@@ -19,10 +19,10 @@ This repository contains the implementation of a Boolean Model for Information R
 
 ## File Descriptions
 
-- `document_query_gui.py`: Main Python script containing the implementation.
+- `main.py`: Main Python script containing the implementation.
 - `Stopword-List.txt`: Text file containing a list of stopwords used for preprocessing.
 - `ResearchPapers/`: Directory containing sample research papers (text files) for indexing and querying.
 
 ## Author
 
-This GUI application was developed by [Your Name].
+This GUI application was developed by Abdul Rehman.
