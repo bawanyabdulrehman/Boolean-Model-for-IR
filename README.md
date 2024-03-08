@@ -6,7 +6,7 @@ This repository contains the implementation of a Boolean Model for Information R
 
 - Preprocessing of text data
 - Building inverted and positional indexes
-- Executing boolean queries
+- Executing boolean/prioximity queries
 - Graphical User Interface (GUI) for interaction
 - Sample data included for testing and demonstration
 
