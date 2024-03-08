@@ -1,0 +1,279 @@
+Exploring symptoms in chronic heart failure
+Abstract
+Symptoms in patients with chronic heart failure (CHF) are the cry for help, reflecting not only the physical aspects of the disease but the
+impact on lifestyle, anxiety, depression and expectations of the patient. Studies consistently show a difference in patients’ self-assessed
+functional classification compared to investigator reported NYHA classification. Moreover, patient self-assessed symptoms have recentlybeen shown to independently predict hospitalisation and mortality over 5 years. Recognition of symptoms and appreciation of theirimportance justifies the use of a structured assessment in order to provide optimal medical care for patients with CHF. A model of how to
+structure symptom assessment equally with signs is presented in this paper.
+D2005 European Society of Cardiology. Published by Elsevier B.V. All rights reserved.
+Keywords: Symptoms; Signs; Heart failure; NYHA; Adherence
+1. Background
+Few patients present to a health professional com-
+plaining of a specific disease. Most patients seek helpbecause they have symptoms which reflect how they feeland what they can do and how they are viewed by others[1]. The current predominant theoretical frame of
+reference from health providers assumes that symptomsare to be interpreted as reflections of disordered somatic(biochemical, neurophysiological, etc.) processes. The
+task of the clinician is therefore to bdecode Qthe patients’
+symptoms to their biological referents in order todiagnose a disease entity [2,3]. However, most clinicians
+recognize that many symptoms are poorly related to anyobvious somatic disorder, which complicates the diag-nostic process. As a consequence, in order to identifypatients with worsening CHF properly and offer correcttreatment, the development of diagnostic tools such as
+echocardiography, coronary angiography and plasma BNP
+are used to confirm or exclude the disease. However,little consideration is given to trying to understand howpatients’ experiences should be integrated into currentpractice recommendations, reflecting a paucity of scien-tific information.
+Obviously, symptoms are an important aspect of CHF
+and are frequently evaluated in research. The New York
+Heart Association (NYHA) classification has been used
+for over three decades as a summary measure of theclinicians’ impression of symptoms in patients with CHF[4]. NYHA class predicts outcome in patients with heart
+failure. However, this classification is based not only onfunctional limitation due to symptoms but is alsoinfluenced by knowledge of the severity of cardiac
+dysfunction, prior medical history and the likely prog-
+nosis. However, the degree and extent of dyspnoea and
+fatigue are often poorly documented in patient records.This may reflect the lack of objective methods formeasuring symptoms and their variable relationship withenvironment, activity and mood. These factors and theability to induce temporary relief of severe symptomsmay have reduced the importance of symptoms as atarget of therapy for clinical trialists.
+Symptoms are subjective, and clinicians should recog-
+nise and value their importance to patients. They reflecthow the patient feels. They are the cry for help,reflecting not only the physical aspects of the diseasebut the associated impact on lifestyle, anxiety, depressionand expectations of the patient. For these reasons,symptoms will vary markedly amongst patients andwithin the same patient from one time to another.
+Worsening conditions will often provoke emotional
+responses that make the patient feel more severelyaffected by symptoms. Once re-stabilised, even if notimproved, given time to adjust lifestyle and expectations,symptoms may abate even if functional capacity does notrecover. Patients learn to live with their symptoms andthereby report less severity. However, the perceiveddiscomfort of symptoms, as well as the actual limitation
+they cause are both of interest to health professionals.
+Relief of symptoms is an important target of therapy forpatients with CHF [5]as recognised by the European
+agency for the evaluation of medical products (EMEA) aswell as the American Food and Drug administration(FDA) [6].
+1388-9842/$ - see front matter D2005 European Society of Cardiology. Published by Elsevier B.V. All rights reserved.
+doi:10.1016/j.ejheart.2005.07.003The European Journal of Heart Failure 7 (2005) 699–703
+www.elsevier.com/locate/heafai2. Which symptoms?
+Breathlessness and fatigue are the classical symptoms
+of heart failure [7–9] . Probably because of the NYHA
+classification, other symptoms are rarely documented inpatients with CHF, but as many as 23 differentsymptoms have been reported by patients during theirlast 6 months of life [9]. Symptoms such as difficulty
+concentrating and bodily pain (other than chest pain) are
+common [10]. Women and men with CHF experience
+similar symptoms, but they are perceived in differentways; physical and social restrictions affecting daily lifeactivities are most problematic for men, whereas restric-tions affecting the ability to support family and friendsare most difficult for women [11–13] .
+3. Symptom assessment
+Symptoms reflect the patient’s personal subjective
+experience, which is then interpreted, subjectively, byhealth professionals. Not surprisingly, there is disparitybetween the assessment of symptoms by patients comparedto physicians and nurses [14–16] . According to Tiesinga et
+al.[17], nurse assessment of the intensity of patients
+fatigue relates poorly with the patients own perceptions,while the patients’ relatives assessed fatigue more accu-rately. Obviously, knowledge about personal factors isimportant when assessing symptoms. Of even greaterconcern is the poor reproducibility of symptom assessmentby physicians [16].
+It has often been assumed that dyspnoea is a sensation
+that varies only in the degree of intensity, but certain
+descriptors of shortness of breath have been reported to bemore likely to be endorsed by patients with specificconditions [17]. For example, patients with chronic
+obstructive pulmonary disease (COPD) chose, bMy breath-
+ing requires effort Q, whereas patients with heart failure
+chose, bI feel that I am suffocating Q, to characterize their
+personal experiences of dyspnoea [18,19] . When compar-
+ing descriptors of breathlessness among men and women,
+we found that the women did not choose any particulardescriptor whereas men scored the following threedescriptors significantly higher; My breath does not go
+in all the way ,I feel that I am suffocating andI cannot get
+enough air [14]. Furthermore, the physicians recognised
+and assessed symptoms of CHF with greater accuracy inmen. A major reason for failing to make an accurate
+diagnosis in CHF is that symptom presentations mirror our
+cultural and social contexts. The clinical understanding ofsymptoms associated with coronary disease is derivedprimarily from studies in male patients. Clinical trials oftenfocus on patients with left ventricular systolic dysfunctionleading to a higher proportion of men. This may under-value the importance of heart failure and its symptomburden in women.4. Self-assessed symptoms
+The clinicians’ task is difficult because symptoms are
+subjective and meaningful. Studies consistently show adifference in patients’ self-assessed functional classifica-tion compared to investigator reported NYHA classifica-tion [20,21] .(Fig. 1 ). Recently, the COMET trial reported
+that the severity of patient self-assessed symptoms,
+independently predicted hospitalisation and mortality over
+5 years [21]. Breathlessness, fatigue and angina were
+rated by the patients ( n=3029) using a 5-point scale as
+follows: (1) Asymptomatic; (2) Walking upstairs at normalpace; (3) Walking at normal pace on the flat; (4) Walkingslowly on the flat or during washing or dressing and (5)At rest. In a multivariate Cox regression analysisincluding 16 baseline covariates, amongst symptoms,
+breathlessness predicted an increase in mortality and all-
+cause hospitalisation, whilst fatigue predicted the develop-ment of worsening heart failure. Clearly, symptomsreported by patients are not only important targets fortherapy in their own right, but also indicate the need fortreatment to improve prognosis.
+Patient reported symptoms are readily available, inex-
+pensive to acquire, valid (because they reflect the patients’
+experience), predict outcome and may be less operator-
+dependent than physical signs. Helping the physician andnurse to understand the structure of the patients’ realityshould improve the therapeutic alliance between patientsand caregivers.
+5. Disease and illness
+A distinction between disease and illness must be
+made. Disease is defined as an abnormality in thestructure and function of body organs and systems andcan often be identified by signs of bodily disorder such asoedema or reduced ejection fraction [22]. Illness means
+experienced reduction in states of well-being and socialfunction manifesting as symptoms [22]. Disease and
+NYHA%
+020406080100
+III
+II
+IIV
+Self assessed function
+Fig. 1. Patients’ self-assessed functional classification compared to
+conventional NYHA classification (modified after Ref. [20]).Editorial 700
+ 18790844, 2005, 5, Downloaded from https://onlinelibrary.wiley.com/doi/10.1016/j.ejheart.2005.07.003 by Higher Education Commission,, Wiley Online Library on [13/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+illness do not have a one-to-one relationship, signs can be
+identified without experiences of symptoms and similardegrees of organ pathology can generate quite differentsymptoms, as is well known in heart failure [23,24] .
+Illness may occur in the absence of detectable disease.Accordingly, the course of the disease may be verydifferent from that of the accompanying illness. A modelof clinical practice, integrating both the disease and illness
+perspectives, has been developed by the medical anthro-
+pologists Byron J. Good and Mary-Jo Delvecchio-Good[2]. They state that whatever the biological correlates or
+grounds of a disease, illness becomes an interpretedpersonal experience for the patient. At present, the diseaseis primarily considered as an object for therapeuticattention for the care provider. We found this modeluseful in exploring symptoms in a structured way and
+have therefore modified it in order to match care and
+treatment for patients with CHF. The model is describedstep by step in Table 1 .
+The first step; The pathological entity identifies the
+symptoms, such as breathlessness, and tiredness or signssuch as ankle swelling. The next step; Structure of
+relevance means information that reveals the meaning of
+illness to a patient, for example the patient explains that
+he or she cannot manage the stairs at home because of
+the breathlessness. The elicitation procedure in the
+disease perspective is when the physician confirms thesuspected diagnosis with for example echocardiography,from the illness perspective it means listening to thepatient’s personal explanation of the symptoms and signs.The interpretative goal is diagnosis and explanation from
+the disease point of view and from the illness perspectiveit means the health professional’s understanding of thepatient’s interpretation of their condition and the treat-ment. And finally, The therapeutic goal which is to
+intervene in the disease process in the disease-orientedapproach while, from the illness perspective it meanstrying to reach concordance between health professionals
+and patients’ view on illness and treatment.
+6. Adherence to prescribed treatment
+Studies suggest that as many as 30–50% of medicines
+prescribed for the treatment of CHF are not taken asprescribed [25–27] . The reasons for this lack of
+adherence are largely unknown, but research indicates
+that lack of symptom relief when taking medicines maybe one explanation [28,29] . The clinician’s assessment of
+the needs and effects of treatment and the patient’ssubjective perception are often not the same. The lattervary between individuals and also within an individual,depending on psychological and social factors that requirecareful assessment and communication between caregiver
+and patient. Even when patients consider that they are
+adhering to treatment and self-care guidelines, many fallshort because of a breakdown in communicationsbetween patients and healthcare providers [30].F o r
+instance, many patients are given a 1 week supply ofmedication when they leave hospital. Some patients maythink, very reasonably, that once they have finished theirdischarge medication that the course of treatment is
+complete, just like taking an anti-biotic. It can also be
+very confusing when patients are faced with their pre-admission medication (left at home) and their dischargemedication [31]. Multidisciplinary management pro-
+grammes improve quality of life, reduce mortality anddelay subsequent hospitalisations in patients with CHF[32,33] . However, these interventions are often vaguely
+described as boptimal pharmacological treatment, educa-
+tion and counselling of the patients Qand are therefore
+difficult to reproduce and develop further [32–34] . Non-
+adherence is often not about patients disobeying orforgetting, and cannot be solved solely with pharmaco-logical information but has to be approached by trying toreach the patients’ way of thinking and adapt to theirway of understanding.
+New approaches are being evaluated for the care and
+treatment of patients with CHF; such as home tele-
+monitoring and nurse telephone support [35], and also
+models which tailor the intervention from a patient’ssubjective reports about his or her condition [36]. The
+latter approach emphasizes the need of the healthprovider to further explore the relationship between apatient’s particular expression of distress and physiolog-ical disorder.
+Table 1
+Interpretation of signs and symptoms in CHF (modified after Ref. [2])
+Disease-signs Illness-symptoms
+Pathological entity
+Somatic lesion or dysfunction,
+e.g. edemaIllness reality of the patient,
+e.g. breathlessness and tired
+Structure of relevance
+Relevant data those that reveal
+somatic disorder, e.g. weight
+gainRelevant data those that reveal
+meaning of illness, e.g. many
+stairs at home
+Elicitation procedure
+Review of systems; laboratory
+tests, e.g. echocardiographyEvaluate the patient’s
+explanatory models, e.g. old age
+Interpretative goal
+Diagnosis, e.g. worsening heart
+failureUnderstanding, e.g. worsening
+heart failure
+Therapeutic goal
+Intervene in somatic disease
+process, e.g. pharmacologicaltreatmentIntervene in order to create
+concordance between patient andhealth provider, e.g. pedagogical
+conversations on the basis of the
+collected dataEditorial 701
+ 18790844, 2005, 5, Downloaded from https://onlinelibrary.wiley.com/doi/10.1016/j.ejheart.2005.07.003 by Higher Education Commission,, Wiley Online Library on [13/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+7. Summary
+Symptoms are important for the interpretation and
+understanding of patients with CHF. They reflect eitherthe disease itself or the patient’s perception of the illness.
+Recognition of symptoms and appreciation of their
+importance should be the reason for a structured assessmentin order to provide optimal care for patients with CHF.
+References
+[1] Eisenberg L, Kleiman A, editors. The relevance of social science for
+medicine. London 7D. Reidal Publishing Company, 1980.
+[2] Good BJ, Delvecchio-Good MJ. The meaning of symptoms: a cultural
+hermeneutic model for clinical practice. In: Eisenberg L, Kleinman A,
+editors. The relevance of social science for medicine. London 7D.
+Reidal Publishing Company, 1980. p. 165–96.
+[3] Foucault M. The birth of the clinic An archaeology of the medical
+perception (Naissance de la Clinique first published 1963 by Presses
+Universitaires de France). . London 7Routledge Classics; 2003.
+[4] Bennett JA, Riegel B, Bittner V , Nichols J. Validity and reliability of
+the NYHA classes for measuring research outcomes in patients withcardiac disease. Heart Lung 2002;31:262–70.
+[5] Swedberg K, Cleland J, Dargie H, Drexler H, Follath F, Komajda M,
+et al. Guidelines for the diagnosis and treatment of chronic heartfailure. Eur Heart J 2005;26:1115–40.
+[6] European Medicines Agency. Evaluation of Medicines for human use.
+http://www.emea.eu.int/pdfs/human/ewp/298603en.pdf .
+[7] Lynn J, Teno JM, Phillips RS, et al. Perceptions by family members
+of the dying experience of older and seriously ill patients.
+SUPPORT Investigators. Study to understand prognoses and
+preferences for outcomes and risks of treatments. Ann Intern Med1997;126:97–106.
+[8] Parshall MP, Welsh DJ, Brockopp DY, Heiser RM, Schooler MP,
+Cassidy KB. Dyspnea duration, distress, and intensity in emergency
+department visits for heart failure. Heart Lung 2001;30:47–56.
+[9] Nordgren L, S frensen S. Symptoms experienced in the last six months
+of life in patients with end-stage heart failure. Scand J Caring Sci
+2003;2:213–7.
+[10] Zambroski CH, Moser DK, Bhat G, Ziegler C. Impact of symptom
+prevalence and symptom burden on quality of life in patients with
+heart failure. Eur J Cardiovasc Nurs in press.
+[11] Friedman MM. Gender differences in the health related quality of life
+of older adults with heart failure. Heart Lung 2003;32:320–7.
+[12] Ekman I, Ehrenberg A. Fatigue in chronic heart failure, does gender
+make a difference? Eur J Cardiovasc Nurs 2003;1:77–82.
+[13] Str fmberg A, M 3rtensson J. Gender differences in patients with heart
+failure. Eur J Cardiovasc Nurs 2003;2:7–18.
+[14] Ekman I, Olofsson M, Boman K, Aires N, Swedberg K. Gender
+makes a difference in the description of dyspnoea in patients with
+chronic heart failure. Eur J Cardiovasc Nurs 2005;4:117–21.
+[15] Ekman I, Ehrenberg A. Fatigued elderly patients with chronic heart
+failure: do patient reports and nursing documentation correspond?
+Nurs Diagn 2002;13:127–36.
+[16] Gadsboll N, Hoilund-Carlsen PF, Nielsen GG, et al. Symptoms and
+signs of heart failure in patients with myocardial infarction:
+reproducibility and relationship to chest X-Ray, radionuclide
+ventriculography and right heart catheterisation. Eur Heart J1989;10:1017–28.
+[17] Tiesenga L, Dijkstra A, Dassen TWN, Halfens RJD, van den Heuve
+W.J.A. Are nurses able to assess fatigue, exertion fatigue and types of
+fatigue in residential home patients? Scand J Caring Sci 2002;16:129–36.[18] Simon PM, Schwartzstein RM, Weiss JW, Fencl V, Teghtsoonian M,
+Weinberger SE. Distinguishable types of dyspnea in patients withshortness of breath. Am Rev Respir Dis 1990;142:1009–14.
+[19] Mahler DA, Harver A, Lentine T, Scott JA, Beck K, Schwartzstein
+RM. Descriptors of breathlessness in cardiorespiratory diseases. Am JRespir Crit Care Med 1996;154:1357–63.
+[20] B. Andersson, G. Brunlof, P.A. Lundberg, G. Lindstedt. Nurse-
+managed clinic provides a good foundation for heart failure patients.
+Lakartidningen 2002:2640-2, 2645-8.
+[21] Ekman I, Cleland JCF, Swedberg K, Charlesworth A, Metra M,
+Poole-Wilson PA. Symptoms in patients with heart failure are
+prognostic predictors. Insights from COMET. J Card Fail 2005;
+11(4):288–92.
+[22] Eisenberg L. Disease and illness: distinctions between professional
+and popular ideas of sickness. Cult Med Psychiatry 1977;1:9–23.
+[23] Russell SD, McNeer FR, Higginbotham MB. Duke University
+Clinical Studies (DUCC) Exercise Group Wilson Circ. 1995. Exer-tional dyspnea in heart failure: a symptom unrelated to pulmonary
+function at rest or during exercise. Am Heart J 1998;135:398–405.
+[24] Shah MR, Hasselblad V , Stinnett SS, Kramer JM, Grossman S,
+Gheorghiade M, et al. Dissociation between hemodynamic changesand symptom improvement in patients with advanced congestive heart
+failure. Eur J Heart Fail 2002;4:297–304.
+[25] Evangelista L, Doering LV, Dracup K, Westlake C, Hamilton M,
+Fonarow GC. Compliance behaviors of elderly patients with advancedheart failure. J Cardiovasc Nurs 2003;18(3):197–206.
+[26] Struthers AD, Anderson G, MacFadyen RJ, Fraser C, MacDonald
+TM. Nonadherence with ACE inhibitors is common and can bedetected in clinical practice by routine serum ACE activity. Congest
+Heart Fail 2001;7(1):43–6.
+[27] Bohachick P, Burke LE, Sereika S, Murali S, Dunbar-Jacob J.
+Adherence to angiotensin-converting enzyme inhibitor therapy forheart failure. Prog Cardiovasc Nurs 2002;17(4):160–6.
+[28] Pound P, Britten N, Morgan M, Yardley L, Pope C, Daker-White G, et
+al. Resisting medicines: a synthesis of qualitative studies of medicinetaking. Soc Sci Med 2005;61:133–55.
+[29] Ekman I, Andersson G, Boman K, Charlesworth A, Cleland JGF,
+Poole-Wilson P, et al. Adherence and perception of medication in
+patients with chronic heart failure during a five year randomised trial.Pat Educ Counsel in press.
+[30] Horowitz CR, Rein SB, Leventhal H. A story of maladies,
+misconceptions and mishaps: effective management of heart failure.Soc Sci Med 2004;58:631–43.
+[31] Komajda M, Follath F, Swedberg K, Cleland J, Aguilar JC, Cohen-
+Solal A, et al. The EuroHeart failure survey programme—a survey on
+the quality of care among patients with heart failure in Europe: Part 2.Treatment. Eur Heart J 2003;24:464–74.
+[32] Stromberg A, Martensson J, Fridlund B, et al. Nurse-led heart failure
+clinics improve survival and self-care behaviour in patients with heart
+failure: results from a prospective, randomised trial. Eur Heart J2003;24:1014–23.
+[33] Thompson DR, Roebuck A, Stewart S. Effects of a nurse-led, clinic
+and home-based intervention on recurrent hospital use in chronic heart
+failure. Eur J Heart Fail 2005;16(7):377–84.
+[34] Ekman I, Swedberg K. (Editorial) Home-based management of
+patients with chronic heart failure—focus on content not just form!.
+Eur Heart J 2002;23:1323–5.
+[35] Cleland JGF, Louis AA, Rigby AS, Janssens U, Balk AHMM.
+Noninvasive home telemonitoring for patients with heart failure at
+high risk for recurrent admission and death. J Am Coll Cardiol
+2005;45:1654–64.
+[36] Jaarsma T, Van Der Wal MH, Hogenhuis J, Lesman I, Luttik ML,
+Veeger NJ, et al. Design and methodology of the COACH study: a
+multicenter randomised coordinating study evaluating outcomes of
+advising and counselling in heart failure. Eur J Heart Fail2004;1:227–33.Editorial 702
+ 18790844, 2005, 5, Downloaded from https://onlinelibrary.wiley.com/doi/10.1016/j.ejheart.2005.07.003 by Higher Education Commission,, Wiley Online Library on [13/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+Inger Ekman
+Department of Nursing,
+The Sahlgrenska Academy at Go ¨teborg University,
+Box 457, SE 405 30 Go ¨teborg,
+Sweden
+E-mail address: inger.ekman@fhs.gu.se.
+Corresponding author. Fax: +46317736050.
+John G.F. Cleland
+Department of Cardiology,
+University of Hull,
+Kingston upon Hull, UKBert Andersson
+Department of Cardiology,
+Sahlgrenska University hospital/Sahlgrenska,
+Go¨teborg, Sweden
+Karl Swedberg
+Department of Medicine,
+Sahlgrenska University hospital/
+O¨stra, Go ¨teborg, Sweden
+3 July 2005Editorial 703
+ 18790844, 2005, 5, Downloaded from https://onlinelibrary.wiley.com/doi/10.1016/j.ejheart.2005.07.003 by Higher Education Commission,, Wiley Online Library on [13/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License

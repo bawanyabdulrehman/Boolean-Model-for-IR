@@ -1,0 +1,251 @@
+A timely and accurate heart failure diagnosis 
+is the gateway to effective treatment that 
+can improve quality of life and prognosis 
+for patients;1 however, almost 80% of 
+people receive an initial diagnosis following 
+emergency admission to hospital.2 This is 
+distressing for patients and families, costly 
+to the NHS, and usually denotes progression 
+to a later stage of disease. The British Heart 
+Foundation has called for earlier diagnosis 
+of heart failure to be prioritised,3 but what 
+are the challenges for primary care?
+HEART FAILURE BURDEN
+Around a million people in England 
+are living with heart failure, and nearly 
+200 000 are newly diagnosed each year.4 
+Patients typically experience increasing 
+breathlessness, fatigue, and leg swelling, 
+which can impair their quality of life. The 
+outlook following a heart failure diagnosis 
+is worse than many common cancers 
+and survival rates have not improved 
+substantially in the last two decades.5 The 
+NHS spends around £2 billion per year on 
+heart failure care, with most of the cost 
+incurred through emergency department 
+attendance, prolonged hospital stay, and 
+frequent readmissions.1 Families and 
+carers are also impacted and can often play 
+a vital role in supporting patients following 
+diagnosis.
+TREATABLE CONDITION
+Heart failure is categorised according to 
+left ventricular ejection fraction to guide 
+management: heart failure with reduced 
+ejection fraction (HFrEF) and heart 
+failure with preserved ejection fraction 
+(HFpEF).1 There is a substantial evidence 
+base for HFrEF treatments, such as 
+angiotensin-converting enzyme inhibitors, 
+beta-?blockers, and mineralocorticoid 
+receptor antagonists, which can improve 
+quality of life, reduce hospital admissions, 
+and increase survival. Newer drugs 
+such as sacubitril/valsartan, ivabradine, 
+and most recently sodium-?glucose cotransporter-2 (SGLT2) inhibitors, are 
+also available for specialist initiation. 
+Prognostically beneficial treatments for 
+HFpEF have been limited until recently 
+when SGLT2 inhibitors dapagliflozin and 
+empagliflozin showed promising results in 
+clinical trials.6 Treatment of valvular heart 
+disease and arrhythmias is also important 
+if a correctable cause of heart failure is 
+found. For all types of heart failure, diuretic 
+therapy is vital to relieve fluid overload.
+NATRIURETIC PEPTIDE TESTING
+The National Institute for Health and 
+Care Excellence (NICE) chronic heart 
+failure guideline recommends that 
+patients presenting to primary care with 
+symptoms suggestive of heart failure 
+undergo natriuretic peptide testing.1 B-type 
+natriuretic peptide (BNP) and NT-proBNP 
+are both clinically available and perform 
+similarly for diagnosis.7 If the natriuretic 
+peptide level is raised, the patient requires 
+referral for echocardiography and further 
+assessment by a specialist to confirm the 
+diagnosis of heart failure. Thresholds for 
+referral differ between European and NICE 
+guidelines, and this is further explored in 
+our accompanying diagnostic accuracy 
+study in this edition of the BJGP .8 A very 
+high natriuretic peptide level is associated 
+with an increased risk of hospitalisation and 
+worse prognosis, so NICE recommends 
+patients with a NT-proBNP level >2000 ng/L 
+be seen within 2 weeks, and all patients 
+with a NT-proBNP >400  ng/L be seen 
+within 6 weeks.1
+DIAGNOSTIC DELAYS
+The pathway to heart failure diagnosis is complex, however, and dependent on 
+patient, clinician, and system factors 
+that can lead to delays. The mean age at 
+diagnosis is 77 years, and most patients 
+have other long-term conditions and take 
+several medications.4 The main symptoms 
+of heart failure are also common, with a 
+variety of causes, and awareness of the 
+condition among the public is limited. 
+Qualitative interviews with people recently 
+diagnosed with heart failure found 
+participants ‘normalised’ symptoms such 
+as breathlessness, putting it down to old 
+age or another condition, which led to a 
+delay in accessing medical services.9 The 
+term ‘heart failure’ itself was perceived to 
+be frightening and often misunderstood.
+There is also evidence of delays between 
+patients first presenting to primary care 
+with symptoms and subsequent referral 
+to specialist services.10 Clinicians may 
+initially link common symptoms such as 
+breathlessness to existing disorders (for 
+example, lung disease) and optimise 
+management before considering an 
+alternative diagnosis. A normal natriuretic 
+peptide level can be helpful to rule out a 
+heart failure diagnosis but universal access 
+to rapid testing is needed. A recent large 
+study using primary care data to analyse 
+trends in natriuretic peptide testing between 
+2004 and 2018 showed testing increased 
+during the study period, with NT-proBNP 
+being the favoured test. However, only one 
+in four patients had a natriuretic peptide test 
+prior to heart failure diagnosis.11 
+There are also capacity issues in 
+echocardiography services, and analysis of 
+primary care data showed that timeframes 
+recommended by NICE for patients to 
+receive a formal heart failure diagnosis 
+through imaging and specialist assessment 
+were not being achieved in practice.10
+RAISING AWARENESS 
+Despite being a malignant condition, 
+prioritisation has not been given to 
+improving understanding of heart failure Earlier heart failure diagnosis in primary careEditorials
+4  British Journal of General Practice, January 2023“The British Heart Foundation has called for earlier 
+diagnosis of heart failure to be prioritised, but what are 
+the challenges for primary care?”
+“Despite being a malignant condition, prioritisation has 
+not been given to improving understanding of heart 
+failure among the public.”among the public. Cancer awareness 
+campaigns have successfully highlighted 
+the symptoms of common cancers and 
+a similar approach could be helpful in 
+heart failure to encourage symptomatic 
+patients to seek help. Inspired by the ‘FAST’ 
+acronym for stroke, we created BEAT-HF 
+— Breathless, Exhausted, Ankle Swelling, 
+Time for a simple blood test12 — with the 
+aim to raise awareness among the public, 
+patients, and healthcare workers in 
+primary and secondary care to consider a 
+diagnosis of heart failure. The patient-led 
+heart failure charity Pumping Marvellous 
+Foundation is successfully leading the 
+BEAT-HF campaign and we hope the 
+acronym will be adopted more generally 
+across the healthcare system.
+ACHIEVING EARLIER DIAGNOSIS
+Heart failure is a common, costly, 
+yet treatable clinical syndrome; but 
+while guidelines offer clear pathways 
+for diagnosis, the complexity and 
+multimorbidity of patients in primary 
+care means the reality of the diagnostic 
+journey is far more challenging. Changes across the patient pathway are required 
+to prevent admissions to hospital and 
+facilitate diagnosis at a more treatable 
+stage. Greater public awareness of heart 
+failure symptoms, clinicians considering 
+the diagnosis in patients with new-onset 
+or worsening breathlessness, increasing 
+use of natriuretic peptide testing to 
+inform decision making, investment in 
+echocardiography capacity, and access 
+to rapid diagnostic referral pathways are 
+all needed to achieve earlier diagnosis in 
+primary care.
+Clare J Taylor, 
+(ORCID: 0000-0001-8926-2581), GP and National 
+Institute for Health and Care Research Academic 
+Clinical Lecturer, Nuffield Department of Primary 
+Care Health Sciences, University of Oxford, Oxford.
+Provenance
+Commissioned; not externally peer reviewed. 
+Competing interests
+Clare J Taylor reports personal fees from Roche 
+outside the submitted work.
+DOI: https://doi.org/10.3399/bjgp23X731481ADDRESS FOR CORRESPONDENCE
+Clare J Taylor
+Nuffield Department of Primary Care Health Sciences, 
+Radcliffe Primary Care Building, Radcliffe Observatory 
+Quarter, University of Oxford, Woodstock Road, Oxford 
+OX2 6GG, UK.
+Email: clare.taylor@phc.ox.ac.uk 
+@clarejtaylor
+British Journal of General Practice, January 2023  5REFERENCES
+1. National Institute for Health and Care 
+Excellence. Chronic heart failure in adults: 
+diagnosis and management. NG106.  London: 
+NICE, 2018. www.nice/org.uk/guidance/ng106 
+(accessed 5 Dec 2022).
+2. Bottle A, Kim D, Aylin P , et al . Routes to diagnosis 
+of heart failure: observational study using linked 
+data in England. Heart  2018; 104(7): 600–605.
+3. British Heart Foundation. Heart failure: a 
+blueprint for change.  https://www.bhf.org.uk/-/
+media/files/health-intelligence/heart-failure-
+a-blueprint-for-change.pdf (accessed 5 Dec 
+2022).
+4. Conrad N, Judge A, Tran J, et al . Temporal 
+trends and patterns in heart failure incidence: a 
+population-based study of 4 million individuals. 
+Lancet  2018; 391(10120): 572–580.
+5. Taylor CJ, Ordóñez-Mena JM, Roalfe AK, et 
+al. Trends in survival after a diagnosis of heart 
+failure in the United Kingdom 2000–2017: 
+population based cohort study. BMJ  2019; 364:  
+I223.
+6. Vaduganathan M, Docherty KF, Claggett BL, 
+et al . SGLT-2 inhibitors in patients with heart 
+failure: a comprehensive meta-analysis of five 
+randomised controlled trials. Lancet 2022; 
+400(10354): 757–767.
+7. Booth RA, Hill SA, Don-Wauchope A, et al . 
+Performance of BNP and NT-proBNP for 
+diagnosis of heart failure in primary care 
+patients: a systematic review. Heart Fail Rev  
+2014; 19(4): 439–451.
+8. Taylor CJ, Ordóñez-Mena JM, Lay-Flurrie SL, et 
+al. Natriuretic peptide testing and heart failure 
+diagnosis in primary care: diagnostic accuracy 
+study. Br J Gen Pract  2022; DOI: https://doi.
+org/10.3399/BJGP.2022.0278.
+9. Taylor CJ, Hobbs FD, Marshall T, et al . From 
+breathless to failure: symptom onset and 
+diagnostic meaning in patients with heart failure 
+— a qualitative study. BMJ Open  2017; 7(3):  
+e013648.
+10. Hayhoe B, Kim D, Aylin PP , et al . Adherence 
+to guidelines in management of symptoms 
+suggestive of heart failure in primary care. Heart  
+2019; 105(9): 678–685.
+11. Roalfe AK, Lay-Flurrie SL, Ordóñez-Mena JM, et 
+al. Long term trends in natriuretic peptide testing 
+for heart failure in UK primary care: a cohort 
+study. Eur Heart J  2021; 43(9): 881–891.
+12. Taylor CJ, Hartshorne-Evans N, 
+Satchithananda D, Hobbs FDR. FASTer 
+diagnosis: time to BEAT heart failure. BJGP 
+Open  2021; DOI: https://doi.org/10.3399/
+BJGPO.2021.0006.“Inspired by the ‘FAST’ acronym for stroke, we created 
+BEAT-HF — Breathless, Exhausted, Ankle Swelling, 
+Time for a simple blood test — with the aim to raise 
+awareness among the public, patients, and healthcare 
+workers in primary and secondary care to consider a 
+diagnosis of heart failure.”

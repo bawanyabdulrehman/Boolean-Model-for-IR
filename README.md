@@ -26,3 +26,7 @@ This repository contains the implementation of a Boolean Model for Information R
 ## Author
 
 This GUI application was developed by Abdul Rehman.
+
+## Repository
+
+[View on GitHub](https://github.com/bawanyabdulrehman/Boolean-Model-for-IR.git)

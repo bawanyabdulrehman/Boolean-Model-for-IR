@@ -1,0 +1,762 @@
+11 https://e-heartfailure.orgABSTRACT
+The prevalence of heart failure (HF) is increasing, necessitating accurate diagnosis and tailored 
+treatment. The accumulation of clinical information from patients with HF generates big data, 
+which poses challenges for traditional analytical methods. To address this, big data approaches 
+and artificial intelligence (AI) have been developed that can effectively predict future observa -
+tions and outcomes, enabling precise diagnoses and personalized treatments of patients with 
+HF. Machine learning (ML) is a subfield of AI that allows computers to analyze data, find pat -
+terns, and make predictions without explicit instructions. ML can be supervised, unsupervised, 
+or semi-supervised. Deep learning is a branch of ML that uses artificial neural networks with 
+multiple layers to find complex patterns. These AI technologies have shown significant poten -
+tial in various aspects of HF research, including diagnosis, outcome prediction, classification of 
+HF phenotypes, and optimization of treatment strategies. In addition, integrating multiple data 
+sources, such as electrocardiography, electronic health records, and imaging data, can enhance 
+the diagnostic accuracy of AI algorithms. Currently, wearable devices and remote monitoring 
+aided by AI enable the earlier detection of HF and improved patient care. This review focuses on 
+the rationale behind utilizing AI in HF and explores its various applications.
+Keywords:  Heart failure; Artificial intelligence; Machine learning; Deep learning; Big data
+INTRODUCTION
+The prevalence of heart failure (HF) is increasing,1,2) along with the complexity of its treatment 
+and diagnosis. The accurate diagnosis of HF relies on various invasive and noninvasive tests, 
+and tailored treatment is based on the characteristics and type of HF.3-6) The diagnosis and 
+management of patients with HF require a substantial amount of clinical information, leading 
+to the accumulation of big data. However, traditional analytical methods are insufficient for 
+handling large datasets.7,8)
+Consequently, the significance of big data approaches and artificial intelligence (AI) in med -
+icine has grown.9) This review discusses the role of AI in HF. We focused on traditional risk 
+factors, electrocardiography (ECG), electronic health records (EHRs), and telemonitoring, Int J Heart Fail. 2024 Jan;6(1):11-19
+https://doi.org/10.36628/ijhf.2023.0050
+pISSN 2636-154X·eISSN 2636-1558
+Review Article
+Received:  Sep 5, 2023
+Revised:  Nov 24, 2023
+Accepted:  Nov 26, 2023
+Published online:  Nov 30, 2023
+Correspondence to
+Dong-Ju Choi, MD, PhD
+Cardiovascular Center, Seoul National 
+University Bundang Hospital, Seoul National 
+University College of Medicine, 82 Gumi-ro 
+173-beon-gil, Bundang-gu, Seongnam 13620, 
+Korea.
+Email: djchoi@snubh.org
+*Minjae Yoon and Jin Joo Park contributed 
+equally to this work and share first authorship.
+Copyright © 2024. Korean Society of Heart 
+Failure
+This is an Open Access article distributed 
+under the terms of the Creative Commons 
+Attribution Non-Commercial License ( https://
+creativecommons.org/licenses/by-nc/4.0 ) 
+which permits unrestricted noncommercial 
+use, distribution, and reproduction in any 
+medium, provided the original work is properly 
+cited.Minjae Yoon , MD1,*, Jin Joo Park , MD, PhD1,*, Taeho Hur , PhD1,2,  
+Cam-Hao Hua , PhD2, Musarrat Hussain , PhD2, Sungyoung Lee , PhD2, and 
+Dong-Ju Choi , MD, PhD1
+1 Division of Cardiology, Department of Internal Medicine, Seoul National University Bundang Hospital, 
+Seoul National University College of Medicine, Seongnam, Korea
+2Department of Computer Science and Engineering, Kyung Hee University, Yongin, KoreaApplication and Potential of Artificial 
+Intelligence in Heart Failure: Past, 
+Present, and Futureand excluded each detailed imaging modality (cardiac magnetic 
+resonance image, echocardiography, nuclear imaging, etc.).
+IMPORTANCE OF BIG DATA 
+APPROACHES IN HF
+The era of big data is upon us, a term that refers to the explo -
+sion of available information. Enormous amounts of extremely 
+high-dimensional or unstructured data are being produced and 
+stored at a much lower cost than ever before, driving the big data 
+movement. The main goal of analyzing such high-dimensional 
+data is to develop effective methods for accurately predicting 
+future observations and results.10) However, the large sample size 
+and high dimensionality of big data introduce unique computa -
+tional and statistical challenges, necessitating the development 
+of new paradigms and analysis techniques.11) These innovations 
+aim to address issues such as data noise, erroneous correlations, 
+and computational power constraints.11) One common objective 
+of computational methods is feature or dimension reduction.12) 
+Statistical learning and modeling are frequently employed to 
+estimate populations (inference) or predict future experiments 
+after preprocessing and performing possible dimension reduc -
+tion. These analyses frequently rely on AI and machine learning 
+(ML), which are algorithms that can perform computational 
+tasks without specific user instructions.13)
+HF is an important target for big data research because of its 
+complex etiology, numerous comorbidities, and the prolonged 
+and progressive course of the disease.7,14) The 2 most popular big 
+data types used in HF research are clinical data and omics. Clini -
+cal data are collected using various means such as imaging meth -
+ods, echocardiography, ECG, wearables, and EHRs. In contrast, 
+the omics technologies, including genomics, transcriptomics, 
+proteomics, and metabolomics, are primarily used for analyzing 
+heart tissue or blood samples.7,15) However, the accuracy, struc -
+ture, and volume of omics and clinical data present challenges 
+for data analysis.16) To advance biological comprehension and 
+clinical care of patients with HF, both conventional statistical 
+methods and ML approaches are employed to gather critical in -
+sights from big data sources.
+APPLICATION OF AI IN HF
+Concept of AI, ML, and deep learning (DL)
+AI is defined as the intelligence of a computer or machine that en -
+ables it to imitate or mimic human capabilities.17,18) This technol -
+ogy can make decisions without requiring human intervention. ML is a subfield of AI that empowers computers to analyze data 
+beyond programmatic procedures, identify patterns within the 
+data, apply learned patterns to new data, and perform computa -
+tional tasks more effectively than humans.19)
+Traditional statistical methods and ML have several distinct and 
+overlapping characteristics.20) High-dimensional datasets with 
+numerous variables present a challenge for traditional statistical 
+techniques, such as regression, whereas ML methods are well 
+suited to handle such complex data. Moreover, ML can evaluate 
+intricate connections between predictors and handle correlated 
+or collinear data. To accommodate temporal changes in data, 
+ML can generate dynamic models that are continuously updated 
+using new training data. For instance, “baseline” features, such 
+as vital signs, laboratory results, and comorbidities, may change 
+over time. Although the evolution of these traits may be crucial 
+for outcome prediction, conventional statistical tools are fre -
+quently ill-equipped to handle them.20) ML algorithms offer the 
+ability to calculate nonlinear relationships more effectively and 
+precisely; however, their higher accuracy comes at the expense 
+of interpretability.21)
+There are 3 primary/representative methods in ML: supervised, 
+unsupervised, and semi-supervised learning ( Figure 1 ).20,22) Su-
+pervised ML is characterized by the use of human-labeled data -
+sets that are intended to “supervise” or “train” algorithms to 
+correctly classify data or predict outcomes. In contrast, unsuper -
+vised ML is used to analyze and group unlabeled datasets, uncov -
+ering hidden patterns in the data without human intervention. 
+Semi-supervised is a method that combines both supervised and 
+unsupervised methods with limited labeled datasets and unla -
+beled datasets, where the unlabeled datasets are grouped with 
+labeled datasets based on their traits. In the field of cardiovascu -
+lar medicine, ML can uncover disease mechanisms and increase 
+the precision of diagnosis, management, and risk prediction by 
+identifying clinically relevant patterns or phenotypes that may 
+not be apparent to clinicians.23) In fact, algorithms such as re -
+gression, decision trees, random forest, support vector machine, 
+naïve Bayes, K-Nearest neighbors, and extreme gradient boost -
+ing are commonly used to analyze medical data.
+DL is a subset of ML that uses multiple layers of artificial neural 
+networks to discover or predict patterns.24) It mimics the operation 
+of the human brain and was originally developed by Dr. Warren 
+McCulloch (neuroscientist) and Walter Pitts (computer scientist) 
+in 1943 as the “McCulloch-Pitts (MP) neuron.”25) MP neurons are 
+structured similarly to brain neurons. Similar to the dendrites of 
+neurons, they receive external data, perform calculations in the 
+nucleus, and output the results as binary signals (1 or 0) that are 
+12Role of AI in Heart Failure
+https://doi.org/10.36628/ijhf.2023.0050 https://e-heartfailure.orgtransmitted through the axons. When these neurons are con -
+nected, they create a neural network structure that resembles 
+that of the human brain. Recently, the computational power of 
+MP neurons has advanced, and they are referred to as “Percep -
+tron.” With significant advancements in computing power, brain 
+neural networks have also become more complex, evolving into 
+widely used DL models, such as deep neural networks and CNN 
+(Figure 2 ).DL is especially helpful when handling big data sources, such as 
+EHRs, because it is less dependent on feature engineering or vari -
+able selection. Overall, DL is compelling in image recognition26) 
+and modeling disease onset27) using temporal relations among 
+events. DL models can predict incident HF by analyzing the tem -
+poral relationships among a large number of evolving variables 
+such as comorbidities, physiological measurements, laboratory 
+indices, medication prescriptions, and invasive procedures.28)
+13Role of AI in Heart Failure
+https://doi.org/10.36628/ijhf.2023.0050 https://e-heartfailure.org
+Machine learning
+Supervised
+learning
+Classi?cation
+ Regression
+ Clustering
+Dimensionality
+reduction
+Classi?cation
+Naïve Bayes
+ AdaBoost
+Gaussian mixture
+model
+Autoencoders
+ Co-training
+Nearest neighbor
+ Bayesian network
+Hidden markov
+model
+t-SNE
+ Multi-view learning
+Neural networks
+ Neural networks
+ Neural networks
+ UMAP
+ S/three.LPVM
+Regression
+Support vector
+machine
+Linear regression,
+GLM
+K-Means,
+K-Medoids,
+Fuzzy C-Means
+Principal
+component
+analysis
+Label propagation
+Multi-instance
+regression
+Discriminant
+analysis
+SVR, GPR
+ Hierarchical
+Linear
+discriminant
+analysis
+Self-training
+Transductive
+regression
+Unsupervised
+learning
+Semi-supervised
+learning
+Figure 1.  Classification of machine learning.  
+GLM = generalized linear model; SVR = support vector regression; GPR = ground penetrating radar; t-SNE = t-Distributed Stochastic Neighbor Embedding; UMAP 
+= Uniform Manifold Approximation and Projection; S3VM = Semi-Supervised Support Vector Machines.
+<Perceptron> <Neural network> <Deep neural network (DNN)>Input layer
+Hidden layer /one.LP Hidden layer /two.LPOutput layer
+Figure 2.  Evolution of deep learning.Recently, generative AI has emerged as a great innovation in the 
+domain of digital health ( Figure 3 ). Generative AI is an AI that can 
+generate novel content, such as creating unique and high-quality 
+images or original writing, rather than solving traditional regres -
+sion or classification problems.29) For example, ChatGPT, which 
+was released to the general public about a year ago, can efficiently 
+understand queries from humans and responds to complex ques -
+tions, and even create a script or a source code. Its versatile ap -
+plications have far-reaching implications for improving patient 
+care and advancing medical research. One of the key applications 
+of generative AI is in the medical imaging. Utilizing advanced al -
+gorithms such as Generative Adversarial Networks (GANs) and 
+Variational Autoencoders, these models excel in generating syn -
+thetic medical images, including X-ray, computed tomography, 
+and magnetic resonance images. As a result, they facilitate the 
+development of more accurate and robust medical imaging sys -
+tems.30) Research was conducted to find if an ML model could 
+correctly capture the characteristics of congestive heart failure 
+(CHF).31) Unlike other diseases, such as lung cancer, where the 
+characteristics can be found in the local area, CHF characteris -
+tics are widespread, making them difficult to detect. The authors 
+have created a synthesized image utilizing the Wasserstein GAN 
+model, by subtracting the features from the healthy image with 
+the diseased image, and adding them to the original image. Veri -
+fied by both ML model and radiologist, the model has well reflect -
+ed the features of CHF in the synthesized image, proving both 
+the performance of the model and the usability of generative AI 
+model. Additionally, the digitization of EHRs benefits from gen -
+erative AI, particularly in the context of natural language process -
+ing. These models proficiently generate and summarize patient 
+notes, extract structured information from unstructured clini -
+cal text, and automate data entry into EHR systems, ultimately 
+saving valuable time for healthcare professionals.32)
+Diagnosis of HF
+Even for HF specialists, correctly diagnosing HF can be challeng -
+ing because it is a complex syndrome caused by both structur -
+al and functional cardiac disorders rather than a single disease entity. A classic example is leg edema, a common symptom of 
+right-sided heart congestion. However, it can also develop in 
+numerous alternative conditions, such as chronic venous in -
+sufficiency, chronic kidney disease, and drug side effects. Con -
+sequently, in clinical practice, many patients are misdiagnosed 
+with HF and vice versa. In addition, contemporary physicians 
+face difficulties in keeping up with the rapidly evolving scientific 
+evidence, new medications, time constraints, and complexity of 
+HF management guidelines, particularly in outpatient clinics. AI 
+algorithms could help physicians identify HF in at-risk patients 
+early and develop an AI-Clinical Decision Support System (AI-
+CDSS) ( Figure 4 ).23,33-35) AI-CDSS is a scalable and flexible medical 
+assistant platform for different types of diseases. AI-CDSS con -
+sists of a total of 5 layers: Data Acquisition and Persistence Layer, 
+Context Recognition and Monitoring Layer, Knowledge Acquisi -
+tion and Inferencing Layer, Engineering Support Layer, and User 
+Interface Management Layer. The third layer, Knowledge Acquisi -
+tion and Inferencing Layer, creates hybrid knowledge models by 
+combining rule generated from data such as images and text, and 
+with rules created by experts and automatically evolve knowledge 
+over time. Choi et al.35) developed and evaluated the diagnostic ac -
+curacy of the AI-CDSS for HF. It demonstrated a remarkable diag -
+nostic accuracy of 98% for HF diagnosis, which was higher than 
+that of non-HF specialists (76%). This suggests that the AI-CDSS 
+could prove particularly useful for diagnosing HF, especially in 
+situations where access to HF specialists is limited.
+ECG is a non-invasive and simple diagnostic tool that is widely 
+used in health checkups. Previous studies have shown a signifi -
+cant association between HF and ECG.36-40) Attia et al.38) showed 
+that the application of AI to ECG can be a powerful screening tool 
+to identify left ventricular dysfunction in asymptomatic individu -
+als. To achieve high accuracy, Kwon et al.41) analyzed 55,163 ECGs 
+of 22,765 patients and developed a deep-learning algorithm for 
+ECG-based HF identification. Compared to logistic regression 
+and random forest ML algorithms, the DL algorithm showed 
+superior effectiveness in identifying HF with a reduced ejection 
+fraction (area under the curve, 0.843; 95% confidence interval, 
+14Role of AI in Heart Failure
+https://doi.org/10.36628/ijhf.2023.0050 https://e-heartfailure.org
+Stages of arti?cial intelligence for HF
+Pre-AI
+(Manual)
+Traditional ML
+ Deep learning
+ Generative AI ······/one.LP/nine.LP/five.LP/zero.LP/endash.cap/one.LP/nine.LP/six.LP/zero.LP /one.LP/nine.LP/six.LP/zero.LP/endash.cap/two.LP/zero.LP/one.LP/zero.LP /two.LP/zero.LP/one.LP/zero.LP/endash.cap/two.LP/zero.LP/two.LP/zero.LP /two.LP/zero.LP/two.LP/zero.LP/endash.cap/periodcentered.cap/periodcentered.cap/periodcentered.cap
+Figure 3.  Stages of AI for HF.  
+AI = artificial intelligence; HF = heart failure; ML = machine learning.0.840–0.845). In addition, the DL model applied to ECG was 
+shown to have a high performance in the detection of HF with 
+preserved ejection fraction (HFpEF).39,42)
+Prediction of HF outcomes
+HF is the leading cause of hospitalization in people aged 65 years 
+and older.43) Moreover, patients with HF have a high risk of re -
+admission, especially immediately after discharge.44) Therefore, 
+risk stratification is important for HF, and ML can be particularly 
+valuable in predicting readmission for these patients. Golas et 
+al.45) showed that DL techniques outperformed traditional tech -
+niques in predicting 30-day readmission in patients with HF. 
+Furthermore, Kwon et al.46) showed that a DL-based algorithm 
+predicted in-hospital mortality and long-term mortality more 
+accurately than the existing scores, including the Get with the 
+Guidelines-Heart Failure Score (GWTG) and Meta-Analysis 
+Global Group for Heart Failure (MAGGIC) score. This might be 
+because DL algorithms do not restrict the number of input or fea -
+tures without limiting to those with established associations or 
+biologically plausible rationales.
+Cardiac monitoring data can be used to develop risk prediction al -
+gorithms. In a cohort study of 900 patients, data from implanted cardiac resynchronization therapy (CRT) were collected.47) The 
+alert algorithm used heart sounds, respiratory rate, tidal volume, 
+heart rate, and patient activity to provide a sensitive and timely 
+predictor of impending HF decompensation.
+Classification of HF phenotypes and treatment
+The present HF classification may be enhanced using ML. Phe -
+notype mapping was performed in a prospective trial with 397 
+ambulatory patients with HFpEF using ML algorithms and data 
+from EHRs.48) A novel classification method for HFpEF was cre -
+ated using this technique, which grouped study participants into 
+phenotypes based on their clinical traits, echocardiographic pa -
+rameters, ECG, invasive hemodynamics, and outcomes. Anoth -
+er unsupervised ML analysis of 1,693 hospitalized patients with 
+HF across the left ventricular ejection fraction (LVEF) spectrum 
+identified 6 distinct phenogroups based on the common comor -
+bidities: coronary artery disease, valvular heart disease, atrial 
+fibrillation, chronic obstructive pulmonary disease, obstructive 
+sleep apnea, or a few comorbidities.49) This grouping stratified 
+the cardiovascular risk more effectively than LVEF.
+ML algorithms can be used to improve HF treatment by assessing 
+the heterogeneity of the response to HF therapies. Ahmad et al.50) 
+15Role of AI in Heart Failure
+https://doi.org/10.36628/ijhf.2023.0050 https://e-heartfailure.org
+HF diagnosis services
+? Disease diagnosis
+? Follow-up & AnalyticsRisk prediction services
+? Severity risk prediction
+? Re-admission and mortality predictionHF monitoring services
+? ECG monitoring
+? Blood pressure monitoring? Glucose monitoring
+? Delirium monitoring
+UI management layer
+UI development environment Feedback module
+Knowledge acquisition and inferencing layer
+Knowledge evolution
+and inferencingKnowledge
+hybridizationStructured
+knowledge
+acquisitionDescriptive
+knowledge
+acquisitionImage-based
+knowledge
+acquisitionEngineering support layer
+Knowledge engineering tool Evidence support
+Context recognition and monitoring layer
+High level context recognizer Low level context recognizer Patient monitoring module
+Data acquisition and persistence layer
+Big data storage processing Log repositoryMultimodal data acquisition and
+processingAI-CDSS platform
+Figure 4.  Hybrid AI-CDSS (expert system and machine learning) for diagnosis of heart failure.  
+AI-CDSS = Artificial Intelligence-Clinical Decision Support System; HF = heart failure; ECG = electrocardiography; UI = user interface.studied 44,886 patients with HF in the Swedish HF registry, and 
+utilized ML to classify patients into 4 subgroups based on their 
+response to therapeutics and 1-year survival rates. This stratifi -
+cation allowed the identification of those most likely to benefit 
+from guideline-directed medical therapy.51) ML can be used to 
+prioritize patients who are most likely to benefit from interven -
+tions to optimize evidence-based therapies.52) Moreover, ML 
+algorithms can assist clinicians in determining optimal sequenc -
+ing and dosing of evidence-based therapies.53)
+Furthermore, ML has a potential role in optimizing patient se -
+lection for HF device therapy. In general, one-third of patients 
+with HF are non-responders to CRT.54) A post-hoc analysis of the 
+Multicenter Automatic Defibrillator Implantation Trial with CRT 
+demonstrated that ML algorithms, by integrating clinical param -
+eters and cardiac cycle imaging data, could classify a phenotyp -
+ically heterogeneous HF cohort into 4 distinct phenotypes, thus 
+potentially optimizing the response rate to CRT.55) Implantable 
+cardioverter defibrillators (ICDs) reduce the risk of sudden cardiac 
+death in patients with HF. One study showed that unsupervised 
+ML-based phenomapping could identify distinct phenotype sub -
+groups in patients with clinically heterogeneous HF receiving sec -
+ondary prophylactic ICD therapy, thus aiding the implementation 
+of personalized medicine for these patients.56) Shakibfar et al.57) re-
+vealed that ML using daily summaries of ICD measurements in the 
+absence of clinical information could predict the short-term risk 
+of electrical storms. In addition, a DL model can assist in selecting 
+patients with HF that are eligible for subcutaneous ICD.58,59)
+Multiple data sources, remote monitoring, and 
+wearable devices
+AI serves as an essential tool to help physicians improve their clin -
+ical judgment and achieve precise diagnoses of diseases such as 
+HF.60) To detect and diagnose HF, multiple data sources (e.g., ECG, 
+EHRs, and imaging data [echocardiography and cardiac magnetic 
+resonance imaging]) are integrated, and further AI algorithms are 
+developed to improve the diagnostic accuracy. Ongoing research is 
+focused on areas such as ECG analysis, natural language process -
+ing for EHR data mining, and echocardiography image analysis. 
+Cho et al.61) showed that HF with a reduced ejection fraction could 
+be screened not only with a 12-lead ECG, but also with a single-lead 
+ECG performed by a wearable device using an AI algorithm. By in -
+corporating such algorithms, AI can be of great assistance in ana -
+lyzing raw imaging data from cardiac imaging techniques.60)
+With the increasing amount of data from remote monitoring 
+and wearable devices, the role of AI is expanding.62) Kwon et al.63) 
+showed that an AI-enabled smartwatch with a 2-lead ECG detected 
+HF with reduced ejection fraction with acceptable performance. The LINK-HF (Multisensor Non-invasive Remote Monitoring for 
+Prediction of Heart Failure Exacerbation) study evaluated the per -
+formance of a personalized analysis platform using continuous 
+data streams to predict rehospitalization after HF admission.64) 
+This study showed that physiological telemetry from a wearable 
+sensor could provide accurate early detection of impending rehos -
+pitalization. In the future, the use of wearable devices or remote 
+monitoring is expected to enable the earlier detection of HF.
+LIMITATIONS OF AI IN HF
+However, there are several limitations in the widespread use of 
+AI in cardiovascular medicine. Dichotomy and improper cali -
+bration are recognized issues in ML techniques based on AI.23) 
+The performance of ML models can be compromised by inaccu -
+rate or missing training data.65) This is especially true when ML 
+algorithms rely on continuous data inputs, such as EHRs. For 
+accurate predictions, data must be cleansed and validated by de -
+tecting out-of-range values and skewness.65) Missing data can be 
+filled in using ML algorithms and techniques while maintaining 
+the algorithm performance.66)
+In addition, an obvious situation in visual-based diagnosis and 
+predictive tasks (e.g., segmentation of the left ventricle endocar -
+dium, epicardium, and left atrium regions in echocardiography 
+for providing fine-grained cardiac information) is the limited 
+availability of well-annotated imaging data owing to expensive 
+labor costs and time consumption. Furthermore, ML and DL al -
+gorithms are vulnerable to domain shift issues, wherein diagnos -
+tic or predictive outcomes may be adversely affected by inherent 
+differences in distribution between the trained and applied data -
+sets (e.g., those collected and combined from various hospitals 
+with different configurations of data-capturing machines). Thus, 
+external validation is crucial in medical AI.
+Another drawback is the opaque reasoning and lack of explain -
+ability that underlie an ML model’s output of a specific pre -
+diction, especially when using DL algorithms because many 
+physicians are skeptical of recommendations generated by a 
+“black box” algorithm. False prediction due to wrong data based 
+training rises a critical problem in the medical field. In an im -
+age-based prediction, a slight manipulation of an image or noise 
+leads to a different conclusion,67-69) and in text-based prediction, 
+hallucination problem arises that the DL algorithm believes the 
+prediction is correct, which is misled by wrong input data.70,71) In 
+addition, the failure to evaluate the clinical impact of ML algo -
+rithms in prospective studies, which makes the benefits of ML 
+approaches hypothetical, is one of the biggest obstacles to their 
+16Role of AI in Heart Failure
+https://doi.org/10.36628/ijhf.2023.0050 https://e-heartfailure.orgadoption.9) There is an increasing need for prospective AI valida -
+tion studies to address these limitations. Lastly, there have been 
+recent issues with the use of patient data, particularly protected 
+health information.
+CONCLUSION
+Nowadays, big data approaches, AI, ML, and DL are widely used 
+in the field of HF. AI algorithms can help in the diagnosis and 
+classification of HF and predict the prognosis and therapeutic 
+response. Various data, including ECG, echocardiography, and 
+EHRs, are used in AI. In addition, the integration of data from 
+remote monitoring and wearable devices has expanded the po -
+tential applications of AI in HF. The incorporation of AI tools 
+is expected to revolutionize HF management and significantly 
+impact patient outcomes, thereby enabling more precise and 
+personalized care of patients with HF ( Figure 5 ).
+ORCID iDs
+Minjae Yoon 
+https://orcid.org/0000-0003-4209-655X
+Jin Joo Park 
+https://orcid.org/0000-0001-9611-1490
+Taeho Hur 
+https://orcid.org/0000-0001-7458-3745
+Cam-Hao Hua 
+https://orcid.org/0000-0002-2556-4991
+Musarrat Hussain 
+https://orcid.org/0000-0003-4494-1593
+Sungyoung Lee 
+https://orcid.org/0000-0002-5962-1587
+Dong-Ju Choi 
+https://orcid.org/0000-0003-0146-2189
+Funding
+This research was supported by a grant of the Korea Health Technology R&D Project 
+through the Korea Health Industry Development Institute (KHIDI), funded by the 
+Ministry of Health & Welfare, Republic of Korea (grant number: HI21C1074).Conflict of Interest
+Jin Joo Park, serves as an associate editor of the International Journal of Heart 
+Failure , but has no role in the decision to publish this article. Except for that, no 
+potential conflict of interest relevant to this article was reported.
+Author Contributions
+Conceptualization: Yoon M, Park JJ, Hur T, Hua CH, Hussain M, Lee S, Choi DJ; Data 
+curation: Yoon M, Park JJ, Hur T, Hua CH, Hussain M, Lee S, Choi DJ; Funding acquisi -
+tion: Choi DJ; Investigation: Yoon M, Park JJ, Hur T, Hua CH, Hussain M, Lee S, Choi DJ; 
+Methodology: Yoon M, Park JJ, Hur T, Hua CH, Hussain M, Lee S, Choi DJ; Project ad -
+ministration: Yoon M, Park JJ, Lee S, Choi DJ; Supervision: Lee S, Choi DJ; Visualization: 
+Yoon M, Park JJ, Hur T, Hua CH, Hussain M, Choi DJ; Writing - original draft: Yoon M; 
+Writing - review & editing: Yoon M, Park JJ, Hur T, Hua CH, Hussain M, Lee S, Choi DJ.
+REFERENCES
+ 1. Conrad N, Judge A, Tran J, et al. Temporal trends and patterns in heart 
+failure incidence: a population-based study of 4 million individuals. 
+Lancet 2018;391:572-80.     PUBMED  | CROSSREF
+ 2. Park JJ, Lee CJ, Park SJ, et al. Heart failure statistics in Korea, 2020: 
+a report from the Korean Society of Heart Failure. Int J Heart Fail 
+2021;3:224-36.     PUBMED  | CROSSREF
+ 3. Heidenreich PA, Bozkurt B, Aguilar D, et al. 2022 AHA/ACC/HFSA 
+guideline for the management of heart failure: a report of the American 
+College of Cardiology/American Heart Association joint committee 
+on clinical practice guidelines. J Am Coll Cardiol 2022;79:e263-421.     
+PUBMED  | CROSSREF
+ 4. McDonagh TA, Metra M, Adamo M, et al. Corrigendum to: 2021 ESC 
+guidelines for the diagnosis and treatment of acute and chronic heart 
+failure: developed by the task force for the diagnosis and treatment of 
+acute and chronic heart failure of the European Society of Cardiology 
+(ESC) with the special contribution of the Heart Failure Association 
+(HFA) of the ESC. Eur Heart J 2021;42:4901.     PUBMED  | CROSSREF
+ 5. Cho JY, Cho DH, Youn JC, et al. Korean Society of Heart Failure 
+guidelines for the management of heart failure: definition and 
+diagnosis. Int J Heart Fail 2023;5:51-65.     PUBMED  | CROSSREF
+ 6. Youn JC, Kim D, Cho JY, et al. Korean Society of Heart Failure 
+guidelines for the management of heart failure: treatment. Int J Heart 
+Fail 2023;5:66-81.     PUBMED  | CROSSREF
+ 7. Lanzer JD, Leuschner F, Kramann R, Levinson RT, Saez-Rodriguez 
+J. Big data approaches in heart failure research. Curr Heart Fail Rep 
+2020;17:213-24.     PUBMED  | CROSSREF
+17Role of AI in Heart Failure
+https://doi.org/10.36628/ijhf.2023.0050 https://e-heartfailure.orgApplication of AI in HF
+Current and future application
+· Diagnosis
+· Classi?cation and phenotype
+· Prognosis and prediction
+· Treatment
+· Personalized medicine
+Data and imaging
+· Multiple data sources: ECG,
+EHRs, and imaging data
+· Remote monitoring
+· Wearable devices
+Computational techniques
+· Big data approach
+· AI: traditional machine
+learning, deep learning,
+generative AI
+Figure 5.  Application of AI in HF.  
+AI = artificial intelligence; HF = heart failure; ECG = electrocardiography; EHR = electronic health record. 8. Docherty AB, Lone NI. Exploiting big data for critical care research. 
+Curr Opin Crit Care 2015;21:467- 72.     PUBMED  | CROSSREF
+ 9. Averbuch T, Sullivan K, Sauer A, et al. Applications of artificial 
+intelligence and machine learning in heart failure. Eur Heart J Digit 
+Health 2022;3:311-22.     PUBMED  | CROSSREF
+ 10. Fan J, Lv J. Sure independence screening for ultrahigh dimensional 
+feature space. J R Stat Soc Series B Stat Methodol 2008;70:849-911.     
+PUBMED  | CROSSREF
+ 11. Fan J, Han F, Liu H. Challenges of big data analysis. Natl Sci Rev 
+2014;1:293-314.     PUBMED  | CROSSREF
+ 12. Meng C, Zeleznik OA, Thallinger GG, Kuster B, Gholami AM, Culhane 
+AC. Dimension reduction techniques for the integrative analysis of 
+multi-omics data. Brief Bioinform 2016;17:628-41.     PUBMED  | CROSSREF
+ 13. Choi RY, Coyner AS, Kalpathy-Cramer J, Chiang MF, Campbell JP. 
+Introduction to machine learning, neural networks, and deep learning. 
+Transl Vis Sci Technol 2020;9:14.    PUBMED
+ 14. Park SM, Lee SY, Jung MH, et al. Korean Society of Heart Failure guidelines 
+for the management of heart failure: management of the underlying 
+etiologies and comorbidities of heart failure. Korean Circ J 2023;53:425-51.     
+PUBMED  | CROSSREF
+ 15. Fu Y, Eisen HJ. Genetics of dilated cardiomyopathy. Curr Cardiol Rep 
+2018;20:121.     PUBMED  | CROSSREF
+ 16. Rau CD, Lusis AJ, Wang Y. Genetics of common forms of heart failure: 
+challenges and potential solutions. Curr Opin Cardiol 2015;30:222- 7.     
+PUBMED  | CROSSREF
+ 17. Hassani H, Silva ES, Unger S, TajMazinani M, Mac Feely S. Artificial 
+intelligence (AI) or intelligence augmentation (IA): what is the future? 
+AI 2020;1:143-55.     CROSSREF
+ 18. Mintz Y, Brodie R. Introduction to artificial intelligence in medicine. 
+Minim Invasive Ther Allied Technol 2019;28:73-81.     PUBMED  | CROSSREF
+ 19. Rajkomar A, Dean J, Kohane I. Machine learning in medicine. N Engl J 
+Med 2019;380:1347-58.     PUBMED  | CROSSREF
+ 20. Rajula HS, Verlato G, Manchia M, Antonucci N, Fanos V . Comparison 
+of conventional statistical methods with machine learning in 
+medicine: diagnosis, drug development, and treatment. Medicina 
+(Kaunas) 2020;56:455.     PUBMED  | CROSSREF
+ 21. Weller DL, Love TM, Wiedmann M. Interpretability versus accuracy: a 
+comparison of machine learning models built using different algorithms, 
+performance measures, and features to predict E. coli  levels in agricultural 
+water. Front Artif Intell 2021;4:628441.     PUBMED  | CROSSREF
+22. Latif J, Xiao C, Imran A, Tu S. Medical imaging using machine 
+learning and deep learning algorithms: a review. In: Proceedings of 
+2019 2nd International Conference on Computing, Mathematics and 
+Engineering Technologies (iCoMET); 2019 January 30–31; Sukkur, 
+Pakistan. New York: IEEE; 2019. p.1–5.    
+ 23. Johnson KW , Torres Soto J, Glicksberg BS, et al. Artificial intelligence 
+in cardiology. J Am Coll Cardiol 2018;71:2668-79.     PUBMED  | CROSSREF
+ 24. Noorbakhsh-Sabet N, Zand R, Zhang Y, Abedi V . Artificial intelligence 
+transforms the future of health care. Am J Med 2019;132:795-801.     
+PUBMED  | CROSSREF
+ 25. McCulloch WS, Pitts W . A logical calculus of the ideas immanent in 
+nervous activity. 1943. Bull Math Biol 1990;52:99-115 .     PUBMED  | CROSSREF
+ 26. Lee EJ, Kim YH, Kim N, Kang DW . Deep into the brain: artificial 
+intelligence in stroke imaging. J Stroke 2017;19:277-85.     PUBMED  | 
+CROSSREF
+ 27. Choi E, Schuetz A, Stewart WF, Sun J. Using recurrent neural network 
+models for early detection of heart failure onset. J Am Med Inform 
+Assoc 2017;24:361- 70.     PUBMED  | CROSSREF 28. Rao S, Li Y, Ramakrishnan R, et al. An explainable transformer-based 
+deep learning model for the prediction of incident heart failure. IEEE J 
+Biomed Health Inform 2022;26:3362- 72.     PUBMED  | CROSSREF
+ 29. Gozalo-Brizuela R, Garrido-Merchan EC. ChatGPT is not all you need. 
+A state of the art review of large Generative AI models. arXiv. 2023 
+January 11. Available from: https://doi.org/10.48550/arXiv.2301.04655.     
+CROSSREF
+ 30. Kebaili A, Lapuyade-Lahorgue J, Ruan S. Deep learning approaches for 
+data augmentation in medical imaging: a review. J Imaging 2023;9:81.     
+PUBMED  | CROSSREF
+ 31. Seah JC, Tang JS, Kitchen A, Gaillard F, Dixon AF. Chest radiographs 
+in congestive heart failure: visualizing neural network learning. 
+Radiology 2019;290:514-22.     PUBMED  | CROSSREF
+ 32. Harvey D, Lobban F, Rayson P, Warner A, Jones S. Natural language 
+processing methods and bipolar disorder: scoping review. JMIR Ment 
+Health 2022;9:e35928.     PUBMED  | CROSSREF
+ 33. Guo A, Pasque M, Loh F, Mann DL, Payne PR. Heart failure diagnosis, 
+readmission, and mortality prediction using machine learning and 
+artificial intelligence models. Curr Epidemiol Rep 2020;7:212-9.     
+CROSSREF
+ 34. Choi E, Schuetz A, Stewart WF, Sun J. Medical concept representation 
+learning from electronic health records and its application on heart 
+failure prediction. arXiv. 2017 June 20. Available from: https://doi.
+org/10.48550/arXiv.1602.03686 .     CROSSREF
+ 35. Choi DJ, Park JJ, Ali T, Lee S. Artificial intelligence for the diagnosis of 
+heart failure. NPJ Digit Med 2020;3:54.     PUBMED  | CROSSREF
+ 36. Nainwal A, Kumar Y, Jha B. Morphological changes in congestive heart 
+failure ECG. In: Proceedings of 2016 2nd International Conference on 
+Advances in Computing, Communication, & Automation (ICACCA) 
+(Fall); 2016 September 30–October 1; Bareilly, India. New York: IEEE; 
+2016. p.1–4.    
+ 37. Hendry PB, Krisdinarti L, Erika M. Scoring system based on 
+electrocardiogram features to predict the type of heart failure in patients 
+with chronic heart failure. Cardiol Rev 2016;7:110-6.     PUBMED  | CROSSREF
+ 38. Attia ZI, Kapa S, Lopez-Jimenez F, et al. Screening for cardiac 
+contractile dysfunction using an artificial intelligence-enabled 
+electrocardiogram. Nat Med 2019;25:70-4.     PUBMED  | CROSSREF
+ 39. Kwon JM, Kim KH, Eisen HJ, et al. Artificial intelligence assessment 
+for early detection of heart failure with preserved ejection fraction 
+based on electrocardiographic features. Eur Heart J Digit Health 
+2020;2:106-16.     PUBMED  | CROSSREF
+ 40. Choi J, Lee S, Chang M, Lee Y, Oh GC, Lee HY. Deep learning of ECG 
+waveforms for diagnosis of heart failure with a reduced left ventricular 
+ejection fraction. Sci Rep 2022;12:1-10.     CROSSREF
+ 41. Kwon JM, Kim KH, Jeon KH, et al. Development and validation of 
+deep-learning algorithm for electrocardiography-based heart failure 
+identification. Korean Circ J 2019;49:629-39.     PUBMED  | CROSSREF
+ 42. Unterhuber M, Rommel KP, Kresoja KP, et al. Deep learning detects heart 
+failure with preserved ejection fraction using a baseline electrocardiogram. 
+Eur Heart J Digit Health 2021;2:699- 703.     PUBMED  | CROSSREF
+ 43. Bui AL, Horwich TB, Fonarow GC. Epidemiology and risk profile of 
+heart failure. Nat Rev Cardiol 2011;8:30-41.     PUBMED  | CROSSREF
+ 44. Lee SE, Lee HY, Cho HJ, et al. Clinical characteristics and outcome of 
+acute heart failure in Korea: results from the Korean Acute Heart Failure 
+Registry (KorAHF). Korean Circ J 2017;47:341-53.     PUBMED  | CROSSREF
+ 45. Golas SB, Shibahara T, Agboola S, et al. A machine learning model to 
+predict the risk of 30-day readmissions in patients with heart failure: 
+a retrospective analysis of electronic medical records data. BMC Med 
+Inform Decis Mak 2018;18:44.     PUBMED  | CROSSREF
+18Role of AI in Heart Failure
+https://doi.org/10.36628/ijhf.2023.0050 https://e-heartfailure.org 46. Kwon JM, Kim KH, Jeon KH, et al. Artificial intelligence algorithm 
+for predicting mortality of patients with acute heart failure. PLoS One 
+2019;14:e0219302.     PUBMED  | CROSSREF
+ 47. Boehmer JP, Hariharan R, Devecchi FG, et al. A multisensor algorithm 
+predicts heart failure events in patients with implanted devices: results 
+from the MultiSENSE study. JACC Heart Fail 2017;5:216-25.     PUBMED  | 
+CROSSREF
+ 48. Shah SJ, Katz DH, Selvaraj S, et al. Phenomapping for novel 
+classification of heart failure with preserved ejection fraction. 
+Circulation 2015;131:269- 79.     PUBMED  | CROSSREF
+ 49. Gevaert AB, Tibebu S, Mamas MA, et al. Clinical phenogroups are 
+more effective than left ventricular ejection fraction categories in 
+stratifying heart failure outcomes. ESC Heart Fail 2021;8:2741-54.     
+PUBMED  | CROSSREF
+ 50. Ahmad T, Lund LH, Rao P, et al. Machine learning methods improve 
+prognostication, identify clinically distinct phenotypes, and detect 
+heterogeneity in response to therapy in a large cohort of heart failure 
+patients. J Am Heart Assoc 2018;7:e008081.     PUBMED  | CROSSREF
+ 51. Bazoukis G, Stavrakis S, Zhou J, et al. Machine learning versus 
+conventional clinical methods in guiding management of heart failure 
+patients-a systematic review. Heart Fail Rev 2021;26:23-34.     PUBMED  | 
+CROSSREF
+ 52. Jing L, Ulloa Cerna AE, Good CW , et al. A machine learning approach to 
+management of heart failure populations. JACC Heart Fail 2020;8:578-87.     
+PUBMED  | CROSSREF
+ 53. Sullivan K, Mamas MA, Van Spall HG. Machine learning could 
+facilitate optimal titration of guideline-directed medical therapy in 
+heart failure. J Am Coll Cardiol 2019;74:1424-5.     PUBMED  | CROSSREF
+ 54. Daubert C, Behar N, Martins RP, Mabo P, Leclercq C. Avoiding non-
+responders to cardiac resynchronization therapy: a practical guide. Eur 
+Heart J 2017;38:1463- 72.     PUBMED  | CROSSREF
+ 55. Cikes M, Sanchez-Martinez S, Claggett B, et al. Machine learning-
+based phenogrouping in heart failure to identify responders to cardiac 
+resynchronization therapy. Eur J Heart Fail 2019;21:74-85.     PUBMED  | 
+CROSSREF
+ 56. Deng Y, Cheng S, Huang H, et al. Machine learning-based 
+phenomapping in patients with heart failure and secondary prevention 
+implantable cardioverter-defibrillator implantation: a proof-of-concept 
+study. Rev Cardiovasc Med 2023;24:37.     CROSSREF
+ 57. Shakibfar S, Krause O, Lund-Andersen C, et al. Predicting electrical 
+storms by remote monitoring of implantable cardioverter-defibrillator 
+patients using machine learning. Europace 2019;21:268- 74.     PUBMED  | 
+CROSSREF
+ 58. ElRefai M, Abouelasaad M, Wiles BM, et al. Role of deep learning methods in screening for subcutaneous implantable cardioverter 
+defibrillator in heart failure. Ann Noninvasive Electrocardiol 
+2023;28:e13028.     PUBMED  | CROSSREF
+ 59. Dunn AJ, ElRefai MH, Roberts PR, Coniglio S, Wiles BM, Zemkoho 
+AB. Deep learning methods for screening patients’ S-ICD implantation 
+eligibility. Artif Intell Med 2021;119:102139.     PUBMED  | CROSSREF
+ 60. Yasmin F, Shah SM, Naeem A, et al. Artificial intelligence in the 
+diagnosis and detection of heart failure: the past, present, and future. 
+Rev Cardiovasc Med 2021;22:1095-113.     PUBMED  | CROSSREF
+ 61. Cho J, Lee B, Kwon JM, et al. Artificial intelligence algorithm 
+for screening heart failure with reduced ejection fraction using 
+electrocardiography. ASAIO J 2021;67:314-21.     PUBMED  | CROSSREF
+ 62. Bhatia A, Maddox TM. Remote patient monitoring in heart failure: 
+factors for clinical efficacy. Int J Heart Fail 2020;3:31-50.     PUBMED  | 
+CROSSREF
+ 63. Kwon JM, Jo YY, Lee SY, et al. Artificial intelligence-enhanced 
+smartwatch ECG for heart failure-reduced ejection fraction detection 
+by generating 12-lead ECG. Diagnostics (Basel) 2022;12:654.     PUBMED  | 
+CROSSREF
+ 64. Stehlik J, Schmalfuss C, Bozkurt B, et al. Continuous wearable 
+monitoring analytics predict heart failure hospitalization: the LINK-
+HF multicenter study. Circ Heart Fail 2020;13:e006513.     PUBMED  | 
+CROSSREF
+ 65. Breck E, Polyzotis N, Roy S, Whang S, Zinkevich M. Data validation for 
+machine learning. In: Proceedings of the 2nd SysML Conference; Palo 
+Alto, CA, USA; 2019.    
+ 66. Emmanuel T, Maupong T, Mpoeleng D, Semong T, Mphago B, Tabona 
+O. A survey on missing data in machine learning. J Big Data 2021;8:140.     
+PUBMED  | CROSSREF
+ 67. Su J, Vargas DV , Sakurai K. One pixel attack for fooling deep neural 
+networks. IEEE Trans Evol Comput 2019;23:828-41.     CROSSREF
+ 68. Dombrowski AK, Alber M, Anders C, Ackermann M, Müller KR, Kessel 
+P. Explanations can be manipulated and geometry is to blame. In: 
+33rd Conference on Neural Information Processing Systems (NeurIPS 
+2019); Vancouver, Canada; 2019.    
+ 69. Ghorbani A, Abid A, Zou J. Interpretation of neural networks is fragile. 
+Proc Conf AAAI Artif Intell 2019;33:3681-8.     CROSSREF
+ 70. Pal A, Umapathi LK, Sankarasubbu M. Med-HALT: medical domain 
+hallucination test for large language models. arXiv. 2023 October 14. 
+Available from: https://doi.org/10.48550/arXiv.2307.15343.     CROSSREF
+ 71. Nori H, King N, McKinney SM, Carignan D, Horvitz E. Capabilities of 
+GPT-4 on medical challenge problems. arXiv. 2023 April 12. Available 
+from: https://doi.org/10.48550/arXiv.2303.13375.     CROSSREF
+19Role of AI in Heart Failure
+https://doi.org/10.36628/ijhf.2023.0050 https://e-heartfailure.org

@@ -1,0 +1,944 @@
+Transformers in Time Series: A Survey
+Qingsong Wen1, Tian Zhou2, Chaoli Zhang2, Weiqi Chen2, Ziqing Ma2, Junchi Yan3, Liang Sun1
+1DAMO Academy, Alibaba Group, Bellevue, USA
+2DAMO Academy, Alibaba Group, Hangzhou, China
+3Department of CSE, MoE Key Lab of Arti?cial Intelligence, Shanghai Jiao Tong University
+{qingsong.wen, tian.zt, chaoli.zcl, jarvus.cwq, maziqing.mzq, liang.sun }@alibaba-inc.com,
+yanjunchi@sjtu.edu.cn
+Abstract
+Transformers have achieved superior performances
+in many tasks in natural language processing and
+computer vision, which also triggered great inter-
+est in the time series community. Among multiple
+advantages of Transformers, the ability to capture
+long-range dependencies and interactions is espe-
+cially attractive for time series modeling, leading
+to exciting progress in various time series appli-
+cations. In this paper, we systematically review
+Transformer schemes for time series modeling by
+highlighting their strengths as well as limitations.
+In particular, we examine the development of time
+series Transformers in two perspectives. From the
+perspective of network structure, we summarize the
+adaptations and modi?cations that have been made
+to Transformers in order to accommodate the chal-
+lenges in time series analysis. From the perspective
+of applications, we categorize time series Trans-
+formers based on common tasks including forecast-
+ing, anomaly detection, and classi?cation. Empiri-
+cally, we perform robust analysis, model size anal-
+ysis, and seasonal-trend decomposition analysis to
+study how Transformers perform in time series. Fi-
+nally, we discuss and suggest future directions to
+provide useful research guidance. A corresponding
+resource that has been continuously updated can be
+found in the GitHub repository1.
+1 Introduction
+The innovation of Transformer in deep learning [Vaswani
+et al. , 2017 ]has brought great interests recently due to
+its excellent performances in natural language process-
+ing (NLP) [Kenton and others, 2019 ], computer vision
+(CV) [Dosovitskiy et al. , 2021 ], and speech processing [Dong
+et al. , 2018 ]. Over the past few years, numerous Transform-
+ers have been proposed to advance the state-of-the-art per-
+formances of various tasks signi?cantly. There are quite a
+few literature reviews from different aspects, such as in NLP
+applications [Han et al. , 2021 ], CV applications [Han et al. ,
+2022 ], and ef?cient Transformers [Tayet al. , 2022 ].
+1https://github.com/qingsongedu/time-series-transformers-reviewTransformers have shown great modeling ability for long-
+range dependencies and interactions in sequential data and
+thus are appealing to time series modeling. Many variants
+of Transformer have been proposed to address special chal-
+lenges in time series modeling and have been successfully
+applied to various time series tasks, such as forecasting [Li
+et al. , 2019; Zhou et al. , 2022 ], anomaly detection [Xuet
+al., 2022; Tuli et al. , 2022 ], and classi?cation [Zerveas et
+al., 2021; Yang et al. , 2021 ]. Speci?cally, seasonality or pe-
+riodicity is an important feature of time series [Wen et al. ,
+2021a ]. How to effectively model long-range and short-range
+temporal dependency and capture seasonality simultaneously
+remains a challenge [Wuet al. , 2021; Wen et al. , 2022 ]. We
+note that there exist several surveys related to deep learning
+for time series, including forecasting [Lim and Zohren, 2021;
+Benidis et al. , 2022; Torres et al. , 2021 ], classi?cation [Is-
+mail Fawaz et al. , 2019 ], anomaly detection [Choi et al. ,
+2021; Bl ´azquez-Garc ´iaet al. , 2021 ], and data augmenta-
+tion[Wen et al. , 2021b ], but there is no comprehensive sur-
+vey for Transformers in time series. As Transformer for time
+series is an emerging subject in deep learning, a systematic
+and comprehensive survey on time series Transformers would
+greatly bene?t the time series community.
+In this paper, we aim to ?ll the gap by summarizing the
+main developments of time series Transformers. We ?rst
+give a brief introduction about vanilla Transformer, and then
+propose a new taxonomy from perspectives of both network
+modi?cations and application domains for time series Trans-
+formers. For network modi?cations, we discuss the improve-
+ments made on both low-level (i.e. module) and high-level
+(i.e. architecture) of Transformers, with the aim to optimize
+the performance of time series modeling. For applications,
+we analyze and summarize Transformers for popular time
+series tasks including forecasting, anomaly detection, and
+classi?cation. For each time series Transformer, we analyze
+its insights, strengths, and limitations. To provide practical
+guidelines on how to effectively use Transformers for time
+series modeling, we conduct extensive empirical studies that
+examine multiple aspects of time series modeling, including
+robustness analysis, model size analysis, and seasonal-trend
+decomposition analysis. We conclude this work by discussing
+possible future directions for time series Transformers, in-
+cluding inductive biases for time series Transformers, Trans-
+formers and GNN for time series, pre-trained TransformersarXiv:2202.07125v5  [cs.LG]  11 May 2023for time series, Transformers with architecture level variants,
+and Transformers with NAS for time series. To the best of
+our knowledge, this is the ?rst work to comprehensively and
+systematically review the key developments of Transformers
+for modeling time series data. We hope this survey will ignite
+further research interests in time series Transformers.
+2 Preliminaries of the Transformer
+2.1 Vanilla Transformer
+The vanilla Transformer [Vaswani et al. , 2017 ]follows most
+competitive neural sequence models with an encoder-decoder
+structure. Both encoder and decoder are composed of multi-
+ple identical blocks. Each encoder block consists of a multi-
+head self-attention module and a position-wise feed-forward
+network while each decoder block inserts cross-attention
+models between the multi-head self-attention module and the
+position-wise feed-forward network.
+2.2 Input Encoding and Positional Encoding
+Unlike LSTM or RNN, the vanilla Transformer has no recur-
+rence. Instead, it utilizes the positional encoding added in the
+input embeddings, to model the sequence information. We
+summarize some positional encodings below.
+Absolute Positional Encoding
+In vanilla Transformer, for each position index t, encoding
+vector is given by
+PE(t)i={sin(?it)i%2 = 0
+cos(?it)i%2 = 1(1)
+where ?iis the hand-crafted frequency for each dimension.
+Another way is to learn a set of positional embeddings for
+each position which is more ?exible [Kenton and others,
+2019; Gehring et al. , 2017 ].
+Relative Positional Encoding
+Following the intuition that pairwise positional relationships
+between input elements is more bene?cial than positions of
+elements, relative positional encoding methods have been
+proposed. For example, one of such methods is to add a
+learnable relative positional embedding to keys of attention
+mechanism [Shaw et al. , 2018 ].
+Besides the absolute and relative positional encodings,
+there are methods using hybrid positional encodings that
+combine them together [Keet al. , 2021 ]. Generally, the po-
+sitional encoding is added to the token embedding and fed to
+Transformer.
+2.3 Multi-head Attention
+With Query-Key-Value (QKV) model, the scaled dot-product
+attention used by Transformer is given by
+Attention (Q,K,V) =softmax (QKT
+vDk)V (2)
+where queries Q? RN×Dk, keys K? RM×Dk, values
+V?RM×Dv,N, M denote the lengths of queries and keys
+(or values), and Dk, Dvdenote the dimensions of keys (or
+queries) and values. Transformer uses multi-head attention
+Time SeriesTransformersNetwork ModificationsApplicationDomainsPositional EncodingAttentionModuleArchitectureLevelForecastingAnomaly DetectionClassificationTime Series ForecastingSpatio-Temporal ForecastingEvent ForecastingVanilla EncodingLearnable EncodingTimestamp EncodingFigure 1: Taxonomy of Transformers for time series modeling from
+the perspectives of network modi?cations and application domains.
+withHdifferent sets of learned projections instead of a sin-
+gle attention function as
+MultiHeadAttn( Q,K,V) = Concat ( head 1,···, head H)WO,
+where head i=Attention (QWQ
+i,KWK
+i,VWV
+i).
+2.4 Feed-forward and Residual Network
+The feed-forward network is a fully connected module as
+FFN (H') =ReLU (H'W1+b1)W2+b2, (3)
+where H'is outputs of previous layer, W1? RDm×Df,
+W2?RDf×Dm,b1?RDf,b2?RDmare trainable pa-
+rameters. In a deeper module, a residual connection module
+followed by a layer normalization module is inserted around
+each module. That is,
+H'= LayerNorm( SelfAttn (X) +X), (4)
+H= LayerNorm( FFN (H') +H'), (5)
+where SelfAttn (.)denotes self-attention module and
+LayerNorm (.)denotes the layer normalization operation.
+3 Taxonomy of Transformers in Time Series
+To summarize the existing time series Transformers, we pro-
+pose a taxonomy from perspectives of network modi?cations
+and application domains as illustrated in Fig. 1. Based on
+the taxonomy, we review the existing time series Transform-
+ers systematically. From the perspective of network modi-
+?cations, we summarize the changes made on both module
+level and architecture level of Transformer in order to ac-
+commodate special challenges in time series modeling. From
+the perspective of applications, we classify time series Trans-
+formers based on their application tasks, including forecast-
+ing, anomaly detection, and classi?cation. In the following
+two sections, we would delve into the existing time series
+Transformers from these two perspectives.
+4 Network Modi?cations for Time Series
+4.1 Positional Encoding
+As the ordering of time series matters, it is of great impor-
+tance to encode the positions of input time series into Trans-
+formers. A common design is to ?rst encode positional infor-
+mation as vectors and then inject them into the model as anadditional input together with the input time series. How to
+obtain these vectors when modeling time series with Trans-
+formers can be divided into three main categories.
+Vanilla Positional Encoding. A few works [Liet al. ,
+2019 ]simply introduce vanilla positional encoding (Section
+2.2) used in [Vaswani et al. , 2017 ], which is then added to
+the input time series embeddings and fed to Transformer. Al-
+though this approach can extract some positional information
+from time series, they were unable to fully exploit the impor-
+tant features of time series data.
+Learnable Positional Encoding. As the vanilla posi-
+tional encoding is hand-crafted and less expressive and adap-
+tive, several studies found that learning appropriate posi-
+tional embeddings from time series data can be much more
+effective. Compared to ?xed vanilla positional encoding,
+learned embeddings are more ?exible and can adapt to spe-
+ci?c tasks. [Zerveas et al. , 2021 ]introduces an embedding
+layer in Transformer that learns embedding vectors for each
+position index jointly with other model parameters. [Lim et
+al., 2021 ]uses an LSTM network to encode positional em-
+beddings, which can better exploit sequential ordering infor-
+mation in time series.
+Timestamp Encoding. When modeling time series in
+real-world scenarios, the timestamp information is com-
+monly accessible, including calendar timestamps (e.g., sec-
+ond, minute, hour, week, month, and year) and special times-
+tamps (e.g., holidays and events). These timestamps are quite
+informative in real applications but hardly leveraged in vanilla
+Transformers. To mitigate the issue, Informer [Zhou et al. ,
+2021 ]proposed to encode timestamps as additional positional
+encoding by using learnable embedding layers. A similar
+timestamp encoding scheme was used in Autoformer [Wuet
+al., 2021 ]and FEDformer [Zhou et al. , 2022 ].
+4.2 Attention Module
+Central to Transformer is the self-attention module. It can
+be viewed as a fully connected layer with weights that are
+dynamically generated based on the pairwise similarity of in-
+put patterns. As a result, it shares the same maximum path
+length as fully connected layers, but with a much less num-
+ber of parameters, making it suitable for modeling long-term
+dependencies.
+As we show in the previous section the self-attention mod-
+ule in the vanilla Transformer has a time and memory com-
+plexity ofO(N2)(Nis the input time series length), which
+becomes the computational bottleneck when dealing with
+long sequences. Many ef?cient Transformers were proposed
+to reduce the quadratic complexity that can be classi?ed into
+two main categories: (1) explicitly introducing a sparsity bias
+into the attention mechanism like LogTrans [Liet al. , 2019 ]
+and Pyraformer [Liuet al. , 2022a ]; (2) exploring the low-rank
+property of the self-attention matrix to speed up the computa-
+tion, e.g. Informer [Zhou et al. , 2021 ]and FEDformer [Zhou
+et al. , 2022 ]. Table 1 shows both the time and memory com-
+plexity of popular Transformers applied to time series mod-
+eling, and more details about these models will be discussed
+in Section 5.Table 1: Complexity comparisons of popular time series Transform-
+ers with different attention modules.
+MethodsTraining Testing
+Time Memory Steps
+Transformer [Vaswani et al. , 2017 ]O(
+N2)
+O(
+N2)
+N
+LogTrans [Liet al. , 2019 ]O(NlogN)O(NlogN) 1
+Informer [Zhou et al. , 2021 ]O(NlogN)O(NlogN) 1
+Autoformer [Wuet al. , 2021 ]O(NlogN)O(NlogN) 1
+Pyraformer [Liuet al. , 2022a ]O(N)O(N) 1
+Quatformer [Chen et al. , 2022 ]O(2cN)O(2cN) 1
+FEDformer [Zhou et al. , 2022 ]O(N)O(N) 1
+Crossformer [Zhang and Yan, 2023 ]O(D
+L2segN2)O(N) 1
+4.3 Architecture-based Attention Innovation
+To accommodate individual modules in Transformers for
+modeling time series, a number of works [Zhou et al. , 2021;
+Liuet al. , 2022a ]seek to renovate Transformers on the archi-
+tecture level. Recent works introduce hierarchical architec-
+ture into Transformer to take into account the multi-resolution
+aspect of time series. Informer [Zhou et al. , 2021 ]inserts
+max-pooling layers with stride 2 between attention blocks,
+which down-sample series into its half slice. Pyraformer [Liu
+et al. , 2022a ]designs a C-ary tree-based attention mecha-
+nism, in which nodes at the ?nest scale correspond to the orig-
+inal time series, while nodes in the coarser scales represent
+series at lower resolutions. Pyraformer developed both intra-
+scale and inter-scale attentions in order to better capture tem-
+poral dependencies across different resolutions. Besides the
+ability to integrate information at different multi-resolutions,
+a hierarchical architecture also enjoys the bene?ts of ef?cient
+computation, particularly for long-time series.
+5 Applications of Time Series Transformers
+In this section, we review the applications of Transformer to
+important time series tasks, including forecasting, anomaly
+detection, and classi?cation.
+5.1 Transformers in Forecasting
+Here we examine three common types of forecasting tasks
+here, i.e. time series forecasting, spatial-temporal forecast-
+ing, and event forecasting.
+Time Series Forecasting
+A lot of work has been done to design new Transformer
+variants for time series forecasting tasks in the latest years.
+Module-level and architecture-level variants are two large
+categories and the former consists of the majority of the up-
+to-date works.
+Module-level variants In the module-level variants for
+time series forecasting, their main architectures are similar
+to the vanilla Transformer with minor changes. Researchers
+introduce various time series inductive biases to design new
+modules. The following summarized work consists of three
+different types: designing new attention modules, exploring
+the innovative way to normalize time series data, and utilizing
+the bias for token inputs, as shown in Figure 2.
+The ?rst type of variant for module-level Transformers is to
+design new attention modules, which is the category with the
+largest proportion. Here we ?rst describe six typical works:
+LogTrans [Liet al. , 2019 ], Informer [Zhou et al. , 2021 ],Figure 2: Categorization of module-level Transformer variants for
+time series forecasting.
+AST [Wuet al. , 2020a ], Pyraformer [Liuet al. , 2022a ], Quat-
+former [Chen et al. , 2022 ], and FEDformer [Zhou et al. ,
+2022 ], all of which exploit sparsity inductive bias or low-rank
+approximation to remove noise and achieve a low-order cal-
+culation complexity. LogTrans [Liet al. , 2019 ]proposes con-
+volutional self-attention by employing causal convolutions
+to generate queries and keys in the self-attention layer. It
+introduces sparse bias, a Logsparse mask, in self-attention
+model that reduces computational complexity from O(N2)
+toO(NlogN). Instead of using explicit sparse bias, In-
+former [Zhou et al. , 2021 ]selects dominant queries based on
+queries and key similarities, thus achieving similar improve-
+ments as LogTrans in computational complexity. It also de-
+signs a generative style decoder to produce long-term fore-
+casting directly and thus avoids accumulative error in us-
+ing one forward-step prediction for long-term forecasting.
+AST [Wuet al. , 2020a ]uses a generative adversarial encoder-
+decoder framework to train a sparse Transformer model for
+time series forecasting. It shows that adversarial training
+can improve time series forecasting by directly shaping the
+output distribution of the network to avoid error accumula-
+tion through one-step ahead inference. Pyraformer [Liuet
+al., 2022a ]designs a hierarchical pyramidal attention mod-
+ule with a binary tree following the path, to capture temporal
+dependencies of different ranges with linear time and mem-
+ory complexity. FEDformer [Zhou et al. , 2022 ]applies at-
+tention operation in the frequency domain with Fourier trans-
+form and wavelet transform. It achieves a linear complex-
+ity by randomly selecting a ?xed-size subset of frequency.
+Note that due to the success of Autoformer and FEDformer,
+it has attracted more attention in the community to explore
+self-attention mechanisms in the frequency domain for time
+series modeling. Quatformer [Chen et al. , 2022 ]proposes
+learning-to-rotate attention (LRA) based on quaternions that
+introduce learnable period and phase information to depict in-
+tricate periodical patterns. Moreover, it decouples LRA using
+a global memory to achieve linear complexity.
+The following three works focus on building an explicit
+interpretation ability of models, which follows the trend of
+Explainable Arti?cial Intelligence (XAI). TFT [Lim et al. ,2021 ]designs a multi-horizon forecasting model with static
+covariate encoders, gating feature selection, and temporal
+self-attention decoder. It encodes and selects useful infor-
+mation from various covariates to perform forecasting. It
+also preserves interpretability by incorporating global, tem-
+poral dependency, and events. ProTran [Tang and Matteson,
+2021 ]and SSDNet [Linet al. , 2021 ]combine Transformer
+with state space models to provide probabilistic forecasts.
+ProTran designs a generative modeling and inference proce-
+dure based on variational inference. SSDNet ?rst uses Trans-
+former to learn the temporal pattern and estimate the param-
+eters of SSM, and then applies SSM to perform the seasonal-
+trend decomposition and maintain the interpretable ability.
+The second type of variant for module-level Transformers
+is the way to normalize time series data. To the best of our
+knowledge, Non-stationary Transformer [Liuet al. , 2022b ]is
+the only work that mainly focuses on modifying the normal-
+ization mechanism as shown in Figure 2. It explores the over-
+stationarization problem in time series forecasting tasks with
+a relatively simple plugin series stationary and De-stationary
+module to modify and boost the performance of various at-
+tention blocks.
+The third type of variant for module-level Transformer is
+utilizing the bias for token input. Autoformer [Wuet al. ,
+2021 ]adopts a segmentation-based representation mecha-
+nism. It devises a simple seasonal-trend decomposition ar-
+chitecture with an auto-correlation mechanism working as
+an attention module. The auto-correlation block measures
+the time-delay similarity between inputs signal and aggre-
+gates the top-k similar sub-series to produce the output with
+reduced complexity. PatchTST [Nie et al. , 2023 ]utilizes
+channel-independent where each channel contains a single
+univariate time series that shares the same embedding within
+all the series, and subseries-level patch design which seg-
+mentation of time series into subseries-level patches that are
+served as input tokens to Transformer. Such ViT [Dosovit-
+skiy et al. , 2021 ]alike design improves its numerical perfor-
+mance in long-time time-series forecasting tasks a lot. Cross-
+former [Zhang and Yan, 2023 ]proposes a Transformer-based
+model utilizing cross-dimension dependency for multivariate
+time series forecasting. The input is embedded into a 2D
+vector array through the novel dimension-segment-wise em-
+bedding to preserve time and dimension information. Then,
+a two-stage attention layer is used to ef?ciently capture the
+cross-time and cross-dimension dependency.
+Architecture-level variants Some works start to design
+a new transformer architecture beyond the scope of the
+vanilla transformer. Triformer [Cirstea et al. , 2022 ]design a
+triangular,variable-speci?c patch attention. It has a triangular
+tree-type structure as the later input size shrinks exponentially
+and a set of variable-speci?c parameters making a multi-
+layer Triformer maintain a lightweight and linear complex-
+ity. Scaleformer [Shabani et al. , 2023 ]proposes a multi-scale
+framework that can be applied to the baseline transformer-
+based time series forecasting models (FEDformer [Zhou et al. ,
+2022 ], Autoformer [Wuet al. , 2021 ], etc.). It can improve the
+baseline model’s performance by iteratively re?ning the fore-
+casted time series at multiple scales with shared weights.Remarks Note that DLinear [Zeng et al. , 2023 ]questions
+the necessity of using Transformers for long-term time series
+forecasting, and shows that a simpler MLP-based model can
+achieve better results compared to some Transformer base-
+lines through empirical studies. However, we notice that a re-
+cent Transformer model PatchTST [Nieet al. , 2023 ]achieves
+a better numerical result compared to DLinear for long-term
+time series forecasting. Moreover, there is a thorough the-
+oretical study [Yun et al. , 2020 ]showing that the Trans-
+former models are universal approximators of sequence-to-
+sequence functions. It is a overclaim to question the poten-
+tial of any type of method for time series forecasting based
+solely on experimental results from some variant instanti-
+ations of such method, especially for Transformer models
+which already demonstrate the performances in most machine
+learning-based tasks. Therefore, we conclude that summariz-
+ing the recent Transformer-based models for time series fore-
+casting is necessary and would bene?t the whole community.
+Spatio-Temporal Forecasting
+In spatio-temporal forecasting, both temporal and spatio-
+temporal dependencies are taken into account in time series
+Transformers for accurate forecasting.
+Traf?c Transformer [Caiet al. , 2020 ]designs an encoder-
+decoder structure using a self-attention module to capture
+temporal-temporal dependencies and a graph neural network
+module to capture spatial dependencies. Spatial-temporal
+Transformer [Xuet al. , 2020 ]for traf?c ?ow forecasting takes
+a step further. Besides introducing a temporal Transformer
+block to capture temporal dependencies, it also designs a
+spatial Transformer block, together with a graph convolu-
+tion network, to better capture spatial-spatial dependencies.
+Spatio-temporal graph Transformer [Yuet al. , 2020 ]designs
+an attention-based graph convolution mechanism that is able
+to learn a complicated temporal-spatial attention pattern to
+improve pedestrian trajectory prediction. Earthformer [Gao
+et al. , 2022 ]proposes a cuboid attention for ef?cient space-
+time modeling, which decomposes the data into cuboids and
+applies cuboid-level self-attention in parallel. It shows that
+Earthformer achieves superior performance in weather and
+climate forecasting. Recently, AirFormer [Liang et al. , 2023 ]
+devises a dartboard spatial self-attention module and a causal
+temporal self-attention module to ef?ciently capture spatial
+correlations and temporal dependencies, respectively. Fur-
+thermore, it enhances Transformers with latent variables to
+capture data uncertainty and improve air quality forecasting.
+Event Forecasting
+Event sequence data with irregular and asynchronous times-
+tamps are naturally observed in many real-life applications,
+which is in contrast to regular time series data with equal
+sampling intervals. Event forecasting or prediction aims to
+predict the times and marks of future events given the his-
+tory of past events, and it is often modeled by temporal point
+processes (TPP) [Yanet al. , 2019; Shchur et al. , 2021 ].
+Recently, several neural TPP models incorporate Trans-
+formers in order to improve the performance of event pre-
+diction. Self-attentive Hawkes process (SAHP) [Zhang et al. ,
+2020 ]and Transformer Hawkes process (THP) [Zuo et al. ,
+2020 ]adopt Transformer encoder architecture to summarizethe in?uence of historical events and compute the intensity
+function for event prediction. They modify the positional en-
+coding by translating time intervals into sinusoidal functions
+such that the intervals between events can be utilized. Later, a
+more ?exible named attentive neural datalog through time (A-
+NDTT) [Mei et al. , 2022 ]is proposed to extend SAHP/THP
+schemes by embedding all possible events and times with at-
+tention as well. Experiments show that it can better capture
+sophisticated event dependencies than existing methods.
+5.2 Transformers in Anomaly Detection
+Transformer based architecture also bene?ts the time se-
+ries anomaly detection task with the ability to model tem-
+poral dependency, which brings high detection quality [Xu
+et al. , 2022 ]. Besides, in multiple studies, including
+TranAD [Tuli et al. , 2022 ], MT-RV AE [Wang et al. , 2022 ],
+and TransAnomaly [Zhang et al. , 2021 ], researchers pro-
+posed to combine Transformer with neural generative models,
+such as V AEs [Kingma and Welling, 2014 ]and GANs [Good-
+fellow et al. , 2014 ], for better performance in anomaly detec-
+tion. We will elaborate on these models in the following part.
+TranAD [Tuli et al. , 2022 ]proposes an adversarial train-
+ing procedure to amplify reconstruction errors as a sim-
+ple Transformer-based network tends to miss small devia-
+tion of anomaly. GAN style adversarial training procedure
+is designed by two Transformer encoders and two Trans-
+former decoders to gain stability. Ablation study shows that,
+if Transformer-based encoder-decoder is replaced, F1 score
+drops nearly 11%, indicating the effect of Transformer archi-
+tecture on time series anomaly detection.
+MT-RV AE [Wang et al. , 2022 ]and TransAnomaly [Zhang
+et al. , 2021 ]combine V AE with Transformer, but they
+share different purposes. TransAnomaly combines V AE with
+Transformer to allow more parallelization and reduce training
+costs by nearly 80%. In MT-RV AE, a multiscale Transformer
+is designed to extract and integrate time-series information at
+different scales. It overcomes the shortcomings of traditional
+Transformers where only local information is extracted for
+sequential analysis.
+GTA [Chen et al. , 2021c ]combines Transformer with
+graph-based learning architecture for multivariate time series
+anomaly detection. Note that, MT-RV AE is also for multi-
+variate time series but with few dimensions or insuf?cient
+close relationships among sequences where the graph neu-
+ral network model does not work well. To deal with such
+challenge, MT-RV AE modi?es the positional encoding mod-
+ule and introduces feature-learning module. Instead, GTA
+contains a graph convolution structure to model the in?uence
+propagation process. Similar to MT-RV AE, GTA also consid-
+ers “global” information, yet by replacing vanilla multi-head
+attention with a multi-branch attention mechanism, that is,
+a combination of global-learned attention, vanilla multi-head
+attention, and neighborhood convolution.
+AnomalyTrans [Xuet al. , 2022 ]combines Transformer
+and Gaussian prior-Association to make anomalies more dis-
+tinguishable. Sharing similar motivation as TranAD, Anom-
+alyTrans achieves the goal in a different way. The insight is
+that it is harder for anomalies to build strong associations with
+the whole series while easier with adjacent time points com-pared with normality. In AnomalyTrans, prior-association
+and series-association are modeled simultaneously. Besides
+reconstruction loss, the anomaly model is optimized by the
+minimax strategy to constrain the prior- and series- associa-
+tions for more distinguishable association discrepancy.
+5.3 Transformers in Classi?cation
+Transformer is proved to be effective in various time series
+classi?cation tasks due to its prominent capability in captur-
+ing long-term dependency. GTN [Liuet al. , 2021 ]uses a
+two-tower Transformer with each tower respectively work-
+ing on time-step-wise attention and channel-wise attention.
+To merge the feature of the two towers, a learnable weighted
+concatenation (also known as ‘gating’) is used. The proposed
+extension of Transformer achieves state-of-the-art results on
+13 multivariate time series classi?cations. [Rußwurm and
+K¨orner, 2020 ]studied the self-attention based Transformer
+for raw optical satellite time series classi?cation and obtained
+the best results compared with recurrent and convolutional
+neural networks. Recently, TARNet [Chowdhury et al. , 2022 ]
+designs Transformers to learn task-aware data reconstruction
+that augments classi?cation performance, which utilizes at-
+tention score for important timestamps masking and recon-
+struction and brings superior performance.
+Pre-trained Transformers are also investigated in classi?ca-
+tion tasks. [Yuan and Lin, 2020 ]studies the Transformer for
+raw optical satellite image time series classi?cation. The au-
+thors use self-supervised pre-trained schema because of lim-
+ited labeled data. [Zerveas et al. , 2021 ]introduced an unsu-
+pervised pre-trained framework and the model is pre-trained
+with proportionally masked data. The pre-trained models are
+then ?ne-tuned in downstream tasks such as classi?cation.
+[Yang et al. , 2021 ]proposes to use large-scale pre-trained
+speech processing model for downstream time series classi-
+?cation problems and generates 19 competitive results on 30
+popular time series classi?cation datasets.
+6 Experimental Evaluation and Discussion
+We conduct preliminary empirical studies on a typical chal-
+lenging benchmark dataset ETTm2 [Zhou et al. , 2021 ]to
+analyze how Transformers work on time series data. Since
+classic statistical ARIMA/ETS [Hyndman and Khandakar,
+2008 ]models and basic RNN/CNN models perform inferior
+to Transformers in this dataset as shown in [Zhou et al. , 2021;
+Wuet al. , 2021 ], we focus on popular time series Transform-
+ers with different con?gurations in the experiments.
+Robustness Analysis
+A lot of works we describe above carefully design attention
+modules to lower the quadratic calculation and memory com-
+plexity, though they practically use a short ?xed-size input to
+achieve the best result in their reported experiments. It makes
+us question the actual usage of such an ef?cient design. We
+perform a robust experiment with prolonging input sequence
+length to verify their prediction power and robustness when
+dealing with long-term input sequences in Table 2.
+As in Table 2, when we compare the prediction results with
+prolonging input length, various Transformer-based modelTable 2: The MSE comparisons in robustness experiment of fore-
+casting 96 steps for ETTm2 dataset with prolonging input length.
+Model Transformer Autoformer Informer Reformer LogFormerInput Len96 0.557 0.239 0.428 0.615 0.667
+192 0.710 0.265 0.385 0.686 0.697
+336 1.078 0.375 1.078 1.359 0.937
+720 1.691 0.315 1.057 1.443 2.153
+1440 0.936 0.552 1.898 0.815 0.867
+Table 3: The MSE comparisons in model size experiment of fore-
+casting 96 steps for ETTm2 dataset with different number of layers.
+Model Transformer Autoformer Informer Reformer LogFormerLayer Num3 0.557 0.234 0.428 0.597 0.667
+6 0.439 0.282 0.489 0.353 0.387
+12 0.556 0.238 0.779 0.481 0.562
+24 0.580 0.266 0.815 1.109 0.690
+48 0.461 NaN 1.623 OOM 2.992
+deteriorates quickly. This phenomenon makes a lot of care-
+fully designed Transformers impractical in long-term fore-
+casting tasks since they cannot effectively utilize long input
+information. More works and designs need to be investigated
+to fully utilize long sequence input for better performance.
+Model Size Analysis
+Before being introduced into the ?eld of time series predic-
+tion, Transformer has shown dominant performance in NLP
+and CV communities [Vaswani et al. , 2017; Kenton and oth-
+ers, 2019; Han et al. , 2021; Han et al. , 2022 ]. One of the
+key advantages Transformer holds in these ?elds is being able
+to increase prediction power through increasing model size.
+Usually, the model capacity is controlled by Transformer’s
+layer number, which is commonly set between 12 to 128. Yet
+as shown in the experiments of Table 3, when we compare
+the prediction result with different Transformer models with
+various numbers of layers, the Transformer with 3 to 6 layers
+often achieves better results. It raises a question about how to
+design a proper Transformer architecture with deeper layers
+to increase the model’s capacity and achieve better forecast-
+ing performance.
+Seasonal-Trend Decomposition Analysis
+In recent studies, researchers [Wuet al. , 2021; Zhou et al. ,
+2022; Lin et al. , 2021; Liu et al. , 2022a ]begin to realize
+that the seasonal-trend decomposition [Cleveland et al. , 1990;
+Wen et al. , 2020 ]is a crucial part of Transformer’s perfor-
+mance in time series forecasting. As an experiment shown
+in Table 4, we adopt a simple moving average seasonal-trend
+decomposition architecture proposed in [Wuet al. , 2021 ]to
+test various attention modules. It can be seen that the simple
+seasonal-trend decomposition model can signi?cantly boost
+model’s performance by 50 % to 80%. It is a unique block
+and such performance boosting through decomposition seems
+a consistent phenomenon in time series forecasting for Trans-
+former’s application, which is worth further investigating for
+more advanced and carefully designed time series decompo-
+sition schemes.
+7 Future Research Opportunities
+Here we highlight a few directions that are potentially
+promising for future research of Transformers in time series.Table 4: The MSE comparisons in ablation experiments of seasonal-trend decomposition analysis. ’Ori’ means the original version without
+the decomposition. ’Decomp’ means with decomposition. The experiment is performed on ETTm2 dataset with prolonging output length.
+Model FEDformer Autoformer Informer LogTrans Reformer Transformer Promotion
+MSE Ori Decomp Ori Decomp Ori Decomp Ori Decomp Ori Decomp Ori Decomp RelativeOut Len96 0.457 0.203 0.581 0.255 0.365 0.354 0.768 0.231 0.658 0.218 0.604 0.204 53%
+192 0.841 0.269 1.403 0.281 0.533 0.432 0.989 0.378 1.078 0.336 1.060 0.266 62%
+336 1.451 0.325 2.632 0.339 1.363 0.481 1.334 0.362 1.549 0.366 1.413 0.375 75%
+720 3.282 0.421 3.058 0.422 3.379 0.822 3.048 0.539 2.631 0.502 2.672 0.537 82%
+7.1 Inductive Biases for Time Series Transformers
+Vanilla Transformer does not make any assumptions about
+data patterns and characteristics. Although it is a general
+and universal network for modeling long-range dependen-
+cies, it also comes with a price, i.e., lots of data are needed
+to train Transformer to improve the generalization and avoid
+data over?tting. One of the key features of time series data
+is its seasonal/periodic and trend patterns [Wen et al. , 2019;
+Cleveland et al. , 1990 ]. Some recent studies have shown
+that incorporating series periodicity [Wuet al. , 2021 ]or fre-
+quency processing [Zhou et al. , 2022 ]into time series Trans-
+former can enhance performance signi?cantly. Moreover, it
+is interesting that some studies adopt a seemly opposite in-
+ductive bias, but both achieve good numerical improvement:
+[Nieet al. , 2023 ]removes the cross-channel dependency by
+utilizing a channel-independent attention module, while an
+interesting work [Zhang and Yan, 2023 ]improves its experi-
+mental performance by utilizing cross-dimension dependency
+with a two-stage attention mechanism. Clearly, we have noise
+and signals in such a cross-channel learning paradigm, but a
+clever way to utilize such inductive bias to suppress the noise
+and extract the signal is still desired. Thus, one future direc-
+tion is to consider more effective ways to induce inductive
+biases into Transformers based on the understanding of time
+series data and characteristics of speci?c tasks.
+7.2 Transformers and GNN for Time Series
+Multivariate and spatio-temporal time series are becoming
+increasingly common in applications, calling for additional
+techniques to handle high dimensionality, especially the abil-
+ity to capture the underlying relationships among dimen-
+sions. Introducing graph neural networks (GNNs) is a natural
+way to model spatial dependency or relationships among di-
+mensions. Recently, several studies have demonstrated that
+the combination of GNN and Transformers/attentions could
+bring not only signi?cant performance improvements like in
+traf?c forecasting [Caiet al. , 2020; Xu et al. , 2020 ]and multi-
+modal forecasting [Liet al. , 2021 ], but also better understand-
+ing of the spatio-temporal dynamics and latent causality. It is
+an important future direction to combine Transformers and
+GNNs for effectively spatial-temporal modeling in time se-
+ries.
+7.3 Pre-trained Transformers for Time Series
+Large-scale pre-trained Transformer models have signif-
+icantly boosted the performance for various tasks in
+NLP [Kenton and others, 2019; Brown et al. , 2020 ]and
+CV[Chen et al. , 2021a ]. However, there are limited works
+on pre-trained Transformers for time series, and existing stud-
+ies mainly focus on time series classi?cation [Zerveas et al. ,2021; Yang et al. , 2021 ]. Therefore, how to develop appro-
+priate pre-trained Transformer models for different tasks in
+time series remains to be examined in the future.
+7.4 Transformers with Architecture Level Variants
+Most developed Transformer models for time series main-
+tain the vanilla Transformer’s architecture with modi?cations
+mainly in the attention module. We might borrow the idea
+from Transformer variants in NLP and CV which also have
+architecture-level model designs to ?t different purposes,
+such as lightweight [Wuet al. , 2020b; Mehta et al. , 2021 ],
+cross-block connectivity [Bapna et al. , 2018 ], adaptive com-
+putation time [Dehghani et al. , 2019; Xin et al. , 2020 ], and
+recurrence [Daiet al. , 2019 ]. Therefore, one future direction
+is to consider more architecture-level designs for Transform-
+ers speci?cally optimized for time series data and tasks.
+7.5 Transformers with NAS for Time Series
+Hyper-parameters, such as embedding dimension and the
+number of heads/layers, can largely affect the performance
+of Transformers. Manual con?guring these hyper-parameters
+is time-consuming and often results in suboptimal perfor-
+mance. AutoML technique like Neural architecture search
+(NAS) [Elsken et al. , 2019; Wang et al. , 2020 ]has been a
+popular technique for discovering effective deep neural archi-
+tectures, and automating Transformer design using NAS in
+NLP and CV can be found in recent studies [Soet al. , 2019;
+Chen et al. , 2021b ]. For industry-scale time series data which
+can be of both high dimension and long length, automatically
+discovering both memory- and computational-ef?cient Trans-
+former architectures is of practical importance, making it an
+important future direction for time series Transformers.
+8 Conclusion
+We have provided a survey on time series Transformers. We
+organize the reviewed methods in a new taxonomy consisting
+of network design and application. We summarize represen-
+tative methods in each category, discuss their strengths and
+limitations by experimental evaluation, and highlight future
+research directions.
+References
+[Bapna et al. , 2018 ]Ankur Bapna, Mia Xu Chen, Orhan Firat,
+Yuan Cao, and Yonghui Wu. Training deeper neural machine
+translation models with transparent attention. In EMNLP , 2018.
+[Benidis et al. , 2022 ]Konstantinos Benidis, Syama Sundar Ranga-
+puram, Valentin Flunkert, Yuyang Wang, Danielle Maddix, , et al.
+Deep learning for time series forecasting: Tutorial and literature
+survey. ACM Computing Surveys , 55(6):1–36, 2022.[Bl´azquez-Garc ´iaet al. , 2021 ]Ane Bl ´azquez-Garc ´ia, Angel
+Conde, Usue Mori, et al. A review on outlier/anomaly detection
+in time series data. ACM Computing Surveys , 54(3):1–33, 2021.
+[Brown et al. , 2020 ]Tom Brown, Benjamin Mann, Nick Ryder,
+Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, et al. Lan-
+guage models are few-shot learners. NeurIPS , 2020.
+[Caiet al. , 2020 ]Ling Cai, Krzysztof Janowicz, Gengchen Mai,
+Bo Yan, and Rui Zhu. Traf?c transformer: Capturing the conti-
+nuity and periodicity of time series for traf?c forecasting. Trans-
+actions in GIS , 24(3):736–755, 2020.
+[Chen et al. , 2021a ]Hanting Chen, Yunhe Wang, Tianyu Guo,
+Chang Xu, Yiping Deng, Zhenhua Liu, Siwei Ma, Chunjing Xu,
+et al. Pre-trained image processing transformer. In CVPR , 2021.
+[Chen et al. , 2021b ]Minghao Chen, Houwen Peng, Jianlong Fu,
+and Haibin Ling. AutoFormer: Searching transformers for vi-
+sual recognition. In CVPR , 2021.
+[Chen et al. , 2021c ]Zekai Chen, Dingshuo Chen, Xiao Zhang, Zix-
+uan Yuan, and Xiuzhen Cheng. Learning graph structures with
+transformer for multivariate time series anomaly detection in IoT.
+IEEE Internet of Things Journal , 2021.
+[Chen et al. , 2022 ]Weiqi Chen, Wenwei Wang, Bingqing Peng,
+Qingsong Wen, Tian Zhou, and Liang Sun. Learning to rotate:
+Quaternion transformer for complicated periodical time series
+forecasting. In KDD , 2022.
+[Choi et al. , 2021 ]Kukjin Choi, Jihun Yi, Changhwa Park, and
+Sungroh Yoon. Deep learning for anomaly detection in time-
+series data: Review, analysis, and guidelines. IEEE Access , 2021.
+[Chowdhury et al. , 2022 ]Ranak Roy Chowdhury, Xiyuan Zhang,
+Jingbo Shang, Rajesh K Gupta, and Dezhi Hong. TARNet: Task-
+aware reconstruction for time-series transformer. In KDD , 2022.
+[Cirstea et al. , 2022 ]Razvan-Gabriel Cirstea, Chenjuan Guo, Bin
+Yang, Tung Kieu, Xuanyi Dong, and Shirui Pan. Triformer: Tri-
+angular, variable-speci?c attentions for long sequence multivari-
+ate time series forecasting. In IJCAI , 2022.
+[Cleveland et al. , 1990 ]Robert Cleveland, William Cleveland, Jean
+McRae, et al. STL: A seasonal-trend decomposition procedure
+based on loess. Journal of Of?cial Statistics , 6(1):3–73, 1990.
+[Daiet al. , 2019 ]Zihang Dai, Zhilin Yang, Yiming Yang, Jaime G.
+Carbonell, Quoc V . Le, et al. Transformer-XL: Attentive lan-
+guage models beyond a ?xed-length context. In ACL, 2019.
+[Dehghani et al. , 2019 ]Mostafa Dehghani, Stephan Gouws, Oriol
+Vinyals, Jakob Uszkoreit, and Lukasz Kaiser. Universal trans-
+formers. In ICLR , 2019.
+[Dong et al. , 2018 ]Linhao Dong, Shuang Xu, and Bo Xu. Speech-
+transformer: a no-recurrence sequence-to-sequence model for
+speech recognition. In ICASSP , 2018.
+[Dosovitskiy et al. , 2021 ]Alexey Dosovitskiy, Lucas Beyer,
+Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai,
+Thomas Unterthiner, et al. An image is worth 16x16 words:
+Transformers for image recognition at scale. In ICLR , 2021.
+[Elsken et al. , 2019 ]Elsken, Thomas, Jan Hendrik Metzen, and
+Frank Hutter. Neural architecture search: A survey. Journal of
+Machine Learning Research , 2019.
+[Gao et al. , 2022 ]Zhihan Gao, Xingjian Shi, Hao Wang, Yi Zhu,
+Bernie Wang, Mu Li, et al. Earthformer: Exploring space-time
+transformers for earth system forecasting. In NeurIPS , 2022.
+[Gehring et al. , 2017 ]Jonas Gehring, Michael Auli, David Grang-
+ier, Denis Yarats, and Yann N Dauphin. Convolutional sequence
+to sequence learning. In ICML , 2017.[Goodfellow et al. , 2014 ]Ian Goodfellow, Jean Pouget-Abadie,
+Mehdi Mirza, Bing Xu, David Warde-Farley, Sherjil Ozair, et al.
+Generative adversarial nets. NeurIPS , 2014.
+[Han et al. , 2021 ]Xu Han, Zhengyan Zhang, Ning Ding, Yuxian
+Gu, Xiao Liu, Yuqi Huo, Jiezhong Qiu, Liang Zhang, et al. Pre-
+trained models: Past, present and future. AI Open , 2021.
+[Han et al. , 2022 ]Kai Han, Yunhe Wang, Hanting Chen, Xinghao
+Chen, Jianyuan Guo, Zhenhua Liu, Yehui Tang, An Xiao, et al. A
+survey on vision transformer. IEEE TPAMI , 45(1):87–110, 2022.
+[Hyndman and Khandakar, 2008 ]Rob J Hyndman and Yeasmin
+Khandakar. Automatic time series forecasting: the forecast pack-
+age for r. Journal of statistical software , 27:1–22, 2008.
+[Ismail Fawaz et al. , 2019 ]Hassan Ismail Fawaz, Germain
+Forestier, Jonathan Weber, Lhassane Idoumghar, and Pierre-
+Alain Muller. Deep learning for time series classi?cation: a
+review. Data mining and knowledge discovery , 2019.
+[Keet al. , 2021 ]Guolin Ke, Di He, and Tie-Yan Liu. Rethinking
+positional encoding in language pre-training. In ICLR , 2021.
+[Kenton and others, 2019 ]Jacob Devlin Ming-Wei Chang Kenton
+et al. BERT: Pre-training of deep bidirectional transformers for
+language understanding. In NAACL-HLT , 2019.
+[Kingma and Welling, 2014 ]Diederik P Kingma and Max Welling.
+Auto-encoding variational bayes. In ICLR , 2014.
+[Liet al. , 2019 ]Shiyang Li, Xiaoyong Jin, Yao Xuan, Xiyou Zhou,
+Wenhu Chen, Yu-Xiang Wang, and Xifeng Yan. Enhancing the
+locality and breaking the memory bottleneck of transformer on
+time series forecasting. In NeurIPS , 2019.
+[Liet al. , 2021 ]Longyuan Li, Jian Yao, Li Wenliang, Tong He,
+Tianjun Xiao, Junchi Yan, David Wipf, and Zheng Zhang. Grin:
+Generative relation and intention network for multi-agent trajec-
+tory prediction. In NeurIPS , 2021.
+[Liang et al. , 2023 ]Yuxuan Liang, Yutong Xia, Songyu Ke, Yiwei
+Wang, Qingsong Wen, Junbo Zhang, Yu Zheng, and Roger Zim-
+mermann. AirFormer: Predicting nationwide air quality in china
+with transformers. In AAAI , 2023.
+[Lim and Zohren, 2021 ]Bryan Lim and Stefan Zohren. Time-
+series forecasting with deep learning: a survey. Philosophical
+Transactions of the Royal Society , 2021.
+[Lim et al. , 2021 ]Bryan Lim, Sercan ¨O Arik, Nicolas Loeff, and
+Tomas P?ster. Temporal fusion transformers for interpretable
+multi-horizon time series forecasting. International Journal of
+Forecasting , 37(4):1748–1764, 2021.
+[Linet al. , 2021 ]Yang Lin, Irena Koprinska, and Mashud Rana.
+SSDNet: State space decomposition neural network for time se-
+ries forecasting. In ICDM , 2021.
+[Liuet al. , 2021 ]Minghao Liu, Shengqi Ren, Siyuan Ma, Jiahui
+Jiao, Yizhou Chen, Zhiguang Wang, and Wei Song. Gated trans-
+former networks for multivariate time series classi?cation. arXiv
+preprint arXiv:2103.14438 , 2021.
+[Liuet al. , 2022a ]Shizhan Liu, Hang Yu, Cong Liao, Jianguo Li,
+Weiyao Lin, Alex X. Liu, and Schahram Dustdar. Pyraformer:
+Low-complexity pyramidal attention for long-range time series
+modeling and forecasting. In ICLR , 2022.
+[Liuet al. , 2022b ]Yong Liu, Haixu Wu, Jianmin Wang, and Ming-
+sheng Long. Non-stationary transformers: Exploring the station-
+arity in time series forecasting. In NeurIPS , 2022.
+[Mehta et al. , 2021 ]Sachin Mehta, Marjan Ghazvininejad, Srini
+Iyer, Luke Zettlemoyer, and Hannaneh Hajishirzi. Delight: Deep
+and light-weight transformer. In ICLR , 2021.[Meiet al. , 2022 ]Hongyuan Mei, Chenghao Yang, and Jason Eis-
+ner. Transformer embeddings of irregularly spaced events and
+their participants. In ICLR , 2022.
+[Nieet al. , 2023 ]Yuqi Nie, Nam H. Nguyen, Phanwadee Sinthong,
+and Jayant Kalagnanam. A time series is worth 64 words: Long-
+term forecasting with transformers. In ICLR , 2023.
+[Rußwurm and K ¨orner, 2020 ]Marc Rußwurm and Marco K ¨orner.
+Self-attention for raw optical satellite time series classi?cation.
+ISPRS J. Photogramm. Remote Sens. , 169:421–435, 11 2020.
+[Shabani et al. , 2023 ]Amin Shabani, Amir Abdi, Lili Meng, and
+Tristan Sylvain. Scaleformer: iterative multi-scale re?ning trans-
+formers for time series forecasting. In ICLR , 2023.
+[Shaw et al. , 2018 ]Peter Shaw, Jakob Uszkoreit, and Ashish
+Vaswani. Self-attention with relative position representations. In
+NAACL , 2018.
+[Shchur et al. , 2021 ]Oleksandr Shchur, Ali Caner T ¨urkmen, Tim
+Januschowski, and Stephan G ¨unnemann. Neural temporal point
+processes: A review. In IJCAI , 2021.
+[Soet al. , 2019 ]David So, Quoc Le, and Chen Liang. The evolved
+transformer. In ICML , 2019.
+[Tang and Matteson, 2021 ]Binh Tang and David Matteson. Proba-
+bilistic transformer for time series analysis. In NeurIPS , 2021.
+[Tayet al. , 2022 ]Yi Tay, Mostafa Dehghani, Dara Bahri, and Don-
+ald Metzler. Ef?cient transformers: A survey. ACM Computing
+Surveys , 55(6):1–28, 2022.
+[Torres et al. , 2021 ]Jos´e F. Torres, Dalil Hadjout, Abderrazak Se-
+baa, Francisco Mart ´inez- ´Alvarez, and Alicia Troncoso. Deep
+learning for time series forecasting: a survey. Big Data , 2021.
+[Tuliet al. , 2022 ]Shreshth Tuli, Giuliano Casale, and Nicholas R
+Jennings. TranAD: Deep transformer networks for anomaly de-
+tection in multivariate time series data. In VLDB , 2022.
+[Vaswani et al. , 2017 ]Ashish Vaswani, Noam Shazeer, Niki Par-
+mar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Lukasz
+Kaiser, et al. Attention is all you need. In NeurIPS , 2017.
+[Wang et al. , 2020 ]Xiaoxing Wang, Chao Xue, Junchi Yan, Xi-
+aokang Yang, Yonggang Hu, et al. MergeNAS: Merge operations
+into one for differentiable architecture search. In IJCAI , 2020.
+[Wang et al. , 2022 ]Xixuan Wang, Dechang Pi, Xiangyan Zhang,
+et al. Variational transformer-based anomaly detection approach
+for multivariate time series. Measurement , page 110791, 2022.
+[Wen et al. , 2019 ]Qingsong Wen, Jingkun Gao, Xiaomin Song,
+Liang Sun, Huan Xu, et al. RobustSTL: A robust seasonal-trend
+decomposition algorithm for long time series. In AAAI , 2019.
+[Wen et al. , 2020 ]Qingsong Wen, Zhe Zhang, Yan Li, and Liang
+Sun. Fast RobustSTL: Ef?cient and robust seasonal-trend decom-
+position for time series with complex patterns. In KDD , 2020.
+[Wen et al. , 2021a ]Qingsong Wen, Kai He, Liang Sun, Yingying
+Zhang, Min Ke, et al. RobustPeriod: Time-frequency mining for
+robust multiple periodicities detection. In SIGMOD , 2021.
+[Wen et al. , 2021b ]Qingsong Wen, Liang Sun, Fan Yang, Xiaomin
+Song, Jingkun Gao, Xue Wang, and Huan Xu. Time series data
+augmentation for deep learning: A survey. In IJCAI , 2021.
+[Wen et al. , 2022 ]Qingsong Wen, Linxiao Yang, Tian Zhou, and
+Liang Sun. Robust time series analysis and applications: An in-
+dustrial perspective. In KDD , 2022.
+[Wuet al. , 2020a ]Sifan Wu, Xi Xiao, Qianggang Ding, Peilin
+Zhao, Ying Wei, and Junzhou Huang. Adversarial sparse trans-
+former for time series forecasting. In NeurIPS , 2020.[Wuet al. , 2020b ]Zhanghao Wu, Zhijian Liu, Ji Lin, Yujun Lin,
+and Song Han. Lite transformer with long-short range attention.
+InICLR , 2020.
+[Wuet al. , 2021 ]Haixu Wu, Jiehui Xu, Jianmin Wang, and Ming-
+sheng Long. Autoformer: Decomposition transformers with
+auto-correlation for long-term series forecasting. In NeurIPS ,
+2021.
+[Xinet al. , 2020 ]Ji Xin, Raphael Tang, Jaejun Lee, Yaoliang Yu,
+and Jimmy J. Lin. DeeBERT: Dynamic early exiting for acceler-
+ating bert inference. In ACL, 2020.
+[Xuet al. , 2020 ]Mingxing Xu, Wenrui Dai, Chunmiao Liu, Xing
+Gao, Weiyao Lin, Guo-Jun Qi, and Hongkai Xiong. Spatial-
+temporal transformer networks for traf?c ?ow forecasting. arXiv
+preprint arXiv:2001.02908 , 2020.
+[Xuet al. , 2022 ]Jiehui Xu, Haixu Wu, Jianmin Wang, and Ming-
+sheng Long. Anomaly Transformer: Time series anomaly detec-
+tion with association discrepancy. In ICLR , 2022.
+[Yanet al. , 2019 ]Junchi Yan, Hongteng Xu, and Liangda Li. Mod-
+eling and applications for temporal point processes. In KDD ,
+2019.
+[Yang et al. , 2021 ]Chao-Han Huck Yang, Yun-Yun Tsai, and Pin-
+Yu Chen. V oice2series: Reprogramming acoustic models for
+time series classi?cation. In ICML , 2021.
+[Yuet al. , 2020 ]Cunjun Yu, Xiao Ma, Jiawei Ren, Haiyu Zhao, and
+Shuai Yi. Spatio-temporal graph transformer networks for pedes-
+trian trajectory prediction. In ECCV , 2020.
+[Yuan and Lin, 2020 ]Yuan Yuan and Lei Lin. Self-supervised pre-
+training of transformers for satellite image time series classi?ca-
+tion. IEEE J-STARS , 14:474–487, 2020.
+[Yunet al. , 2020 ]Chulhee Yun, Srinadh Bhojanapalli, Ankit Singh
+Rawat, Sashank J. Reddi, et al. Are transformers universal ap-
+proximators of sequence-to-sequence functions? In ICLR , 2020.
+[Zeng et al. , 2023 ]Ailing Zeng, Muxi Chen, Lei Zhang, and Qiang
+Xu. Are transformers effective for time series forecasting? In
+AAAI , 2023.
+[Zerveas et al. , 2021 ]George Zerveas, Srideepika Jayaraman,
+Dhaval Patel, Anuradha Bhamidipaty, and Carsten Eickhoff. A
+transformer-based framework for multivariate time series repre-
+sentation learning. In KDD , 2021.
+[Zhang and Yan, 2023 ]Yunhao Zhang and Junchi Yan. Cross-
+former: Transformer utilizing cross-dimension dependency for
+multivariate time series forecasting. In ICLR , 2023.
+[Zhang et al. , 2020 ]Qiang Zhang, Aldo Lipani, Omer Kirnap, and
+Emine Yilmaz. Self-attentive Hawkes process. In ICML , 2020.
+[Zhang et al. , 2021 ]Hongwei Zhang, Yuanqing Xia, et al. Unsu-
+pervised anomaly detection in multivariate time series through
+transformer-based variational autoencoder. In CCDC , 2021.
+[Zhou et al. , 2021 ]Haoyi Zhou, Shanghang Zhang, Jieqi Peng,
+Shuai Zhang, Jianxin Li, Hui Xiong, and Wancai Zhang. In-
+former: Beyond ef?cient transformer for long sequence time-
+series forecasting. In AAAI , 2021.
+[Zhou et al. , 2022 ]Tian Zhou, Ziqing Ma, Qingsong Wen, Xue
+Wang, Liang Sun, and Rong Jin. FEDformer: Frequency en-
+hanced decomposed transformer for long-term series forecasting.
+InICML , 2022.
+[Zuoet al. , 2020 ]Simiao Zuo, Haoming Jiang, Zichong Li, Tuo
+Zhao, and Hongyuan Zha. Transformer Hawkes process. In
+ICML , 2020.

@@ -1,0 +1,2176 @@
+FeatureSelection: A Data Perspective
+JUNDONGLI,KEWEI CHENG, SUHANGWANG, FREDMORSTATTER,and
+ROBERT P.TREVINO ,Arizona StateUniversity
+JILIANGTANG ,Michigan State University
+HUANLIU ,Arizona StateUniversity
+Featureselection,asadatapreprocessingstrategy,hasbeenproventobeeffectiveandefficientinpreparing
+data (especially high-dimensional data) for various data-mining and machine-learning problems. The objec-
+tivesoffeatureselectionincludebuildingsimplerandmorecomprehensiblemodels,improvingdata-mining
+performance, and preparing clean, understandable data. The recent proliferation of big data has presented
+some substantial challenges and opportunities to feature selection. In this survey, we provide a comprehen-
+sive and structured overview of recent advances in feature selection research. Motivated by current chal-
+lenges and opportunities in the era of big data, we revisit feature selection research from a data perspective
+andreviewrepresentativefeatureselectionalgorithmsforconventionaldata,structureddata,heterogeneous
+data and streaming data. Methodologically, to emphasize the differences and similarities of most existing
+feature selection algorithms for conventional data, we categorize them into four main groups: similarity-
+based, information-theoretical-based, sparse-learning-based, and statistical-based methods. To facilitate and
+promote the research in this community, we also present an open source feature selection repository that
+consistsofmostofthepopularfeatureselectionalgorithms(http://featureselection.asu.edu/).Also,weuseit
+as an example to show how to evaluate feature selection algorithms. At the end of the survey, we present a
+discussionabout someopen problems and challenges that requiremoreattention in futureresearch.
+CCSConcepts:• Computing methodologies ?Feature selection ;
+Additional KeyWords and Phrases:Feature selection
+ACM Reference format:
+Jundong Li, Kewei Cheng, Suhang Wang, Fred Morstatter, Robert P. Trevino, Jiliang Tang, and Huan Liu.
+2017. Feature Selection: A Data Perspective. ACM Comput.Surv. 50, 6, Article 94(December 2017), 45 pages.
+https://doi.org/10.1145/3136625
+1 INTRODUCTION
+We are now in the era of big data, where huge amounts of high-dimensional data become ubiq-
+uitous in a variety of domains, such as social media, healthcare, bioinformatics, and online edu-
+cation. The rapid growth of data presents challenges for effective and efficient data management.
+It is desirable to apply data-mining and machine-learning techniques to automatically discover
+knowledge fromdataof varioussorts.
+This materialis basedon work supported by,or inpartby,theNSF grants1217466and1614576.
+Authors’ addresses: J. Li, K. Cheng, S. Wang, F. Morstatter, R. P. Trevino, and H. Liu, Computer Science and Engineering,
+ArizonaStateUniversity,Tempe,AZ85281;emails:{jundongl,kcheng18,swang187,fmorstat,rptrevin,huan.liu}@asu.edu;
+J.Tang,Michigan StateUniversity, EastLansing,MI48824;email:tangjili@msu.edu.
+Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee
+provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and
+the full citation on the first page. Copyrights for components of this work owned by others than ACM must be honored.
+Abstractingwithcreditispermitted.Tocopyotherwise,orrepublish,topostonserversortoredistributetolists,requires
+prior specific permission and/or a fee.Request permissions from permissions@acm.org.
+© 2017ACM 0360-0300/2017/12-ART94$15.00
+https://doi.org/10.1145/3136625
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.
+94:2 J. Liet al.
+Fig.1. An illustrativeexample of relevant, redundant,andirrelevant features.
+When data-mining and machine-learning algorithms are applied on high-dimensional data, a
+criticalissueisknownasthecurseofdimensionality.Itreferstothephenomenonthatdatabecome
+sparser in high-dimensional space, adversely affecting algorithms designed for low-dimensional
+space (Hastie et al. 2005). Also, with a large number of features, learning models tend to overfit,
+which may cause performance degradation on unseen data. Data of high dimensionality can sig-
+nificantly increasethememory storagerequirementsandcomputationalcostsfordata analytics.
+Dimensionalityreductionisoneofthemostpowerfultoolstoaddressthepreviouslydescribed
+issues. It can be mainly categorized into two main components: feature extraction and feature
+selection.Featureextractionprojectstheoriginalhigh-dimensionalfeaturestoanewfeaturespace
+with low dimensionality. The newly constructed feature space is usually a linear or nonlinear
+combinationoftheoriginalfeatures.Featureselection,ontheotherhand,directlyselectsasubset
+of relevant featuresfor modelconstruction(Guyon andElisseeff 2003;Liu and Motoda 2007).
+Both feature extraction and feature selection have the advantages of improving learning per-
+formance, increasing computational efficiency, decreasing memory storage, and building better
+generalization models. Hence, they are both regarded as effective dimensionality reduction tech-
+niques.Ononehand,formanyapplicationswheretherawinputdatadonotcontainanyfeatures
+understandable to a given learning algorithm, feature extraction is preferred. On the other hand,
+asfeatureextractioncreatesasetofnewfeatures,furtheranalysisisproblematicaswecannotre-
+tainthephysicalmeaningsofthesefeatures.Incontrast,bykeepingsomeoftheoriginalfeatures,
+feature selection maintains physical meanings of the original features and gives models better
+readability and interpretability. Therefore, feature selection is often preferred in many applica-
+tions suchas text mining and genetic analysis.It should benoted thatin some cases even though
+feature dimensionality is often not that high, feature extraction/selection still plays an essential
+rolesuchasimprovinglearningperformance,preventingoverfitting,andreducingcomputational
+costs.
+Real-world data contain a lot of irrelevant, redundant, and noisy features. Removing these fea-
+tures by feature selection reduces storage and computational cost while avoiding significant loss
+ofinformationordegradationoflearningperformance.Forexample,inFigure 1(a),feature f1isa
+relevant feature that is able to discriminate two classes (clusters). However, given feature f1,f e a -
+turef2in Figure 1(b) is redundant as f2is strongly correlated with f1. In Figure 1(c), feature f3is
+an irrelevant feature, as it cannot separate two classes (clusters) at all. Therefore, the removal of
+f2andf3will notnegatively impactthelearningperformance.
+1.1 Traditional Categorizationof Feature Selection Algorithms
+1.1.1 Supervision Perspective. According to the availability of supervision (such as class labels
+inclassificationproblems),featureselectioncanbebroadlyclassifiedassupervised,unsupervised,
+and semi-supervisedmethods.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:3
+Supervised feature selection is generally designed for classification or regression problems. It
+aimstoselectasubsetoffeaturesthatareabletodiscriminatesamplesfromdifferentclasses(clas-
+sification) or to approximate the regression targets (regression). With supervision information,
+featurerelevanceisusuallyassessedviaitscorrelationwiththeclasslabelsortheregressiontarget.
+The training phase highly depends on the selected features: After splitting the data into training
+andtestingsets,classifiersorregressionmodelsaretrainedbasedonasubsetoffeaturesselected
+by supervised feature selection. Note that the feature selection phase can be independent of the
+learningalgorithms(filtermethods),itmayiterativelytakeadvantageofthelearningperformance
+ofaclassifieroraregressionmodeltoassessthequalityofselectedfeaturessofar(wrappermeth-
+ods),ormakeuseoftheintrinsicstructureofalearningalgorithmtoembedfeatureselectioninto
+theunderlyingmodel(embeddedmethods).Finally,thetrainedclassifierorregressionmodelpre-
+dictsclasslabelsorregressiontargetsofunseensamplesinthetestsetwiththeselectedfeatures.
+Inthefollowingcontext,forsupervisedmethods,wemainlyfocusonclassificationproblems,and
+uselabelinformation,supervisioninformation interchangeably.
+Unsupervised feature selection is generally designed for clustering problems. As acquiring la-
+beled data are particularly expensive in both time and effort, unsupervised feature selection has
+gained considerable attention recently. Without label information to evaluate the importance of
+features, unsupervised feature selection methods seek alternative criteria to define feature rel-
+evance. Different from supervised feature selection, unsupervised feature selection usually uses
+all instances that are available in the feature selection phase. The feature selection phase can be
+independent of the unsupervisedlearning algorithms (filter methods), it relies on the learning al-
+gorithms to iteratively improve the quality of selected features (wrapper methods), or it embeds
+thefeatureselectionphaseintounsupervisedlearningalgorithms(embeddedmethods).Afterthe
+featureselectionphase,itoutputstheclusterstructureofalldatasamplesontheselectedfeatures
+by using a standard clustering algorithm (Guyon and Elisseeff 2003; Liu and Motoda 2007;T a n g
+etal.2014).
+Supervised feature selection works when sufficient label information is available while unsu-
+pervisedfeatureselectionalgorithmsdonotrequireanyclasslabels.However,inmanyreal-world
+applications,weusuallyhavealimitednumberoflabeleddata.Therefore,itisdesirabletodevelop
+semi-supervisedmethodsby exploitingbothlabeledand unlabeleddatasamples.
+1.1.2 SelectionStrategyPerspective. Concerningdifferentselectionstrategies,featureselection
+methodscanbe broadlycategorizedas wrapper,filter,and embeddedmethods.
+Wrapper methods rely on the predictive performance of a predefined learning algorithm to
+evaluate the quality of selected features. Given a specific learning algorithm, a typical wrapper
+method performs two steps: (1) searches for a subset of features and (2) evaluates the selected
+features. It repeats (1) and (2) until some stopping criteria are satisfied. The feature set search
+component first generates a subset of features, and then the learning algorithm acts as a black
+box to evaluate the quality of these features based on the learning performance. For example,
+the whole process works iteratively until the highest learning performance is achieved or the
+desired number of selected features is obtained. Then the feature subset that gives the highest
+learning performance is returned as the selected features. Unfortunately, a known issue of
+wrappermethodsisthatthesearchspacefor dfeaturesis2d,whichisimpracticalwhen disvery
+large. Therefore, different search strategies such as sequential search (Guyon and Elisseeff 2003),
+hill-climbing search, best-first search (Kohavi and John 1997;A r a ie ta l . 2016), branch-and-bound
+search (Narendra and Fukunaga 1977), and genetic algorithms (Golberg 1989) are proposed to
+yield a local optimum learning performance. However, the search space is still extremely huge
+for high-dimensionaldatasets.As aresult,wrappermethodsare seldomusedinpractice.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:4 J. Liet al.
+Filtermethodsareindependentofanylearningalgorithms.Theyrelyoncharacteristicsofdata
+to assess feature importance. Filter methods are typically more computationally efficient than
+wrapper methods. However, due to the lack of a specific learning algorithm guiding the feature
+selection phase, the selected features may not be optimal for the target learning algorithms. A
+typical filter method consists of two steps. In the first step, feature importance is ranked accord-
+ing to some feature evaluation criteria. The feature importance evaluation process can be either
+univariateormultivariate.Intheunivariatescheme,eachfeatureisrankedindividuallyregardless
+of other features, while the multivariate scheme ranks multiple features in a batch way. In the
+second step of a typical filter method, lowly ranked features are filtered out. In the past decades,
+different evaluation criteria for filter methods have been proposed. Some representative criteria
+include feature discriminative ability to separate samples (Kira and Rendell 1992; Robnik-Šikonja
+andKononenko 2003;Y angetal. 2011;Duetal. 2013;T angetal. 2014),featurecorrelation(Koller
+andSahami 1995;GuyonandElisseeff 2003),mutualinformation(YuandLiu 2003;Pengetal. 2005;
+Nguyen et al. 2014;S h i s h k i ne ta l . 2016; Gao et al. 2016), feature ability to preserve data manifold
+structure (He et al. 2005; Zhao and Liu 2007;G ue ta l . 2011b; Jiang and Ren 2011), and feature
+ability toreconstructtheoriginaldata(Masaelietal. 2010;Farahatetal. 2011;L ietal.2017a).
+Embeddedmethodsisatradeoffbetweenfilterandwrappermethodsthatembedthefeaturese-
+lectionintomodellearning.ThustheyinheritthemeritsofwrapperandfiltermethodsL(1)They
+include the interactions with the learning algorithm and (2) they are far more efficient than the
+wrappermethods,sincetheydonotneedtoevaluatefeaturesetsiteratively.Themostwidelyused
+embeddedmethodsaretheregularizationmodelsthattargettofitalearningmodelbyminimizing
+thefittingerrorsandforcingfeaturecoefficientstobesmall(orexactzero)simultaneously.After-
+wards,boththeregularizationmodeland selectedfeaturesetsarereturnedasthefinalresults.
+It should be noted that some literature classifies feature selection methods into four categories
+(fromtheselectionstrategyperspective)byincludingthehybridfeatureselectionmethods(Saeys
+et al.2007;S h e ne ta l . 2012; Ang et al. 2016). Hybrid methods can be regarded as a combination
+ofmultiplefeatureselectionalgorithms(e.g.,wrapper,filter,andembedded).Themaintargetisto
+tackletheinstabilityandperturbationissuesofmanyexistingfeatureselectionalgorithms.Forex-
+ample,forsmall-sizedhigh-dimensionaldata,asmallperturbationonthetrainingdatamayresult
+intotallydifferentfeatureselectionresults.Byaggregatingmultipleselectedfeaturesubsetsfrom
+different methods together, the results are more robust, and hence the credibility of the selected
+featuresisenhanced.
+1.2 Feature Selection Algorithmsfroma Data Perspective
+The recent popularity of big data presents unique challenges for traditional feature selection (Li
+and Liu2017), and some characteristics of big data such as velocity and variety necessitate the
+development of novel feature selection algorithms. Here we briefly discuss some major concerns
+whenapplyingfeatureselectionalgorithms.
+Streamingdataandfeatureshavebecomemoreandmoreprevalentinreal-worldapplications.It
+poseschallengestotraditionalfeatureselectionalgorithms,whicharedesignedforstaticdatasets
+withfixeddatasamplesandfeatures.Forexample,inTwitter,newdatalikepostsandnewfeatures
+likeslangwordsarecontinuouslybeingusergenerated.Itisimpracticaltoapplytraditionalbatch-
+modefeatureselectionalgorithmstofindrelevantfeaturesfromscratchwhennew dataoranew
+featurearrives.Moreover,thevolumeofdatamaybetoolargetobeloadedintomemory.Inmany
+cases, a single scan of data is desired as further scans are either expensive or impractical. Given
+thereasonsmentionedintheprevioustext,itisappealingtoapplyfeatureselectioninastreaming
+fashionto dynamically maintain aset ofrelevant features.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:5
+Fig. 2. Featureselection algorithmsfrom thedataperspective.
+Most existing algorithms of feature selection are designed to handle tasks with a single data
+source and always assume that data is independent and identically distributed ( i.i.d.). However,
+data could come from multiple sources in many applications. For example, in social media, data
+come from heterogeneous sources such as text, images, tags, and videos. In addition, linked data
+are ubiquitous and presents in various forms such as user-post relations and user-user relations.
+The availability of multiple data sources brings unprecedented opportunities, as we can leverage
+shared intrinsic characteristics and correlations to find more relevant features. However, chal-
+lenges are also unequivocally presented. For instance, with link information, the widely adopted
+i.i.d.assumption in most learning algorithms does not hold. How to appropriately utilize link in-
+formation forfeatureselectionisstillachallengingproblem.
+Features can also exhibit certain types of structures. Some well-known structures among fea-
+turesaregroup,tree,andgraphstructures.Whenperformingfeatureselection,ifthefeaturestruc-
+tureisnottakenintoconsideration,thentheintrinsicdependenciesmaynotbecaptured,andthus
+theselectedfeaturesmaynotbesuitableforthetargetapplication.Incorporatingpriorknowledge
+offeaturestructurescanhelpselectrelevantfeaturestoimprovethelearningperformancegreatly.
+The aforementioned reasons motivate the investigation of feature selection algorithms from a
+different view. In this survey, we revisit feature selection algorithms from a data perspective; the
+categorization is illustrated in Figure 2. It is shown that data consist of static data and stream-
+ing data. For the static data, it can be grouped into conventional data and heterogeneous data.
+In conventional data, features can either be flat or possess some inherent structures. Traditional
+feature selection algorithms are proposed to deal with these flat features in which features are
+considered to be independent. The past few decades have witnessed hundreds of feature selec-
+tion algorithms. Based on their technical characteristics, we propose to classify them into four
+main groups, that is, similarity-based, information-theoretical-based, sparse-learning-based, and
+statistical-based methods. It should be noted that this categorization only involves filter meth-
+ods and embedded methods while the wrapper methods are excluded. The reason for excluding
+wrappermethodsisthattheyarecomputationallyexpensiveandareusuallyusedinspecificappli-
+cations.Moredetailsaboutthesefourcategorieswillbepresentedlater.Wepresentothermethods
+thatcannotbefittedintothesefourcategories,suchashybridmethods,deep-learning-basedmeth-
+ods, and reconstruction-based methods. When features express some structures, specific feature
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:6 J. Liet al.
+selectionalgorithmsaremoredesired.Datacanbeheterogeneoussuchthatdatacouldcomefrom
+multiple sourcesand could be linked.Hence, we also show how new feature selectionalgorithms
+copewiththesesituations.Second,inthestreamingsettings,dataarrivesequentiallyinastream-
+ing fashion where the size of data instances is unknown, and feature selection algorithms that
+make only one pass over the data is proposed accordingly. Similarly, in an orthogonal setting,
+features can also be generated dynamically. Streaming feature selection algorithms are designed
+to determine if one should accept the newly added features and remove existing but outdated
+features.
+1.3 Differences with Existing Surveys
+Currently, there exist some other surveys that give a summarization of feature selection algo-
+rithms, such as those in Guyon and Elisseeff ( 2003), Alelyani et al. ( 2013), Chandrashekar and
+Sahin(2014),andTangetal.( 2014).Thesestudieseitherfocusontraditionalfeatureselectionalgo-
+rithmsorspecificlearningtaskslikeclassificationandclustering.However,noneofthemprovidea
+comprehensiveandstructuredoverviewoftraditionalfeatureselectionalgorithmsinconjunction
+with recent advances in feature selection from a data perspective. In this survey, we will intro-
+duce representative feature selection algorithms to cover all components mentioned in Figure 2.
+We also release a feature selection repository in Python, named scikit-feature , that is built on the
+widely used machine-learning package scikit-learn (http://scikit-learn.org/stable/) and two scien-
+tific computing packages Numpy(http://www.numpy.org/ )a n dScipy(http://www.scipy.org/ ). It
+includes near 40 representative feature selection algorithms. The web page of the repository is
+available at http://featureselection.asu.edu/ .
+1.4 Notations
+We summarize some symbols used throughout this survey in Table 1.W eu s eb o l du p p e r c a s e
+characters for matrices (e.g., A), bold lowercase characters for vectors (e.g., a), and calligraphic
+fontsforsets(e.g., F).WefollowthematrixsettingsinMatlabtorepresent ithrowofmatrix Aas
+A(i,:),jth column of AasA(:,j),(i,j)thentry of AasA(i,j),transposeof AasA', and trace of A
+astr(A). For any matrix A?Rn×d, its Frobenius norm is defined as ?A?F=v?n
+i=1?d
+j=1A(i,j)2,
+and itsl2,1-norm is?A?2,1=?n
+i=1v?d
+j=1A(i,j)2. For any vector a=[a1,a2,...,an]',i t sl2-norm
+is defined as?a?2=v?n
+i=1a2
+i, and itsl1-norm is?a?1=?n
+i=1|ai|.Iis an identity matrix and 1is
+a vectorwhoseelements areall1’s.
+2 FEATURE SELECTION ON CONVENTIONAL DATA
+Since the mid-1990s, hundreds of feature selection algorithms have been proposed. In this sec-
+tion,webroadlygrouptraditionalfeatureselectionalgorithmsforconventionaldataassimilarity-
+based, information-theoretical-based, sparse-learning-based, and statistical-based methods, and
+othermethodsaccordingto theusedtechniques.
+2.1 Similarity-Based Methods
+Different feature selection algorithms exploit various types of criteria to define the relevance of
+features. Among them, there is a family of methods assessing feature importance by their ability
+to preserve data similarity. We refer to them as similarity-based methods. For supervised feature
+selection, data similarity can be derived from label information; while for unsupervised feature
+selection methods, most methods take advantage of different distance metric measures to obtain
+data similarity.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:7
+Table 1. Symbols
+Notations DefinitionsorDescriptions
+n numberof instancesin thedata
+d numberof featuresin thedata
+k numberof selectedfeatures
+c numberof classes(ifexist)
+F originalfeaturesetwhichcontains dfeatures
+S selectedfeaturesetwhichcontains kselectedfeatures
+{i1,i2,...,ik} indexofkselectedfeaturesin S
+f1,f2,...,fd doriginalfeatures
+fi1,fi2,...,fik kselectedfeatures
+x1,x2,...,xn ndatainstances
+f1,f2,..., fddfeaturevectorscorrespondingto f1,f2,...,fd
+fi1,fi2,..., fikkfeaturevectorscorrespondingto fi1,fi2,...,fik
+x1,x2,...,xnndatavectorscorrespondingto x1,x2,...,xn
+y1,y2,...,yn classlabelsof all ninstances(ifexist)
+X?Rn×ddatamatrixwith ninstancesand dfeatures
+XS?Rn×kdatamatrixon theselected kfeatures
+y?Rnclasslabelvectorfor all ninstances(ifexist)
+Given a dataset X?Rn×dwithninstancesand dfeatures,pairwisesimilarity among instances
+can be encoded in an affinity matrix S?Rn×n. Suppose that we want to select kmost relevant
+featuresS; one way is to maximize their utility: max SU(S),w h e r eU(S)denotes the utility of
+the feature subset S. As algorithms in this family often evaluate features individually, the utility
+maximization over featuresubset Scan befurtherdecomposedinto thefollowing form:
+max
+SU(S)=max
+S?
+f?SU(f)=max
+S?
+f?Sˆf'ˆSˆf, (1)
+whereU(f)is a utility function for feature f.ˆfdenotes the transformation (e.g., scaling, nor-
+malization, etc.) result of the original feature vector f.ˆSis a new affinity matrix obtained from
+affinity matrix S. The maximization problem in Equation ( 1) shows that we would select a subset
+offeaturesfromSsuchthattheycanwellpreservethedatamanifoldstructureencodedin ˆS.This
+problem is usually solved by greedily selecting the top kfeatures that maximize their individual
+utility.Methodsinthiscategoryvaryinthewaytheaffinitymatrix ˆSisdesigned.Wesubsequently
+discuss some representative algorithms in this group that can be reformulated under the unified
+utilitymaximization framework.
+2.1.1 Laplacian Score. Laplacian Score (He et al. 2005) is an unsupervised feature selection
+algorithm that selects features that can best preserve the data manifold structure. It consists of
+three phases. First, it constructs the affinity matrix such that S(i,j)=e-?xi-xj?2
+2
+tifxiis among
+thep-nearest neighbor of xj; otherwise, S(i,j)=0. Then, the diagonal matrix Dis defined as
+D(i,i)=?n
+j=1S(i,j)and the Laplacian matrix LisL=D-S. Last, the Laplacian Score of each
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:8 J. Liet al.
+featurefiis computedas
+laplacian _score(fi)=˜f'
+iL˜fi
+˜f'
+iD˜fi,where˜fi=fi-f'
+iD1
+1'D11. (2)
+As Laplacian Score evaluates each feature individually, the task of selecting the kfeatures can be
+solved by greedily picking the top kfeatures with the smallest Laplacian Scores. The Laplacian
+Scoreof eachfeaturecanbe reformulatedas
+laplacian _score(fi)=1-/parenlefttpA
+/parenleftbtA˜fi
+?D1
+2˜fi?2/parenrighttpA
+/parenrightbtA'
+S/parenlefttpA
+/parenleftbtA˜fi
+?D1
+2˜fi?2/parenrighttpA
+/parenrightbtA, (3)
+where?D1
+2˜fi?2is the standard data variance of feature fi, and the term ˜fi/?D1
+2˜fi?2is interpreted
+as a normalized feature vector of fi. Therefore, it is obvious that Laplacian Score is a special case
+of utility maximization in Equation( 1).
+2.1.2 SPEC. SPEC (Zhao and Liu 2007) is an extension of Laplacian Score that works for both
+supervised and unsupervised scenarios. For example, in the unsupervised scenario, the data sim-
+ilarity is measured by RBF kernel; while in the supervised scenario, data similarity can be de-
+fined by S(i,j)={1
+nlifyi=yj=l
+0 otherwise,w h e r enlis the number of data samples in the lth class. Af-
+ter obtaining the affinity matrix Sand the diagonal matrix D, the normalized Laplacian matrix
+Lnorm=D-1
+2(D-S)D-1
+2. The basic idea of SPEC is similar to Laplacian Score: a feature that is
+consistentwiththedatamanifoldstructureshouldassignsimilarvaluestoinstancesthatarenear
+eachother.InSPEC,thefeaturerelevanceis measuredbythreedifferentcriteria:
+SPEC_score1(fi)=ˆfi'?(Lnorm)ˆfi=n?
+j=1a2
+j?(?j)
+SPEC_score2(fi)=ˆfi'?(Lnorm)ˆfi
+1-(ˆfi'?1)2=?n
+j=2a2
+j?(?j)
+?n
+j=2a2
+j
+SPEC_score3(fi)=m?
+j=1(?(2)-?(?j))a2
+j.(4)
+Intheearlierequations, ˆfi=D1
+2fi/?D1
+2fi?2;(?j,?j)isthejtheigenpairofthenormalizedLaplacian
+matrixLnorm;aj=cos?j,?jistheanglebetween ?jandfi;?(.)isanincreasingfunctiontopenalize
+high-frequencycomponentsoftheeigensystemtoreducenoise.Ifthedataarenoisefree,thenthe
+function?(.)canberemovedand ?(x)=x.Whenthesecondevaluationcriterion SPEC_score2(fi)
+isused,SPECisequivalenttotheLaplacianScore.For SPEC_score3(fi),itusesthetop meigenpairs
+to evaluatetheimportanceof feature fi.
+Allthesethreecriteriacanbereducedtothetheunifiedsimilarity-basedfeatureselectionframe-
+work in Equation ( 1) by setting ˆfiasfi?D1
+2fi?2,(fi-µ1)/?D1
+2fi?2,fi?D1
+2fi?2;a n dˆSasD1
+2U(I-
+?(S))U'D1
+2,D1
+2U(I-?(S))U'D1
+2,D1
+2Um(?(2I)-?(Sm))U'
+mD1
+2inSPEC_score1,SPEC_score2,and
+SPEC_score3,respectively. UandSarethesingularvectorsandsingularvaluesofthenormalized
+Laplacian matrix Lnorm.
+2.1.3 Fisher Score. Fisher Score (Duda et al. 2012) is a supervised feature selection algorithm.
+It selects features such that the feature values of samples within the same class are similar while
+thefeaturevaluesofsamplesfromdifferentclassesaredissimilar.TheFisherScoreofeachfeature
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:9
+fiisevaluated asfollows:
+fisher_score(fi)=?c
+j=1nj(µij-µi)2
+?c
+j=1njs2
+ij, (5)
+wherenj,µi,µij,a n ds2
+ijindicate the number of samples in class j, mean value of feature fi,
+mean value of feature fifor samples in class j, variance value of feature fifor samples in class j,
+respectively. Similar to Laplacian Score, the top kfeatures can be obtained by greedily selecting
+thefeatureswiththelargest FisherScores.
+AccordingtoHeetal.( 2005),FisherScorecanbeconsideredasaspecialcaseofLaplacianScore
+as long as the affinity matrix is S(i,j)={1
+nlifyi=yj=l
+0 otherwise,. In this way, the relationship between
+Fisher Score and Laplacian Score is fisher_score(fi)=1-1
+laplacian _score(fi). Hence, the compu-
+tationof FisherScorecan alsobe reducedto theunified utilitymaximization framework.
+2.1.4 TraceRatioCriterion. Thetraceratiocriterion(Nieetal. 2008)directlyselectstheglobal
+optimalfeaturesubsetbasedonthecorrespondingscore,whichiscomputedbyatracerationorm.
+Itbuildstwoaffinitymatrices SwandSbtocharacterizewithin-classandbetween-classdatasimi-
+larity.Let W=[wi1,wi2,...,wik]?Rd×kbetheselectionindicatormatrixsuchthatonlythe ijth
+entry inwijis 1 and all the other entries are 0. With these, the trace ratio score of the selected k
+featuresinSis
+trace_ratio(S)=tr(W'X'LbXW)
+tr(W'X'LwXW), (6)
+whereLbandLwareLaplacianmatricesof SaandSb,respectively.Thebasicideaistomaximizethe
+data similarity for instances from the same class while minimize the data similarity for instances
+from different classes. However, the trace ratio problem is difficult to solve as it does not have
+a closed-form solution. Hence, the trace ratio problem is often converted into a more tractable
+format called the ratio trace problem by maximizing tr[(W'X'LwXW)-1(W'X'LbXW)]. As an
+alternative, Wang et al. ( 2007) propose an iterative algorithm called ITR to solve the trace ratio
+problemdirectly andwas laterappliedin traceratiofeatureselection(Nieet al. 2008).
+Different SbandSwleadtodifferentfeatureselectionalgorithmssuchasbatch-modeLalpacian
+Score and batch-mode Fisher Score. For example, in batch-mode Fisher Score, the within-class
+data similarity and the between-class data similarity are Sw(i,j)={1/nlifyi=yj=l
+0 otherwiseandSb(i,j)={1/n-1/nlifyi=yj=l
+1/n otherwise,respectively.Therefore,maximizingthetraceratiocriterionisequivalentto
+maximizing?k
+s=1f'
+isSwfis?k
+s=1f'
+isfis=X'
+SSwXS
+X'
+SXS.SinceX'
+SXSis constant, it can be further reduced to the uni-
+fied similarity-based feature selection framework by setting ˆf=f/?f?2andˆS=Sw. On the other
+hand, in batch-mode Laplacian Score, the within-class data similarity and the between-class data
+similarityare Sw(i,j)={
+e-?xi-xj?2
+2tifxi?N p(xj)orxj?N p(xi)
+0 otherwiseandSb=(1'Dw1)-1Dw11'Dw,respec-
+tively. In this case, the trace ratio criterion score istr(W'X'LbXW)
+tr(W'X'LwXW)=?k
+s=1f'
+isDwfis?k
+s=1f'
+is(Dw-Sw)fis. Therefore,
+maximizing the trace ratio criterion is also equivalent to solving the unified maximization prob-
+lemin Equation( 1),whereˆf=f/?D1
+2wf?2andˆS=Sw.
+2.1.5 ReliefF. ReliefF (Robnik-Šikonja and Kononenko 2003) selects features to separate
+instances from different classes. Assume that ldata instances are randomly selected among all
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:10 J. Liet al.
+ninstances,thenthefeaturescoreof fiinReliefF isdefinedas follows:
+ReliefF_score(fi)=1
+cl?
+j=1/parenlefttpA/parenleftexA
+/parenleftbtA-1
+mj?
+xr?NH(j)d(X(j,i)-X(r,i))
++?
+y/nequalyj1
+hjyp(y)
+1-p(y)?
+xr?NM(j,y)d(X(j,i)-X(r,i))/parenrighttpA/parenrightexA
+/parenrightbtA,(7)
+whereNH(j)andNM(j,y)are the nearest instances of xjin the same class and in class y,
+respectively.Theirsizes are mjandhjy,respectively. p(y)is theratioofinstancesinclass y.
+ReliefFisequivalenttoselectingfeaturesthatpreserveaspecialformofdatasimilaritymatrix.
+Assumethatthedatasethasthesamenumberofinstancesineachofthe cclassesandthereare q
+instancesinboth NM(j)andNH(j,y).Then,accordingtoZhaoandLiu( 2007),theReliefFfeature
+selectioncanbe reducedto theutility maximization frameworkin Equation( 1).
+Discussion:Similarity-basedfeatureselectionalgorithmshavedemonstratedwithexcellentperfor-
+mance in both supervised and unsupervised learning problems. This category of methods is straight-
+forward and simple as the computation focuses on building an affinity matrix, and afterwards, the
+scoresoffeaturescanbeobtained.Also,thesemethodsareindependentofanylearningalgorithmsand
+theselectedfeaturesaresuitableformanysubsequentlearningtasks.However,onedrawbackofthese
+methodsisthatmostofthemcannothandlefeatureredundancy.Inotherwords,theymayrepeatedly
+find highlycorrelatedfeaturesduring theselectionphase .
+2.2 Information-Theoretical-Based Methods
+A large family of existing feature selection algorithms is information-theoretical-based methods.
+Algorithms in this family exploit different heuristic filter criteria to measure the importance of
+features.AsindicatedinDudaetal.( 2012),manyhand-designedinformation-theoreticcriteriaare
+proposedtomaximizefeaturerelevanceandminimizefeatureredundancy.Sincetherelevanceof
+a feature is usually measured by its correlation with class labels, most algorithms in this family
+are performed in a supervised way. In addition, most information-theoretic concepts can only
+be applied to discrete variables. Therefore, feature selection algorithms in this family can only
+work with discrete data. For continuous feature values, some data discretization techniques are
+required beforehand. Two decades of research on information-theoretic criteria can be unified
+in a conditional likelihood maximization framework (Brown et al. 2012). In this subsection, we
+introduce some representative algorithms in this family. We first give a brief introduction about
+basicinformation-theoreticconcepts.
+Theconceptof entropymeasurestheuncertaintyofadiscreterandomvariable.Theentropyof
+a discreterandomvariable Xisdefinedas follows:
+H(X)=-?
+xi?XP(xi)lo?(P(xi)), (8)
+wherexidenotes a specific value of random variable X,P(xi)denotes the probability of xiover
+allpossiblevaluesof X.
+Second,the conditionalentropy ofXgiven anotherdiscreterandomvariable Yis:
+H(X|Y)=-?
+yj?YP(yj)?
+xi?XP(xi|yj)lo?(P(xi|yj)), (9)
+whereP(yi)is the prior probability of yi,w h i l eP(xi|yj)is the conditional probability of xigiven
+yj. Itshowstheuncertaintyof XgivenY.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:11
+Then,informationgain ormutualinformation betweenXandYisusedtomeasuretheamount
+of informationsharedby XandYtogether:
+I(X;Y)=H(X)-H(X|Y)=?
+xi?X?
+yj?YP(xi,yj)lo?P(xi,yj)
+P(xi)P(yj), (10)
+whereP(xi,yj)is the joint probability of xiandyj. Information gain is symmetric such that
+I(X;Y)=I(Y;X)and iszero if thediscretevariables XandYareindependent.
+At last,conditional information gain (orconditional mutual information ) of discrete variables X
+andYgiven athird discretevariable Zis given asfollows:
+I(X;Y|Z)=H(X|Z)-H(X|Y,Z)=?
+zk?ZP(zk)?
+xi?X?
+yj?YP(xi,yj|zk)lo?P(xi,yj|zk)
+P(xi|zk)P(yj|zk).(11)
+Itshowstheamount ofmutualinformation sharedby XandYgivenZ.
+SearchingfortheglobalbestsetoffeaturesisNP-hard,andthusmostalgorithmsexploitheuris-
+ticsequentialsearchapproachestoadd/removefeaturesonebyone.Inthissurvey,weexplainthe
+feature selection problem by forward sequential search such that features are added into the se-
+lectedfeaturesetonebyone.Wedenote Sasthecurrentselectedfeaturesetthatisinitiallyempty.
+Yrepresentstheclasslabels. Xj?Sisaspecificfeatureinthecurrent S.J(.)isafeatureselection
+criterion(score)where,generally,thehigherthevalueof J(Xk),themoreimportantthefeature Xk
+is. In the unified conditional likelihood maximization feature selection framework, the selection
+criterion(score)fora new unselectedfeature Xkisgiven as follows:
+JCMI(Xk)=I(Xk;Y)+?
+Xj?S?[I(Xj;Xk),I(Xj;Xk|Y)], (12)
+where?(.)is a function w.r.t. two variables I(Xj;Xk)andI(Xj;Xk|Y).I f?(.)is a linear function
+w.r.t. these two variables, then it is referred to as a criterion by linear combinations of Shannon
+information termssuchthat:
+JCMI(Xk)=I(Xk;Y)-ß?
+Xj?SI(Xj;Xk)+??
+Xj?SI(Xj;Xk|Y). (13)
+whereßand?aretwononnegativeparametersbetweenzeroand1.Ontheotherhand,if ?(.)isa
+non-linearfunctionw.r.t.thesetwovariables,itisreferredasacriterionbynon-linearcombination
+of Shannoninformationterms.
+2.2.1 MutualInformationMaximization(InformationGain). MutualInformationMaximization
+(MIM) (a.k.a. Information Gain) (Lewis 1992) measures the importance of a feature by its correla-
+tionwithclasslabels.Itassumesthatwhenafeaturehasastrongcorrelationwiththeclasslabel,
+it can help achieve good classification performance. The Mutual Information score for feature Xk
+is
+JMIM(Xk)=I(Xk;Y). (14)
+It can be observed that in MIM, the scores of features are assessed individually. Therefore, only
+the feature correlation is considered while the feature redundancy is completely ignored. After it
+obtains the MIM feature scores for all features, we choose the features with the highest feature
+scores and add them to the selected feature set. The process repeats until the desired number of
+selectedfeaturesisobtained.
+ItcanalsobeobservedthatMIMisaspecialcaseoflinearcombinationofShannoninformation
+termsin Equation( 13)wher eboth ßand?areequalto zero.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:12 J. Liet al.
+2.2.2 Mutual Information Feature Selection. A limitation of MIM criterion is that it assumes
+that features are independent of each other. In reality, good features should not only be strongly
+correlated with class labels but also should not be highly correlated with each other. In other
+words, the correlation between features should be minimized. Mutual Information Feature Se-
+lection (MIFS) (Battiti 1994) considers both the feature relevance and feature redundancy in the
+feature selection phase, the feature score for a new unselected feature Xkcan be formulated as
+follows:
+JMIFS(Xk)=I(Xk;Y)-ß?
+Xj?SI(Xk;Xj). (15)
+In MIFS, the feature relevance is evaluated by I(Xk;Y), while the second term penalizes features
+thathaveahighmutualinformationwiththecurrentlyselectedfeaturessuchthatfeatureredun-
+dancy isminimized.
+MIFScanalsobereducedtobeaspecialcaseofthelinearcombinationofShannoninformation
+terms inEquation( 13),whereßis betweenzero and 1and ?is zero.
+2.2.3 Minimum Redundancy Maximum Relevance. Peng et al. ( 2005) proposes a Minimum Re-
+dundancy Maximum Relevance (MRMR) criterion to set the value of ßto be the reverse of the
+number of selectedfeatures:
+JMRMR(Xk)=I(Xk;Y)-1
+|S|?
+Xj?SI(Xk;Xj). (16)
+Hence, with more selected features, the effect of feature redundancy is gradually reduced. The
+intuition is that with more non-redundant features selected, it becomes more difficult for new
+features to be redundant to the features that have already been in S. In Brown et al. ( 2012), it
+gives another interpretation that the pairwise independence between features becomes stronger
+as more featuresare addedto S,possiblybecauseof noiseinformationin thedata.
+MRMR is also strongly linked to the Conditional likelihood maximization framework if we it-
+eratively revisethevalue of ßtobe1
+|S|andsettheotherparameter ?tobe zero.
+2.2.4 ConditionalInfomaxFeatureExtraction. Somestudies(LinandTang 2006;ElAkadietal.
+2008; Guo and Nixon 2009) show that in contrast to minimize the feature redundancy, the con-
+ditional redundancy between unselected features and already selected features given class labels
+should also be maximized. In other words, as long as the feature redundancy given class labels is
+strongerthantheintra-featureredundancy,thefeatureselectionwillbeaffectednegatively.Atyp-
+ical feature selection under this argument is Conditional Infomax Feature Extraction (CIFE) (Lin
+and Tang 2006),inwhichthefeaturescorefora new unselectedfeature Xkis
+JCIFE(Xk)=I(Xk;Y)-?
+Xj?SI(Xj;Xk)+?
+Xj?SI(Xj;Xk|Y). (17)
+Compared with MIFS, it adds a third term?
+Xj?SI(Xj;Xk|Y)to maximize the conditional redun-
+dancy. Also, CIFE is a special case of the linear combination of Shannon information terms by
+settingboth ßand?tobe 1.
+2.2.5 JointMutualInformation. MIFSandMRMRreducefeatureredundancyinthefeaturese-
+lectionprocess.An alternativecriterion,JointMutualInformation(YangandMoody 1999;Me y er
+et al.2008) is proposed to increase the complementary information that is shared between unse-
+lectedfeaturesandselectedfeaturesgiventheclasslabels.Thefeatureselectioncriterionislisted
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:13
+asfollows:
+JJMI(Xk)=?
+Xj?SI(Xk,Xj;Y). (18)
+ThebasicideaofJMIisthatweshouldincludenewfeaturesthatarecomplementarytotheexisting
+featuresgiven theclasslabels.
+JMI cannot be directly reduced to the condition likelihood maximization framework. In Brown
+et al. (2012), the authors demonstrate that with simple manipulations, the JMI criterion can be
+re-writtenas
+JJMI(Xk)=I(Xk;Y)-1
+|S|?
+Xj?SI(Xj;Xk)+1
+|S|?
+Xj?SI(Xj;Xk|Y). (19)
+Therefore, it is also a special case of the linear combination of Shannon information terms by
+iterativelysetting ßand?tobe1
+|S|.
+2.2.6 Conditional Mutual Information Maximization. Previously mentioned criteria could be
+reduced to a linear combination of Shannon information terms. Next, we show some other al-
+gorithms that can only be reduced to a non-linear combination of Shannon information terms.
+Among them, Conditional Mutual Information Maximization (CMIM) (Vidal-Naquet and Ullman
+2003;Fleuret2004)iterativelyselectsfeaturesthatmaximizethemutualinformationwiththeclass
+labels given the selected features so far. Mathematically, during the selection phase, the feature
+scoreforeachnew unselectedfeature Xkcanbe formulatedasfollows:
+JCMIM(Xk)=min
+Xj?S[I(Xk;Y|Xj)]. (20)
+Note that the value of I(Xk;Y|Xj)is small if Xkis not strongly correlated with the class label Y
+or ifXkis redundant when Sis known. By selecting the feature that maximizes this minimum
+value, it can guarantee that the selected feature has a strong predictive ability, and it can reduce
+theredundancyw.r.t.theselectedfeatures.
+TheCMIMcriterionisequivalenttothefollowing formaftersome derivations:
+JCMIM(Xk)=I(Xk;Y)-max
+Xj?S[I(Xj;Xk)-I(Xj;Xk|Y)]. (21)
+Therefore, CMIM is also a special case of the conditional likelihood maximization framework in
+Equation( 12).
+2.2.7 InformativeFragments. InVidal-NaquetandUllman( 2003),theauthorsproposeafeature
+selection criterion called Informative Fragments (IF). The feature score of each new unselected
+featuresisgiven as
+JIF(Xk)=min
+Xj?S[I(XjXk;Y)-I(Xj;Y)]. (22)
+The intuition behind Informative Fragments is that the addition of the new feature Xkshould
+maximizethevalueofconditionalmutualinformationbetween Xkandexistingfeaturesin Sover
+themutualinformationbetween XjandY.AninterestingphenomenonofIFisthatwiththechain
+rule that I(XkXj;Y)=I(Xj;Y)+I(Xk;Y|Xj), IF has the equivalent form as CMIM. Hence, it can
+alsobe reducedto thegeneralframework in Equation( 12).
+2.2.8 InteractionCapping. InteractionCapping(Jakulin 2005)isasimilarfeatureselectioncri-
+terion as CMIM in Equation ( 21), it restricts the term I(Xj;Xk)-I(Xj;Xk|Y)to be nonnegative:
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:14 J. Liet al.
+JCMIM(Xk)=I(Xk;Y)-?
+Xj?Smax[0,I(Xj;Xk)-I(Xj;Xk|Y)]. (23)
+Apparently,itisaspecialcaseofnon-linearcombinationofShannoninformationtermsbysetting
+thefunction ?(.)tobe-max[0,I(Xj;Xk)-I(Xj;Xk|Y)].
+2.2.9 Double Input Symmetrical Relevance. Another class of information-theoretical-based
+methodssuchasDoubleInputSymmetricalRelevance(DISR)(MeyerandBontempi 2006)exploits
+normalization techniquestonormalize mutualinformation (Guyonet al. 2008):
+JDISR(Xk)=?
+Xj?SI(XjXk;Y)
+H(XjXkY). (24)
+ItiseasytovalidatethatDISRisanon-linearcombinationofShannoninformationtermsandcan
+be reducedto theconditionallikelihoodmaximization framework.
+2.2.10 Fast Correlation-Based Filter. There are other information-theoretical based feature se-
+lectionmethodsthatcannotbesimplyreducedtotheunifiedconditionallikelihoodmaximization
+framework. Fast Correlation-Based Filter (FCBF) (Yu and Liu 2003) is an example that exploits
+feature-class correlation and feature-feature correlation simultaneously. The algorithm works as
+follows: (1) given a predefined threshold d, it selects a subset of features Sthat are highly corre-
+lated with the class labels with SU=d,w h e r eSUis the symmetric uncertainty. The SUbetween
+a setoffeatures XSandtheclasslabel Yisgiven asfollows:
+SU(XS,Y)=2I(XS;Y)
+H(XS)+H(Y). (25)
+A specific feature Xkis called predominant iff SU(Xk,Y)=d, and there does not exist a feature
+Xj?S(j/nequalk)such that SU(Xj,Xk)=SU(Xk,Y). Feature Xjis considered to be redundant to
+featureXkifSU(Xj,Xk)=SU(Xk,Y); (2) the set of redundant features is denoted as SPi,w h i c h
+will be further split into S+
+PiandS-
+Piwhere they contain redundant features to feature Xkwith
+SU(Xj,Y)>SU(Xk,Y)andSU(Xj,Y)<SU(Xk,Y), respectively; and (3) different heuristics are
+applied onSP,S+
+Pi,a n dS-
+Pito remove redundant features and keep the features that are most
+relevant totheclasslabels.
+Discussion: Unlike similarity-based feature selection algorithms that fail to tackle feature redun-
+dancy,mostaforementionedinformation-theoretical-basedfeatureselectionalgorithmscanbeunified
+inaprobabilisticframeworkthatconsidersboth“featurerelevance”and“featureredundancy.”Mean-
+while, similar as similarity-based methods, this category of methods is independent of any learning
+algorithms and hence are generalizable. However, most of the existing information-theoretical-based
+featureselectionmethodscanonlyworkinasupervisedscenario.Withouttheguideofclasslabels,it
+is still not clear how to assess the importance of features. In addition, these methods can only handle
+discretedata andcontinuousnumericalvariables requirediscretizationpreprocessingbeforehand .
+2.3 Sparse-Learning-Based Methods
+The third type of methods is sparse-learning-based methods that aim to minimize the fitting er-
+rors along with some sparse regularization terms. The sparse regularizer forces many feature co-
+efficients to be small, or exactly zero, and then the corresponding features can be simply elim-
+inated. Sparse-learning-based methods have received considerable attention in recent years due
+to their good performance and interpretability. In the following parts, we review some represen-
+tative sparse-learning-based feature selection methods from both supervised and unsupervised
+perspectives.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:15
+2.3.1 FeatureSelectionwith lp-NormRegularizer. First,weconsiderthebinaryclassificationor
+univariateregressionproblem.Toachievefeatureselection,the lp-normsparsity-inducedpenalty
+termisaddedontheclassificationorregressionmodel,where0 =p=1.Letwdenotesthefeature
+coefficient,and thentheobjectivefunctionforfeatureselectionis
+min
+wloss(w;X,y)+a?w?p, (26)
+whereloss(.)is a loss function, and some widely used loss functions loss(.)include least squares
+loss,hingeloss,andlogisticloss. ?w?p=(?d
+i=1?wi?p)1
+pisasparseregularizationterm,and aisa
+regularization parameter to balance the contribution of the loss function and the sparse regular-
+ization termfor featureselection.
+Typically when p=0, thel0-norm regularization term directly seeks for the optimal set of
+nonzeroentries(features)forthemodellearning.However,theoptimizationproblemisnaturally
+anintegerprogrammingproblemandisdifficulttosolve.Therefore,itisoftenrelaxedtoa l1-norm
+regularization problem, which is regarded as the tightest convex relaxation of the l0-norm. One
+mainadvantageof l1-normregularization(LASSO)(Tibshirani 1996)isthatitforcesmanyfeature
+coefficientstobecomesmallerand,insomecases,exactlyzero.Thispropertymakesitsuitablefor
+featureselection,aswecanselectfeatureswhosecorrespondingfeatureweightsarelarge,which
+motivatesasurgeof l1-normregularizedfeatureselectionmethods(Zhuetal. 2004;Xuetal. 2014;
+Wei et al. 2016a;W e ia n dY u 2016; Hara and Maehara 2017). Also, the sparse vector wenables
+the ranking of features. Normally, the higher the value, the more important the corresponding
+featureis.
+2.3.2 FeatureSelectionwith lp,q-NormRegularizer. Here,wediscusshowtoperformfeaturese-
+lectionforthegeneralmulti-classclassificationormultivariateregressionproblems.Theproblem
+ismoredifficultbecauseofthemultipleclassesandmultivariateregressiontargets,andwewould
+like the feature selection phase to be consistent over multiple targets. In other words, we want
+multiple predictive models for different targets to share the same parameter sparsity patterns—
+each feature either has small scores or large scores for all targets. This problem can be generally
+solvedbythelp,q-normsparsity-inducedregularizationterm,where p>1(mostexistingworkfo-
+cusonp=2or8)and0=q=1(mostexistingworkfocuson q=1or0).Assumethat Xdenotes
+thedatamatrixand Ydenotestheone-hotlabelindicatormatrix.Thenthemodelisformulatedas
+follows:
+min
+Wloss(W;X,y)+a?W?p,q, (27)
+where?W?p,q=(?c
+j=1(?d
+i=1|W(i,j)|p)q
+p)1
+q; and the parameter ais used to control the contribu-
+tion of the loss function and the sparsity-induced regularization term. Then the features can be
+rankedaccordingtothevalueof ?W(i,:)?2
+2(i=1,...,d);thehigherthevalue,themoreimportant
+thefeatureis.
+Case 1:p=2,q=0. To find relevant features across multiple targets, an intuitive way is to use
+discrete optimization through the l2,0-norm regularization. The optimization problem with the
+l2,0-normregularization termcan bereformulatedas follows:
+min
+Wloss(W;X,y)s.t.?W?2,0=k. (28)
+However, solving the aforementioned optimization problem has been proven to be NP-hard, and
+also, due to its discrete nature, the objective function is also not convex. To solve it, a variation
+ofAlternatingDirectionMethodcouldbeleveragedtoseekforalocaloptimalsolution(Caietal.
+2013;G ue ta l . 2012). In Zhang et al. ( 2014), the authors provide two algorithms, the proximal
+gradient algorithmand rank-oneupdatealgorithm, tosolve thisdiscreteselectionproblem.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:16 J. Liet al.
+Case2:p=2,0<q<1.Theaforementionedsparsity-reducedregularizationtermisinherently
+discreteandhardtosolve.InPengandFan( 2016)andPengandFan( 2017),theauthorsproposea
+more generalframeworkto directlyoptimizethesparsity-reducedregularizationwhen0 <q<1
+and providedefficientiterativealgorithmwithguaranteedconvergencerate.
+Case 3:p=2,q=1. Although thel2,0-norm is more desired for feature sparsity, however, it
+is inherently non-convex and non-smooth. Hence, the l2,1-norm regularization is preferred and
+widely used in different scenarios such as multi-task learning (Obozinski et al. 2007; Zhang et al.
+2008), anomaly detection (Li et al. 2017;W ue ta l . 2017), and crowdsourcing (Zhou and He 2017).
+Manyl2,1-normregularization-basedfeatureselectionmethodshavebeenproposedoverthepast
+decade (Zhao et al. 2010;G ue ta l . 2011c;Y a n ge ta l . 2011; Hou et al. 2011;L ie ta l . 2012; Qian
+and Zhai 2013;S h ie ta l . 2014; Liu et al. 2014;D ua n dS h e n 2015;J i a ne ta l . 2016; Liu et al. 2016b;
+N i ee ta l . 2016; Zhu et al. 2016;L ie ta l . 2017b). Similarly tol1-norm regularization, l2,1-norm
+regularizationisalsoconvexandaglobaloptimalsolutioncanbeachieved(Liuetal. 2009a),thus
+the following discussions about the sparse-learning-based feature selection will center around
+thel2,1-norm regularization term. The l2,1-norm regularization also has strong connections with
+grouplasso(YuanandLin 2006),whichwillbeexplainedlater.Bysolvingtherelatedoptimization
+problem,wecanobtainasparsematrix Wwheremanyrowsareexactzeroorofsmallvalues,and
+thenthefeaturescorrespondingto theserowscan beeliminated.
+Case 4:p=8,q=1. In addition to the l2,1-norm regularization term, the l8,1-norm regular-
+izationisalsowidelyusedtoachievejointfeaturesparsityacrossmultipletargets(Quattonietal.
+2009).Inparticular,itpenalizesthesumofmaximumabsolutevaluesofeachrow,suchthatmany
+rows of thematrix willallbezero.
+2.3.3 Efficient and Robust Feature Selection. N i ee ta l .( 2010) propose an efficient and robust
+feature selection (REFS) method by employing a joint l2,1-norm minimization on both the loss
+functionandtheregularization.Theirargumentisthatthe l2-norm-basedlossfunctionissensitive
+to noisy data while the l2,1-norm-based loss function is more robust to noise. The reason is that
+l2,1-normlossfunctionhasarotationalinvariantproperty(Dingetal. 2006).Consistentwithl2,1-
+norm regularized feature selection model, a l2,1-norm regularizer is added to the l2,1-norm loss
+functionto achievegroupfeaturesparsity.Theobjectivefunctionof REFSis
+min
+W?XW-Y?2,1+a?W?2,1. (29)
+Tosolvetheconvexbutnon-smoothoptimizationproblem,anefficientalgorithmisproposedwith
+strictconvergenceanalysis.
+ItshouldbenotedthattheaforementionedREFSisdesignedformulti-classclassificationprob-
+lemswhereeachinstanceonlyhasoneclasslabel.However,datacouldbeassociatedwithmultiple
+labelsinmanydomainssuchasinformationretrievalandmultimediaannotation.Recently,thereis
+asurgeofresearchworkstudymulti-labelfeatureselectionproblemsbyconsideringlabelcorrela-
+tions.Mostofthem,however,arealsobasedonthe l2,1-normsparseregularizationframework(Gu
+et al.2011a;Changetal. 2014;J ianetal . 2016).
+2.3.4 Multi-ClusterFeatureSelection. Mostofexistingsparse-learning-basedapproachesbuild
+a learning model with the supervision of class labels. The feature selection phase is derived af-
+terwards on the sparse feature coefficients. However, since labeled data are costly and time-
+consumingtoobtain,unsupervisedsparse-learning-basedfeatureselectionhasreceivedincreasing
+attentioninrecentyears.Multi-ClusterFeatureSelection(MCFS)(Caietal. 2010)isoneofthefirst
+attempts.Withoutclasslabelstoguidethefeatureselectionprocess,MCFSproposestoselectfea-
+turesthatcancovermulti-clusterstructureofthedatawherespectralanalysisisusedtomeasure
+thecorrelationbetweendifferent features.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:17
+MCFSconsistsofthreesteps.Inthefirststep,itconstructsa p-nearestneighborgraphtocapture
+thelocalgeometricstructureofdataandgetsthegraphaffinitymatrix SandtheLaplacianmatrix
+L. Then a flat embedding that unfolds the data manifold can be obtained by spectral clustering
+techniques. In the second step, since the embedding of data is known, MCFS takes advantage of
+themtomeasuretheimportanceoffeaturesbyaregressionmodelwitha l1-normregularization.
+Specifically,given the ithembedding ei,MCFS regardsit asa regressiontargetto minimize:
+min
+wi?Xwi-ei?2
+2+a?wi?1, (30)
+wherewidenotes the feature coefficient vector for the ith embedding. By solving all Ksparse
+regression problems, MCFS obtains Ksparse feature coefficient vectors W=[w1,...,wK], and
+each vector corresponds to one embedding of X. In the third step, for each feature fj,t h eM C F S
+score for that feature can be computed as MCFS(j)=maxi|W(j,i)|. The higher the MCFS score,
+themore importantthefeatureis.
+2.3.5l2,1-Norm Regularized Discriminative Feature Selection. In Yang et al. ( 2011), the authors
+propose a new unsupervised feature selection algorithm (UDFS) to select the most discrimina-
+tive features by exploiting both the discriminative information and feature correlations. First,
+assume˜Xis the centered data matrix such ˜X=HnXandG=[G1,G1,...,Gn]'=Y(Y'Y)-1
+2is
+the weighted label indicator matrix, where Hn=In-1
+n1n1'
+n. Instead of using global discrimina-
+tive information, they propose to utilize the local discriminative information to select discrimi-
+native features. The advantage of using local discriminative information are twofold. First, it has
+been demonstrated to be more important than global discriminative information in many classi-
+fication and clustering tasks. Second, when it considers the local discriminative information, the
+datamanifoldstructureisalsowellpreserved.Foreachdatainstance xi,itconstructsa p-nearest-
+neighborsetforthatinstance Np(xi)={xi1,xi2,...,xip}.LetXNp(i)=[xi,xi1,...,xip]denotethe
+local data matrix around xi, and then the local total scatter matrix S(i)
+tand local between class
+scatter matrix S(i)
+bare˜Xi'˜Xiand˜Xi'GiG'
+i˜Xirespectively, where ˜Xiis the centered data matrix
+andG(i)=[Gi,Gi1,...,Gik]'.N o t et h a t G(i)is a subset from GandG(i)can be obtained by a se-
+lection matrix Pi?{0,1}n×(k+1)such that G(i)=P'
+iG. Without label information in unsupervised
+featureselection,UDFSassumesthatthereisalinearclassifier W?Rd×stomapeachdatainstance
+xi?Rdto a low-dimensional space Gi?Rs. Following the definition of global discriminative in-
+formation (Yang et al. 2010; Fukunaga 2013), the local discriminative score for each instance xiis
+DSi=tr[(S(i)
+t+?Id)-1S(i)
+b]=tr[W'X'P(i)˜Xi'(˜Xi˜Xi'+?Id)-1˜XiP'
+(i)XW]. (31)
+Ahighlocaldiscriminativescoreindicatesthattheinstancecanbewelldiscriminatedby W.There-
+fore,UDFStendstotrain W,whichobtainsthehighestlocaldiscriminativescoreforallinstances
+inX; also it incorporates a l2,1-norm regularizer to achieve feature selection, and the objective
+functionis formulatedasfollows:
+min
+W'W=Idn?
+i=1{tr[G'
+(i)Hk+1G(i)-DSi]}+a?W?2,1, (32)
+whereais aregularization parameterto controlthesparsityof thelearnedmodel.
+2.3.6 Feature Selection Using Nonnegative Spectral Analysis. Nonnegative Discriminative Fea-
+ture Selection (NDFS) (Li et al. 2012) performs spectral clustering and feature selection simulta-
+neously in a joint framework to select a subset of discriminative features. It assumes that pseudo
+classlabelindicatorscanbeobtainedbyspectralclusteringtechniques.Differentfrommostexist-
+ingspectralclusteringtechniques,NDFSimposesnonnegativeandorthogonalconstraintsduring
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:18 J. Liet al.
+thespectralclusteringphase.Theargumentisthatwiththeseconstraints,thelearnedpseudoclass
+labelsareclosertorealclusterresults.Thesenonnegativepseudoclasslabelsthenactasregression
+constraintstoguidethefeatureselectionphase.Insteadofperformingthesetwotasksseparately,
+NDFS incorporatesthesetwo phasesintoa jointframework.
+SimilarlytotheUDFS,weuse G=[G1,G1,...,Gn]'=Y(Y'Y)-1
+2todenotetheweightedcluster
+indicator matrix. It is easy to show that we have GG'=In. NDFS adopts a strategy to learn the
+weightclustermatrixsuchthatthelocalgeometricstructureofthedatacanbewellpreserved(Shi
+and Malik 2000; Yu and Shi 2003). The local geometric structure can be preserved by minimizing
+the normalized graph Laplacian tr(G'LG),w h e r eLis the Laplacian matrix that can be derived
+from RBF kernel. In addition to that, given the pseudo labels G, NDFS assumes that there exists
+a linear transformation matrix W?Rd×sbetween the data instances Xand the pseudo labels G.
+These pseudo class labels are utilized as constraints to guide the feature selection process. The
+combinationof thesetwocomponentsresultsin thefollowing problem:
+min
+G,Wtr(G'LG)+ß(?XW-G?2
+F+a?W?2,1)
+s.t.GG'=In,G=0,(33)
+whereais a parameter to control the sparsity of the model, and ßis introduced to balance the
+contributionof spectralclusteringand discriminativefeatureselection.
+Discussion: Sparse-learning-based feature selection methods have gained increasing popularity in
+recent years. A merit of such type of methods is that it embeds feature selection into a typical learn-
+ing algorithm (such as linear regression, SVM, etc.). Thus it can often lead very good performance
+for the underlying learning algorithm. Also, with sparsity of feature weights, the model poses good
+interpretability as it enables us to explain why we make such prediction. Nonetheless, there are still
+some drawbacks of these methods: First, as it directly optimizes a particular learning algorithm by
+feature selection, the selected features do not necessary achieve good performance in other learning
+tasks. Second, this kind of methods often involves solving a non-smooth optimization problem, and
+withcomplexmatrixoperations(e.g.,multiplication,inverse,etc.)inmostcases.Hence,theexpensive
+computationalcostisanotherbottleneck .
+2.4 Statistical-Based Methods
+Anothercategoryoffeatureselectionalgorithmsisbasedondifferentstatisticalmeasures.Asthey
+relyonvariousstatisticalmeasuresinsteadoflearningalgorithmstoassessfeaturerelevance,most
+of them are filter-based methods. In addition, most statistical-based algorithms analyze features
+individually. Hence, feature redundancy is inevitably ignored during the selection phase. We in-
+troducesome representativefeatureselectionalgorithmsin thiscategory.
+2.4.1 Low Variance. Low Variance eliminates features whose variance are below a predefined
+threshold.Forexample,forthefeaturesthathavethesamevaluesforallinstances,thevarianceis0
+andshouldberemoved,sinceitcannothelpdiscriminateinstancesfromdifferentclasses.Suppose
+thatthedatasetconsistsofonlyBooleanfeatures,thatis,thefeaturevaluesareeither0and1.As
+theBooleanfeatureis aBernoulli randomvariable,itsvariancevalue canbe computedas:
+variance_score(fi)=p(1-p), (34)
+wherepdenotesthepercentageofinstancesthattakethefeaturevalueof1.Afterthevarianceof
+featuresisobtained,thefeaturewithavariancescorebelowapredefinedthresholdcanbedirectly
+pruned.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:19
+2.4.2 T-Score. T-score (Davis and Sampson 1986) is used for binary classification problems.
+Foreachfeature fi,supposethat µ1andµ2arethemeanfeaturevaluesfortheinstancesfromtwo
+different classes, s1ands2are the corresponding standard deviations, and n1andn2denote the
+numberof instancesfromthesetwo classes.Thenthe t-scoreforthefeature fiis
+t_score(fi)=|µ1-µ2|/v
+s2
+1
+n1+s2
+2
+n2. (35)
+The basic idea of t-score is to assess whether the feature makes the means of two classes statisti-
+callydifferent,whichcanbecomputedastheratiobetweenthemeandifferenceandthevariance
+oftwoclasses.Thehigherthe t-score,themore importantthefeatureis.
+2.4.3 Chi-Square Score. Chi-square score (Liu and Setiono 1995) utilizes the test of indepen-
+dencetoassesswhetherthefeatureisindependentoftheclasslabel.Givenaparticularfeature fi
+withrdifferent featurevalues,theChi-squarescoreof thatfeaturecan becomputedas:
+Chi_square_score(fi)=r?
+j=1c?
+s=1(njs-µjs)2
+µjs, (36)
+wherenjsisthenumberofinstanceswiththe jthfeaturevaluegivenfeature fi.Inaddition, µjs=
+n*snj*
+n,w h e r enj*indicates the number of data instances with the jth feature value given feature
+fi,n*sdenotes the number of data instances in class r. A higher Chi-square score indicates that
+thefeatureisrelatively more important.
+2.4.4 Gini Index. Gini index (Gini 1912) is also a widely used statistical measure to quantify if
+the feature is able to separate instances from different classes. Given a feature fiwithrdifferent
+feature values, suppose WandWdenote the set of instances with the feature value smaller or
+equal to the jth feature value and larger than the jth feature value, respectively. In other words,
+thejth feature value can separate the dataset into WandW, and then the Gini index score for
+thefeature fiisgiven asfollows:
+?ini_index_score(fi)=min
+W/parenlefttpA
+/parenleftbtAp(W)(1-c?
+s=1p(Cs|W)2)+p(W)(1-c?
+s=1p(Cs|W)2)/parenrighttpA
+/parenrightbtA,(37)
+wherep(.)denotes the probability. For instance, p(Cs|W)is the conditional probability of class
+sgivenW. For binary classification, Gini Index can take a maximum value of 0.5, it can also be
+usedinmulti-classclassificationproblems.Unlikepreviousstatisticalmeasures,thelowertheGini
+indexvalue,themore relevant thefeatureis.
+2.4.5 CFS. The basic idea of CFS (Hall and Smith 1999) is to use a correlation-based heuristic
+toevaluate theworthofa featuresubset S:
+CFS_score(S)=krcfv
+k+k(k-1)rff, (38)
+wheretheCFSscoreshowstheheuristic“merit”ofthefeaturesubset Swithkfeatures.rcfisthe
+meanfeatureclasscorrelationand rffistheaveragefeature-featurecorrelation.InEquation( 38),
+the numerator indicates the predictive power of the feature set while the denominator shows
+how much redundancy the feature set has. The basic idea is that a good feature subset should
+haveastrongcorrelationwithclasslabelsandareweaklyintercorrelated.Togetthefeature-class
+correlation and feature-feature correlation, CFS uses symmetrical uncertainty (Vetterling et al.
+1992). As finding the globally optimal subset is computational prohibitive, it adopts a best-search
+strategy to find a local optimal feature subset. At the very beginning, it computes the utility of
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:20 J. Liet al.
+each feature by considering both feature-class and feature-feature correlation. It then starts with
+an empty set and expands the set by the feature with the highest utility until it satisfies some
+stoppingcriteria.
+Discussion: Most of the statistical-based feature selection methods rely on predefined statistical
+measurestofilteroutunwantedfeaturesandaresimpleandstraightforwardinnature.Andthecom-
+putationalcostsofthesemethodsareoftenverylow.Tothisend,theyareoftenusedasapreprocessing
+stepbeforeapplyingothersophisticatedfeatureselectionalgorithms.Also,assimilarity-basedfeature
+selection methods, these methods often evaluate the importance of features individually and hence
+cannot handle feature redundancy. Meanwhile, most algorithms in this family can only work on dis-
+crete data and conventional data discretization techniques are required to preprocess numerical and
+continuousvariables .
+2.5 Other Methods
+Inthissubsection,wepresentotherfeatureselectionmethodsthatdonotbelongtotheaforemen-
+tionedfourtypesoffeatureselectionalgorithms.Inparticular,wereviewhybridfeatureselection
+methodsand deep-learning-basedand reconstruction-basedmethods.
+Hybrid feature selection methods is a kind of ensemble-based methods that aim to construct a
+group of feature subsets from different feature selection algorithms and then produce an aggre-
+gated result out of the group. In this way, the instability and perturbation issues of most single
+featureselectionalgorithmscanbealleviated,andthesubsequentlearningtaskscanbeenhanced.
+Similarlytoconventionalensemblelearningmethods(Zhou 2012),hybridfeatureselectionmeth-
+ods consist of two steps: (1) construct a set of different feature selection results and (2) aggregate
+different outputs into a consensus result. Different methods differ in the way these two steps are
+performed. For the first step, existing methods either ensemble the selected feature subsets of a
+single method on different sample subset or ensemble the selected feature subsets from multiple
+featureselectionalgorithms.Inparticular,asamplingmethodtoobtaindifferentsamplesubsetsis
+necessaryforthefirstcase;andtypicalsamplingmethodsincluderandomsamplingandbootstrap
+sampling. For example, Saeys et al. ( 2008) studied the ensemble feature selection that aggregates
+aconventionalfeatureselectionalgorithmsuchasRELIEFwithmultiplebootstrappedsamplesof
+the training data. In Abeel et al. ( 2010), the authors improved the stability of SVM-RFE feature
+selection algorithm by applying multiple random sampling on the original data. The second step
+involvesinaggregatingrankingsofmultipleselectedfeaturesubset.Mostoftheexistingmethods
+employasimpleyeteffectivelinearaggregationfunction(Saeysetal. 2008;Abeeletal. 2010;Y ang
+andMao2011).Nonetheless,otherrankingaggregationfunctionssuchastheMarkovchain-based
+method(DutkowskiandGambin 2007),distancesynthesismethod(Yangetal. 2005),andstacking
+method (Netzer et al. 2009) are also widely used. In addition to using the aggregation function,
+anotherwayistoidentifytheconsensusfeaturesdirectlyfrommultiplesamplesubsets(Loscalzo
+et al.2009).
+Nowadays, deep learning techniques are popular and successful in various real-world applica-
+tions,especiallyincomputervisionandnaturallanguageprocessing.Deeplearningisdistinctfrom
+featureselectionasdeeplearningleveragesdeepneutralnetworksstructurestolearnnewfeature
+representations while feature selection directly finds relevant features from the original features.
+Fromthisperspective,theresultsoffeatureselectionaremorehumanreadableandinterpretable.
+Even though deep learning is mainly used for feature learning, there are still some attempts that
+use deep learning techniques for feature selection. We briefly review these deep-learning-based
+feature selection methods. For example, in Li et al. ( 2015), a deep feature selection model (DFS)
+is proposed. DFS selects features at the input level of a deep neural network. Typically, it adds a
+sparse one-to-one linear layer between the input layer and the first hidden layer of a multilayer
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:21
+perceptrons(MLP).Toachievefeatureselection,DFSimposessparseregularizationterm,andthen
+onlythefeaturescorrespondingtononzeroweightsareselected.Similarly,inRoyetal.( 2015),the
+authorsalso proposeto selectfeaturesat theinput levelof a deepneuralnetwork.Thedifference
+isthattheyproposeanewconcept—netpositivecontribution—toassessiffeaturesaremorelikely
+to make the neurons contribute in the classification phase. Since heterogeneous (multi-view) fea-
+tures are prevalent in machine-learning and pattern recognition applications, Zhao et al. ( 2015)
+proposestocombinedeepneuralnetworkswithsparserepresentationforgroupedheterogeneous
+feature selection. It first extracts a new unified representation from each feature group using a
+multi-modalneuralnetwork.Thentheimportanceoffeaturesislearnedbyakindofsparsegroup
+lasso method. In Wang et al. ( 2014a), the authors propose an attentional neural network, which
+guides feature selection with cognitive bias. It consists of two modules, a segmentation module,
+and a classification module. First, given a cognitive bias vector, segmentation module segments
+out an object belonging to one of classes in the input image. Then, in the classification module,
+a reconstruction function is applied to the segment to gate the raw image with a threshold for
+classification. When features are sensitive to a cognitive bias, the cognitive bias will activate the
+correspondingrelevant features.
+Recently, data reconstruction error emerged as a new criterion for feature selection, especially
+for unsupervised feature selection. It defines feature relevance as the capability of features to ap-
+proximatetheoriginaldataviaareconstructionfunction.Amongthem,ConvexPrincipalFeature
+Selection(CPFS)(Masaelietal. 2010)reformulatesthefeatureselectionproblemasaconvexcon-
+tinuousoptimizationproblemthatminimizesamean-squared-reconstructionerrorwithlinearand
+sparsity constraint. GreedyFS (Farahat et al. 2011) uses a projection matrix to project the original
+dataontothespanofsomerepresentativefeaturevectorsandderivesanefficientgreedyalgorithm
+toobtaintheserepresentativefeatures.Zhaoetal.( 2016)formulatestheproblemofunsupervised
+feature selection as the graph regularized data reconstruction. The basic idea is to make the se-
+lectedfeatureswellpreservethedatamanifoldstructureoftheoriginaldataandreconstructeach
+data sample via linear reconstruction. A pass-efficient unsupervised feature selection is proposed
+in Maung and Schweitzer ( 2013). It can be regarded as a modification of the classical pivoted QR
+algorithm, the basic idea is still to select representative features that can minimize the recon-
+structionerrorvialinearfunction.Theaforementionedmethodsmostlyuselinearreconstruction
+functions; Li et al. ( 2017a) argues that the reconstruction function is not necessarily linear and
+proposestolearnthereconstructionfunctionautomaticallyfunctionfromdata.Inparticular,they
+definea schemetoembed thereconstructionfunctionlearningintofeatureselection.
+3 FEATURE SELECTIONWITH STRUCTURED FEATURES
+Existingfeatureselectionmethodsforconventionaldataarebasedonastrongassumptionthatfea-
+turesareindependentofeachother(flat)whileignoringtheinherentfeaturestructures.However,
+in many real applications features could exhibit various kinds of structures, for example, spatial
+or temporal smoothness, disjoint groups, overlap groups, trees and graphs (Tibshirani et al. 2005;
+Jenattonetal. 2011;Y uanetal. 2011;Huangetal. 2011;Zhouetal. 2012;W angandY e 2015).Ifthis
+is the case, then feature selection algorithms incorporating knowledge about the structure infor-
+mationmayhelpfindmorerelevantfeaturesandthereforecanimprovesubsequentlearningtasks.
+One motivating example is from bioinformatics, in the study of array CGH, features have some
+naturalspatialorder,incorporatingsuchspatialstructurecanhelpselectmoreimportantfeatures
+andachievemoreaccurateclassificationaccuracy.Therefore,inthissection,wediscusssomerep-
+resentativefeatureselectionalgorithmsthatexplicitlyconsiderfeaturestructures.Specifically,we
+willfocuson groupstructure,treestructure,andgraphstructure.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:22 J. Liet al.
+Fig. 3. Illustration of Lasso, Group Lasso, and Sparse Group Lasso. The feature set can be divided into four
+groups,G1,G2,G3,a n dG4. The column with dark color denotes selected features while the column with
+light color denotes unselectedfeatures.
+A popular and successful approach to achieve feature selection with structured features is to
+minimize an empiricalerrorpenalizedbya structuralregularization term:
+w=argmin
+wloss(w;X,y)+apenalty (w,G), (39)
+whereGdenotes the structures among features and ais a tradeoff parameter between the loss
+functionandthestructuralregularizationterm.Toachievefeatureselection, penalty(w,G)isusu-
+ally set to be a sparse regularization term. Note that the aforementioned formulation is similar to
+that in Equation ( 26); the only difference is that for feature selection with structured features, we
+explicitlyconsiderthestructuralinformation Gamongfeaturesinthesparseregularizationterm.
+3.1 Feature Selection withGroupFeature Structures
+First, features could exhibit group structures. One of the most common examples is that in mul-
+tifactor analysis-of-variance (ANOVA), each factor is associated with several groups and can be
+expressed by a set of dummy features (Yuan and Lin 2006). Some other examples include differ-
+ent frequency bands represented as groups in signal processing (McAuley et al. 2005) and genes
+with similar functionalities acting as groups in bioinformatics (Ma et al. 2007). Therefore, when
+performingfeatureselection,itis moreappealingto modelthegroupstructureexplicitly.
+3.1.1 Group Lasso. Group Lasso (Yuan and Lin 2006; Bach2008; Jacob et al. 2009; Meier et al.
+2008),whichderivesfeaturecoefficientsfromcertaingroupstobesmallorexactzero,isasolution
+tothisproblem.Inotherwords,itselectsorignoresagroupoffeaturesasawhole.Thedifference
+between Lasso and Group Lasso is shown by the illustrative example in Figure 3. Suppose that
+these features come from four different groups and there is no overlap between these groups.
+Lassocompletelyignoresthegroupstructuresamongfeatures,andtheselectedfeaturesarefrom
+four different groups. On the contrary, Group Lasso tends to select or not select features from
+different groups as a whole. As shown in the figure, Group Lasso only selects the second and
+the fourth groups G2andG4, and features in the other two groups G1andG3are not selected.
+Mathematically,GroupLassofirstusesa l2-normregularizationtermforfeaturecoefficients wiin
+each group Gi, and then it performs a l1-norm regularization for all previous l2-norm terms. The
+objectivefunctionof GroupLasso isformulatedas follows:
+min
+wloss(w;X,y)+a??
+i=1hi?wGi?2, (40)
+wherehiis a weight for the ith group wGi, which can be considered as a prior to measuring the
+contributionof the ithgroupin thefeatureselectionprocess.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:23
+3.1.2 Sparse Group Lasso. Once Group Lasso selects a group, all the features in the selected
+groupwillbekept.However,inmanycases,notallfeaturesintheselectedgroupcouldbeuseful,
+and it is desirable to consider the intrinsic feature structures and select features from different
+selected groups simultaneously (as illustrated in Figure 3). Sparse Group Lasso (Friedman et al.
+2010;Pengetal. 2010)takesadvantageofbothLassoandGroupLasso,anditproducesasolution
+withsimultaneousintra-groupandinter-groupsparsity.ThesparseregularizationtermofSparse
+GroupLasso isa combinationof thepenaltytermof Lassoand GroupLasso:
+min
+wloss(w;X,y)+a?w?1+(1-a)??
+i=1hi?wGi?2, (41)
+whereais parameter between 0 and 1 to balance the contribution of inter-group sparsity and
+intra-group sparsity for feature selection. The difference among Lasso, Group Lasso, and Sparse
+GroupLasso isshownin Figure 3.
+3.1.3 Overlapping Sparse Group Lasso. The above methods consider the disjoint group struc-
+tures among features. However, groups may also overlap with each other (Jacob et al. 2009;
+Jenattonetal. 2011;Zhaoetal. 2009).Onemotivatingexampleistheusageofbiologicallymeaning-
+ful gene/protein groups mentioned in Ye and Liu ( 2012). Different groups of genes may overlap,
+that is, one protein/gene may belong to multiple groups. A general Overlapping Sparse Group
+Lasso regularization is similar to the regularization term of Sparse Group Lasso. The difference is
+thatdifferentfeaturegroups Gicanhaveanoverlap,thatis,thereexistatleasttwogroups Giand
+Gjsuchthat Gi?Gj/nequalØ.
+3.2 Feature Selection with Tree Feature Structures
+In addition to the group structures, features can also exhibit tree structures. For example, in face
+recognition,differentpixelscanberepresentedasatree,wheretherootnodeindicatesthewhole
+face,itschildnodescanbedifferentorgans,andeachspecificpixelisconsideredasaleafnode.An-
+othermotivatingexampleisthatgenes/proteinsmayformcertainhierarchicaltreestructures(Liu
+and Ye2010). Recently, Tree-guided Group Lasso is proposed to handle the feature selection for
+features that can be represented in an index tree (Kim and Xing 2010; Liu and Ye 2010; Jenatton
+etal.2010).
+3.2.1 Tree-Guided Group Lasso. In Tree-guided Group Lasso (Liu and Ye 2010), the structure
+over the features can be represented as a tree with leaf nodes as features. Each internal node
+denotes a group of features such that the internal node is considered as a root of a subtree and
+thegroupoffeaturesisconsideredasleafnodes.Eachinternalnodeinthetreeisassociatedwith
+a weight that represents the height of its subtree or how tightly the features in this subtree are
+correlated.
+InTree-guidedGroupLasso,foranindextree Gwithadepthof d,Gi={Gi
+1,Gi
+2,...,Gi
+ni}denotes
+the whole set of nodes (features) in the ith level (the root node is in level 0), and nidenotes the
+number of nodes in the level i. Nodes in Tree-guided Group Lasso have to satisfy the following
+two conditions: (1) internal nodes from the same depth level have non-overlapping indices, that
+is,Gi
+j?Gi
+k=Ø,?i=1,2,...,d,j/nequalk,i=j,k=ni, and (2) if Gi-1
+mis the parent node of Gi
+j,t h e n
+Gi
+j?Gi-1
+m.
+WeexplaintheseconditionsviaanillustrativeexampleinFigure 4.Inthefigure,wecanobserve
+that eight features are organized in an indexed tree of depth 3. For the internal nodes in each
+level,wehave G0
+1={f1,f2,f3,f4,f5,f6,f7,f8},G1
+1={f1,f2},G1
+2={f3,f4,f5,f6,f7},G1
+3={f8},G2
+1=
+{f1,f2},G2
+2={f3,f4},G2
+3={f5,f6,f7}.G0
+1is the root node of the index tree. In addition, internal
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:24 J. Liet al.
+Fig. 4. Illustration of the tree structure among features. These eight features form a simple index tree with
+ad e p t ho f3 .
+nodes from the same level do not overlap while the parent node and the child node have some
+overlapsuchthatthefeaturesofthechildnodeisasubsetofthoseoftheparentnode.Inthisway,
+theobjectivefunctionof Tree-guidedGroupLassois
+min
+wloss(w;X,y)+ad?
+i=0ni?
+j=1hi
+j?wGi
+j?2, (42)
+wherea=0 is a regularization parameter and hi
+j=0 is a predefined parameter to measure the
+contribution of the internal node Gi
+j. Since a parent node is a superset of its child nodes, thus, if
+a parent nodeis not selected,allof its child nodes willnot be selected.For example, as illustrated
+in Figure 4, if the internal node G1
+2is not selected, both of its child nodes G2
+2andG2
+3will not be
+selected.
+3.3 Feature Selection withGraphFeature Structures
+In many cases, features may have strong pairwise interactions. For example, in natural language
+processing,ifwetakeeachwordasafeature,thenwehavesynonymsandantonymsrelationships
+betweendifferentwords(Fellbaum 1998).Moreover,manybiologicalstudiesshowthatthereexist
+strong pairwise dependencies between genes. Since features show certain kinds of dependencies
+in these cases, we can model them by an undirected graph, where nodes represent features and
+edges among nodes show the pairwise dependencies between features (Sandler et al. 2009;K i m
+andXing 2009;Y angetal. 2012).Wecanuseanundirectedgraph G(N,E)toencodethesedepen-
+dencies. Assume that there are nnodesN={N1,N2,...,Nn}and a set of eedges{E1,E2,...,Ee}
+inG(N,E).T h e nn o d e Nicorresponds to the ith feature and the pairwise feature dependencies
+can berepresentedbyan adjacencymatrix A?RNn×Nn.
+3.3.1 Graph Lasso. Since features exhibit graph structures, when two nodes (features) Niand
+Njare connected by an edge in G(N,E), the features fiandfjare more likely to be selected
+together, and they should have similar feature coefficients. One way to achieve this target is via
+Graph Lasso—adding a graph regularizer for the feature graph on the basis of Lasso (Ye and Liu
+2012).Theformulation is
+min
+wloss(w;X,y)+a?w?1+(1-a)?
+i,jA(i,j)(wi-wj)2, (43)
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:25
+where the first regularization term a?w?1is from Lasso while the second term ensures that if a
+pairoffeaturesshowstrongdependency,thatis,large A(i,j),theirfeaturecoefficientsshouldalso
+besimilar to eachother.
+3.3.2 GFLasso. In Equation ( 43), Graph Lasso encourages features connected together have
+similar feature coefficients. However, features can also be negatively correlated. In this case, the
+feature graphG(N,E)is represented by a signed graph, with both positive and negative edges.
+GFLasso(KimandXing 2009)isproposedtomodelbothpositiveandnegativefeaturecorrelations,
+theobjectivefunctionis
+min
+wloss(w;X,y)+a?w?1+(1-a)?
+i,jA(i,j)|wi-sign(ri,j)wj|, (44)
+whereri,jindicates the correlation between two features fiandfj. When two features are posi-
+tively correlated, we have A(i,j)=1a n dri,j>0, and the penalty term forces the feature coeffi-
+cientswiandwjto be similar; on the other hand, if two features are negatively correlated, then
+we haveA(i,j)=1andri,j<0,andthepenaltytermmakesthefeaturecoefficients wiandwjto
+be dissimilar. A major limitation of GFLasso is that it uses pairwise sample correlations to mea-
+surefeaturedependencies,whichmayleadtoadditionalestimationbias.Thefeaturedependencies
+cannotbecorrectlyestimatedwhenthesamplesize issmall.
+3.3.3 GOSCAR. To address the limitations of GFLasso, Yang et al. ( 2012) propose GOSCAR by
+putting al8-norm regularization to enforce pairwise feature coefficients to be equivalent if two
+featuresareconnectedin thefeaturegraph.Theformulation is
+min
+wloss(w;X,y)+a?w?1+(1-a)?
+i,jA(i,j)max(|wi|,|wj|). (45)
+In the aforementioned formulation, the l1-norm regularization is used for feature selection while
+thepairwisel8-normtermpenalizeslargecoefficients.Thepairwise l8-normtermcanbedecom-
+posed as max (|wi|,|wj|)=1
+2(|wi+wj|+|wi-wj|)=|u'w|+|v'w|,w h e r euandvare sparse
+vectorswithonlytwo nonzero entriessuchthat ui=uj=1
+2,vi=-vj=1
+2.
+Discussion:Thisfamilyofalgorithmsexplicitlytakethestructuresamongfeaturesaspriorknowl-
+edgeandfeedintofeatureselection.Therefore,theselectedfeaturescouldenhancesubsequentlearning
+tasks.However,mostofthesemethodsarebasedonthesparselearningframeworkandofteninvolves
+insolvingcomplexoptimizationalgorithms.Thus,computationalcostscouldberelativelyhigh.More-
+over, the feature structure are often given a priori, it is still a challenging problem to automatically
+inferthestructuresfromdata forfeatureselection .
+4 FEATURE SELECTIONWITH HETEROGENEOUSDATA
+Traditional feature selection algorithms are heavily based on the data i.i.d. assumption. However,
+heterogeneousdatafromdifferentsourcesisbecomingmoreandmoreprevalentintheeraofbig
+data.Forexample,inthemedicaldomain,genesareoftenassociatedwithdifferenttypesofclinical
+features.Sincedataofeachsourcecanbenoisy,partial,orredundant,howtofindrelevantsources
+and how to fuse them together for effective feature selection is a challenging problem. Another
+example is in social media platforms, instances of high dimensionality are often linked together,
+finding a way to integrate link information to guide feature selection is another difficult prob-
+lem. In this section, we review current feature selection algorithms for heterogeneous data from
+threeaspects:(1)featureselectionforlinkeddata,(2)multi-sourcefeatureselection,and(3)multi-
+viewfeatureselection.Notethatmulti-sourceandmulti-viewfeatureselectionaredifferentintwo
+ways: First, multi-source feature selection aims to select features from the original feature space
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:26 J. Liet al.
+Fig.5. An illustrativeexample of linkeddata.
+by integrating multiple sources while multi-view feature selection selects features from different
+feature spaces for all views simultaneously. Second, multi-source feature selection normally ig-
+noresthecorrelationsamongsourceswhilemulti-viewfeatureselectionexploitsrelationsamong
+featuresfromdifferent sources.
+4.1 Feature Selection AlgorithmswithLinked Data
+Linkeddataareubiquitousinreal-worldapplicationssuchasTwitter(tweetslinkedbyhyperlinks),
+Facebook (users connected by friendships), and biological systems (protein interactions). Due to
+different typesof links,theyaredistinctfrom traditionalattribute-valuedata(or “flat”data).
+Figure5illustrates an example of linked data and its representation. Figure 5(a) shows eight
+linked instances, and the feature information is illustrated in the left part of Figure 5(b). Linked
+dataprovidesanextrasourceofinformation,whichcanberepresentedbyanadjacencymatrix,il-
+lustratedintherightpartofFigure 5(b).Manylinked-data-relatedlearningtasksareproposedsuch
+ascollectiveclassification(MacskassyandProvost 2007;Senetal. 2008),relationallearning(Long
+etal.2006,2007;Lietal.2017b),linkprediction(Liben-NowellandKleinberg 2007;Backstromand
+Leskovec 2011;C h e ne ta l . 2016), and active learning (Bilgic et al. 2010;H ue ta l . 2013), but the
+taskoffeatureselectionisnotwellstudiedduetosomeofitsuniquechallenges:(1)howtoexploit
+relations among data instances, (2) how to take advantage of these relations for feature selection,
+and(3)becauselinkeddataareoftenunlabeled,howtoevaluatetherelevanceoffeatureswithout
+labels. Recent years have witnessed a surge of research interests in performing feature selection
+onlinkeddata(GuandHan 2011;TangandLiu 2012a,2012b,2013;Weietal. 2015,2016b;Lietal.
+2015,2016,2016; Cheng et al. 2017). Next, we introduce some representative algorithms in this
+family.
+4.1.1 Feature Selection on Networks. In Gu and Han ( 2011), the authors propose a supervised
+featureselectionalgorithm(FSNet)basedonLaplacianRegularizedLeastSquares(LapRLS).Inde-
+tail,theyproposetousealinearclassifiertocapturetherelationshipbetweencontentinformation
+andclasslabelsandincorporatelinkinformationbygraphregularization.Supposethat X?Rn×d
+denotes the content matrix and Y?Rn×cdenotes the one-hot label matrix, Adenotes the adja-
+cency matrix for all nlinked instances. FSNet first attempts to learn a linear classifier W?Rd×c
+to mapXtoY:
+min
+W?XW-Y?2
+F+a?W?2,1+ß?W?2
+F. (46)
+The term?W?2,1is included to achieve joint feature sparsity across different classes. ?W?2
+Fpre-
+ventstheoverfittingofthemodel.Tocapturethecorrelationbetweenlinkinformationandcontent
+informationtoselectmorerelevantfeatures,FSNetusesthegraphregularizationandthebasicas-
+sumptionisthatiftwoinstancesarelinked,theirclasslabelsarelikelytobesimilar,whichresults
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:27
+in thefollowingobjectivefunction:
+min
+W?XW-Y?2
+F+a?W?2,1+ß?W?2
+F+?tr(W'X'LXW), (47)
+wheretr(W'X'LXW)is the graph regularization and ?balances the contribution of content in-
+formation andlink information forfeatureselection.
+4.1.2 Feature Selection for Social Media Data (LinkedFS). Tang and Liu ( 2012a) investigate
+the feature selection problem on social media data by evaluating various social relations such
+as CoPost, CoFollowing, CoFollowed, and Following. These four types of relations are supported
+by social correlation theories such as homophily (McPherson et al. 2001) and social influence
+(MarsdenandFriedkin 1993).WeusetheCoPostrelationasanexampletoillustratehowtheserela-
+tionscanbeintegratedintofeatureselection.Let p={p1,p2,...,pN}bethepostsetand X?RN×d
+bethematrixrepresentationoftheseposts; Y?Rn×cdenotesthelabelmatrix; u={u1,u2,...,un}
+denotesthesetof nusersandtheirlinkinformationisencodedinanadjacencymatrix A;P?Rn×N
+denotestheuser-postrelationshipssuchthat P(i,j)=1ifuipostspj;otherwise,0.Tointegratethe
+CoPost relations among users into the feature selection framework, the authors propose to add a
+regularizationtermtoenforcethehypothesisthattheclasslabels(i.e.,topics)ofpostsbythesame
+useraresimilar,resultinginthefollowing objectivefunction:
+min
+W?XW-Y?2
+F+a?W?2,1+ß?
+u?u?
+{pi,pj}?pu?X(i,:)W-X(j,:)W?2
+2, (48)
+wherepudenotes the set of posts by user u. The parameter acontrols the sparsity of Win rows
+acrossallclasslabelsand ßcontrolsthecontributionof theCoPostrelations.
+4.1.3 Unsupervised Feature Selection for Linked Data. Linked Unsupervised Feature Selection
+(LUFS)(TangandLiu 2012b)isanunsupervisedfeatureselectionframeworkforlinkeddata.With-
+outlabelinformationtoassessfeaturerelevance,LUFSassumestheexistenceofpseudolabelsand
+usesY?Rn×cto denote the pseudo label matrix such that each row of Yhas only one nonzero
+entry. Also, LUFS assumes a linear mapping matrix W?Rd×cbetween feature XandY. First, to
+consider the constraints from link information, LUFS employs social dimension approach (Tang
+and Liu2009) to obtain the hidden factors Hthat incur the interdependency among instances.
+Then, according to the Linear Discriminative Analysis, within, between, and total hidden factor
+scatter matrices Sw,Sb,a n dStare defined as Sw=Y'Y-Y'FF'Y,Sb=Y'FF'Y,a n dSt=Y'Y,r e -
+spectively, where F=H(H'H)-1
+2is the weighted hidden factor matrix. Considering the fact that
+instances with similar hidden factors are similar and instances with different hidden factors are
+dissimilar, the constraint from link information can be incorporated by maximizing tr((St)-1Sb).
+Second,totakeadvantageoffeatureinformation,LUFSobtainstheconstraintsbyspectralanalysis
+tominimize tr(Y'LY),whereListheLaplacianmatrixderivedfromfeatureaffinitymatrix S.With
+these,theobjectivefunction ofLUFS isformulated asfollows:
+min
+Wtr(Y'LY)-atr((St)-1Sb), (49)
+whereais a regularization parameter to balance the contribution from these two constraints.
+To achieve feature selection, LUFS further adds a l2,1-norm regularization term on W,a n dw i t h
+spectralrelaxationofthepseudo-classlabelmatrix,theobjectivefunctioninEquation( 49)canbe
+eventually representedas
+min
+Wtr(W'(X'LX+aX'(In-FF'))W)+ß?W?2,1
+s.t.W'(X'X+?Id)W=Ic,(50)
+whereßcontrolsthesparsityof Win rows and ?IdmakesX'X+?Idinvertible.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:28 J. Liet al.
+4.1.4 RobustUnsupervisedFeatureSelectionforNetworkedData. LUFSperformsnetworkstruc-
+ture modeling and feature selection separately, and the feature selection heavily depends on the
+qualityofextractedlatentrepresentations.Inotherwords,theperformanceofLUFSwillbejeop-
+ardized when there are a lot of noisy links in the network. Li et al. ( 2016) propose a robust unsu-
+pervisedfeatureselectionframework(NetFS)toembedlatentrepresentationlearningintofeature
+selection.Specifically,let X?Rn×dandA?Rn×ndenotethefeaturematrixandadjacencymatrix,
+respectively.NetFSfirstuncoversalow-ranklatentrepresentation UbyasymmetricNMFmodel.
+Thelatentrepresentationdescribesasetofdiverseaffiliationfactorshiddeninanetwork,andin-
+stanceswithsimilarlatentrepresentationsaremorelikelytobeconnectedtoeachotherthanthe
+instanceswithdissimilarlatentrepresentations.Aslatentfactorsencodesomehiddenattributesof
+instances,theyshouldberelatedtosomefeatures.Thus,NetFStakes Uasaconstrainttoperform
+featureselectionvia
+min
+U=0,W?XW-U?2
+F+a?W?2,1+ß
+2?A-UU'?2
+F, (51)
+whereaandßaretwobalanceparameters.Byembeddinglatentrepresentationlearningintofea-
+ture selection, these two phases could help and boost each other. Feature information can help
+learnbetterlatentrepresentationsthatarerobusttonoisylinks,andbetterlatentrepresentations
+canfillthegapoflimitedlabelinformationandrichlinkinformationtoguidefeatureselection.The
+authors further extended the NetFS model to the dynamic case to obtain a subset of relevant fea-
+turescontinuouslywhenboththefeatureinformationandnetworkstructureevolveovertime(Li
+et al.2016). In addition to positive links, many real-world networks also contain negative links,
+such as distrust relations in Epinions and foes in Slashdot. Based on NetFS, the authors in Cheng
+et al. (2017) further study if negative links have added value over positive links in finding more
+relevant features.
+4.2 Multi-SourceFeature Selection
+For many learning tasks, we often have multiple data sources for the same set of data instances.
+Forexample,recentadvancementsinbioinformaticsrevealthatnon-codingRNAspeciesfunction
+acrossavarietyofbiologicalprocess.Thetaskofmulti-sourcefeatureselectioninthiscaseisfor-
+mulatedasfollows:Given msourcesofdatadepictingthesamesetof ninstances,andtheirmatrix
+representations X1?Rn×d1,X2?Rn×d2,...,Xm?Rn×dm(whered1,...,dmdenotethefeaturedi-
+mensions), select a subset of relevant features from a target source (e.g., Xi) by taking advantage
+of all information from msources.
+4.2.1 Multi-Source Feature Selection via Geometry-Dependent Covariance Analysis (GDCOV).
+Tointegrateinformationfrommultiplesources, ZhaoandLiu( 2008)proposeanintuitivewayto
+learn a global geometric pattern from all sources that reflects the intrinsic relationships among
+instances(Lanckrietetal. 2004).Theyintroduceaconceptofgeometry-dependentcovariancethat
+enablestheusageoftheglobalgeometricpatternincovarianceanalysisforfeatureselection.Given
+multiple local geometric patterns in multiple affinity matrices Si,w h e r eidenotes the ith data
+source,aglobalpatterncanbeobtainedbylinearlycombiningallaffinitymatricesas S=?m
+i=1aiSi,
+whereaicontrols the contribution of the ith source. With the global geometric pattern obtained
+from multiple data sources, one can build a geometry-dependent sample covariance matrix for
+the target source XiasC=1
+n-1?X'
+i(S-S11'S
+1'S1)Xi?,w h e r e?is a diagonal matrix with ?(j,j)=
+?D1
+2Xi(:,j)?-1,a n dDisalso a diagonal matrixfrom SwithD(k,k)=?n
+j=1S(k,j).
+After getting a geometry-dependent sample covariance matrix, a subsequent question is how
+to use it effectively for feature selection. Basically, two methods are proposed. The first method,
+GPCOVvar sorts the diagonal of the covariance matrix and selects the features that have the
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:29
+Fig.6. Differences between multi-sourceand multi-viewfeatureselection.
+highest variances. Selecting features based on this approach is equivalent to choosing features
+that are consistent with the global geometry pattern. The second method, GPCOVspca, applies
+SparsePrincipalComponentAnalysis(SPCA)(d’Aspremontetal. 2007)toselectfeaturesthatcan
+retainthetotalvariancemaximally.Hence,itconsidersinteractionsamongfeaturesandcanselect
+featureswithlessredundancy.
+4.3 Feature Selection Algorithmswith Multi-ViewData
+Multi-View data representdifferent facets of data instances in different feature spaces.These fea-
+ture spaces are naturally dependent and high-dimensional. Hence, the task of multi-view feature
+selection arises (Feng et al. 2013;T a n ge ta l . 2013;W a n ge ta l . 2013; Liu et al. 2016a), which aims
+to select features from different feature spaces simultaneously by using their relations. One mo-
+tivating example is to select relevant features in pixels, tags, and terms associated with images
+simultaneously. Since multi-view feature selection is designed to select features across multiple
+viewsbyusingtheirrelations,theyarenaturallydifferentfrommulti-sourcefeatureselection.The
+differencebetweenmulti-sourcefeatureselectionandmulti-viewfeatureselectionisillustratedin
+Figure6.Forsupervisedmulti-viewfeatureselection,themostcommonapproachisSparseGroup
+Lasso (Friedman et al. 2010;P e n ge ta l . 2010). In this subsection, we review some representative
+algorithms forunsupervisedmulti-view featureselection.
+4.3.1 Adaptive Multi-View Feature Selection. Adaptive unsupervised multi-view feature se-
+lection (AUMFS) (Feng et al. 2013) takes advantages of the data cluster structure, the data
+similarity and the correlations among views simultaneously. Specifically, let X1?Rn×d1,X2?
+Rn×d2,...,X1?Rn×dmdenotethedescriptionof ninstancesfrom mdifferentviews,respectively,
+X=[X1,X2,...,Xm]?Rddenotes the concatenated data, where d=d1+d2+···+dm.A U M F S
+firstbuildsa featureselectionmodelby using l2,1-normregularizedleast squareslossfunction:
+min
+W,F?XW-F?2,1+a?W?2,1, (52)
+whereF?Rn×cisthepseudoclasslabelmatrix.The l2,1-normlossfunctionisimposed,sinceitis
+robusttooutliersand l2,1-normregularizationselectsfeaturesacrossall cpseudoclasslabelswith
+joint sparsity. Then AUMFS uses spectral clustering on an affinity matrix from different views to
+learn the shared pseudo class labels. For the data matrix Xiin each view, it first builds an affinity
+matrixSibased on the data similarity on that view and gets the corresponding Laplacian matrix
+Li.Thenitaimstolearnthepseudoclasslabelmatrixbyconsideringthespectralclusteringfrom
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:30 J. Liet al.
+allviews.IntegratingitwithEquation( 52),we havethefollowing objectivefunction:
+mintr/parenlefttpA
+/parenleftbtAF'm?
+i=1?iLiF/parenrighttpA
+/parenrightbtA+ß(?XW-F?2,1+a?W?2,1)
+s.t.F'F=Ic,F=0,m?
+i=1?i=1,?i=0.(53)
+wherethecontributionofeachviewforthejointspectralclusteringisbalancedbyanonnegative
+weight?iand the summation of all ?iequals 1. ßis a parameter to balance the contribution of
+spectralclusteringand featureselection.
+4.3.2 UnsupervisedFeatureSelectionforMulti-ViewData. AUMFS(Fengetal. 2013)learnsone
+featureweightmatrixforallfeaturesfromdifferentviewstoapproximatethepseudoclasslabels.
+Tangetal.( 2013)proposeanovelunsupervisedfeatureselectionmethodcalledMulti-ViewFeature
+Selection(MVFS).SimilarlytoAUMFS,MVFSusesspectralclusteringwiththeaffinitymatrixfrom
+different views to learn the pseudo class labels. It differs from AUMFS as it learns one feature
+weight matrix for each view to fit the pseudo class labels by the joint least squares loss and l2,1-
+normregularization.Theoptimization problemof MVFScanbeformulated asfollows:
+mintr/parenlefttpA
+/parenleftbtAF'm?
+i=1?iLiF/parenrighttpA
+/parenrightbtA+m?
+i=1ß(?XiWi-F?2,1+a?Wi?2,1)
+s.t.F'F=Ic,F=0,m?
+i=1?i=1,?i=0.(54)
+Theparameter ?iisemployed to controlthecontributionof eachviewand?m
+i=1?i=1.
+4.3.3 Multi-ViewClusteringandFeatureLearningviaStructuredSparsity. Insomecases,features
+fromacertainviewcontainmorediscriminativeinformationthanfeaturesfromotherviews.One
+exampleisthatinimageprocessing,thecolorfeaturesaremoreusefulthanothertypesoffeatures
+in identifying stop signs. To address this issue in multi-view feature selection, a novel feature
+selection algorithm is proposed in Wang et al. ( 2013) with a joint group l1-norm andl2,1-norm
+regularization.
+For the feature weight matrix W1,...,Wmfrommdifferent views, the group l1-norm is de-
+finedas?W?G1=?c
+j=1?m
+i=1?Wi(:,j)?.Crucially,thegroup l1-normregularizationtermisableto
+capture the global relations among different views and is able to achieve viewwise sparsity such
+that only a few views are selected. In addition to group l1-norm, al2,1-norm regularizer on Wis
+also included to achieve feature sparsity among selected views. Hence, the objective function of
+theproposedmethodisformulated asfollows:
+min
+W,F?XW-F?2
+F+a?W?2,1+ß?W?G1
+s.t.F'F=Ic,F=0,(55)
+whereaandßareusedtocontrolinter-viewsparsityand intra-viewsparsity.
+Discussion: Feature selection algorithms for heterogeneous data can handle various types of data
+simultaneously.Byfusingmultipledatasourcestogether,theselectedfeaturesareabletocapturethe
+inherentcharacteristicsofdataandcouldbetterserveotherlearningproblemsonsuchdata.However,
+most of the proposed algorithms in this family use matrices to represent the data and often convert
+thefeatureselectionproblemintoanoptimizationalgorithm.Theresultedoptimizationproblemoften
+requires complex matrix operations which is computationally expensive and limits the scalability of
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:31
+these algorithms for large-scale data. How to design efficient and distributed algorithms to speed up
+thecomputationisstilla fertilearea andneeds deeperinvestigation .
+5 FEATURE SELECTIONWITH STREAMINGDATA
+Previousmethodsassumethatalldatainstancesandfeaturesareknowninadvance.However,itis
+not the case in many real-world applicationsthat we are more likely faced with data streams and
+featurestreams.Intheworstcases,thesizeofdataorfeaturesareunknownoreveninfinite.Thus
+it is not practical to wait until all data instances or features are available to perform feature se-
+lection.Forstreamingdata,onemotivatingexampleonlinespamemaildetectionproblem,where
+newemailsarecontinuouslyarriving;itisnoteasytoemploybatch-modefeatureselectionmeth-
+ods to select relevant features in a timely manner. On an orthogonal setting, feature selection for
+streaming features also has its practical significances. For example, Twitter produces more than
+500milliontweetseveryday,andalargeamountofslangwords(features)arecontinuouslybeing
+generated.Theseslangwordspromptlygrabusers’attentionandbecomepopularinashorttime.
+Therefore,itispreferredtoperformstreamingfeatureselectiontoadapttothechangesonthefly.
+Therearealsosomeattemptstostudythesetwodualproblemstogether,whichisreferredasfea-
+tureselectiononTrapezoidaldatastreams(Zhangetal. 2015).Wewillreviewsomerepresentative
+algorithms forthesetwoorthogonalproblems.
+5.1 Feature Selection Algorithmswith Feature Streams
+Forthefeatureselectionproblemswithstreamingfeatures,thenumberofinstancesisconsidered
+to be constant while candidate features arrive one at a time; the task is to timely select a subset
+of relevant features from all features seen so far (Perkins and Theiler 2003;Z h o ue ta l . 2005;W u
+et al.2010;Y ue ta l . 2014;L ie ta l . 2015). At each time step, a typical streaming feature selection
+algorithm first determines whether to accept the most recently arrived feature; if the feature is
+added to the selected feature set, it then determines whether to discard some existing features.
+The process repeats until no new features show up anymore. Different algorithms have different
+implementations in the first step. The second step which checks existing features is an optional
+step.
+5.1.1 Grafting Algorithm. The first attempt to perform streaming feature selection is credited
+to Perkins and Theiler ( 2003). Their method is based on a stagewise gradient descent regularized
+risk framework (Perkins et al. 2003). Grafting is a general technique that can deal with a variety
+of models that are parameterized by a feature weight vector wsubject tol1-norm regularization,
+suchasLasso.
+ThebasicideaofGraftingisbasedontheobservationthatincorporatinganewfeatureintothe
+Lasso model involves adding a new penalty term into the model. For example, at the time step j,
+when a new feature fjarrives, it incurs a regularization penalty of a|wj|. Therefore, the addition
+of the new feature fjreduces the objective function value in Lasso only when the reduction in
+the loss function part loss(w;X,y)outweighs the increase in the l1-norm regularization. With
+thisobservation,theconditionofacceptingthenewfeature fjis|?loss(w;X,y)
+?wj|>a.Otherwise,the
+Graftingalgorithmwillsetthefeaturecoefficient wjofthenewfeature fjtobezero.Inthesecond
+step, when new features are accepted and included in the model, Grafting adopts a conjugate
+gradient (CG) procedure to optimize the model with respect to all current parameters to exclude
+some outdatedfeatures.
+5.1.2 Alpha-Investing Algorithm. Alpha-investing (Zhou et al. 2005) is an adaptive complex-
+ity penalty method that dynamically changes the threshold of error reduction that is required to
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:32 J. Liet al.
+acceptanewfeature.Itismotivatedbyadesiretocontrolthefalsediscoveryrate(FDR)ofnewly
+arrived features, such that a small portion of spurious features do not affect the model’s accu-
+racy significantly. The detailed algorithm works as follows: (1) it initializes w0=0 (probability
+of false positives), i=0 (index of features), and selected features in the model to be empty; (2) it
+setsai=wi/2iwhen a new feature arrives; (3) it sets wi+1=wi-aiifp_value(fi,SF)=ai;o r
+setwi+1=wi+a?-ai,SF=SF?fiifp_value(fi,SF)<ai.Thethreshold aicorrespondstothe
+probabilityofselectingaspuriousfeatureatthetimestep i.Itisadjustedbythewealth wi,which
+denotes the acceptable number of false positively detected features at the current moment. The
+wealthwiincreaseswhena feature is added tothe model. Otherwise,it decreaseswhen a feature
+isnotincludedtosaveforfuturefeatures.Moreprecisely,ateachtimestep,themethodcalculates
+thep- v a l u eb yu s i n gt h ef a c tt h a t ?Logliklohood is equivalent to t-statistics. The p-value denotes
+theprobabilitythatafeaturecoefficientcouldbesettononzerowhenitisnot(falsepositivelyde-
+tected).Thebasicideaofalpha-investingistoadaptivelyadjustthethresholdsuchthatwhennew
+featuresareselectedandincludedintothemodel,itallowsahigherchanceofincludingincorrect
+featuresinthefuture.Ontheotherhand,eachtimewhenanewfeatureisnotincluded,thewealth
+is wastedand lowers thechanceof findingmore spuriousfeatures.
+5.1.3 Online Streaming Feature Selection Algorithm. Some other researchers study the stream-
+ingfeatureselectionproblemfromaninformation-theoreticperspective(Wuetal. 2010).Accord-
+ingtothedefinition,thewholefeaturesetconsistsoffourtypesoffeatures:irrelevant,redundant,
+weakly relevant but non-redundant, and strongly relevant features. An optimal feature selection
+should select non-redundant and strongly relevant features. But as features continuously arrive
+in a streaming fashion, it is difficult to find all strongly relevant and non-redundant features. The
+proposedmethod,OSFSisabletocapturethesenon-redundantandstronglyrelevantfeaturesvia
+twosteps:(1)onlinerelevanceanalysisand(2)onlineredundancyanalysis.Intheonlinerelevance
+analysis step, OSFS discovers weakly relevant and strongly relevant features, and these features
+are added into the best candidate features (BCF). Otherwise, if the newly arrived feature is not
+relevanttotheclasslabel,thenitisdiscardedandnotconsideredinfuturesteps.Inonlineredun-
+dancyanalysisstep,OSFSdynamicallyeliminatesredundantfeaturesintheselectedsubsetusing
+aMarkovBlanket.Foreachfeature fjinthebestcandidateset BCF,ifthereexistsasubsetof BCF
+makingfjand theclasslabelconditionallyindependent,then fjis removed from BCF.
+5.1.4 Unsupervised Streaming Feature Selection in Social Media. The vast majority of stream-
+ingfeatureselectionmethodsaresupervised,whichmeanstheyutilizelabelinformationtoguide
+feature selection. However, in social media, it is easy to amass vast quantities of unlabeled data,
+while it is time and labor consuming to obtain labels. To deal with large-scale unlabeled data in
+social media, Li et al. ( 2015) propose the USFS algorithm to tackle unsupervised streaming fea-
+ture selection. The key idea of USFS is to utilize source information such as link information.
+USFS first uncovers hidden social factors from link information by mixed membership stochastic
+blockmodel(Airoldietal. 2009).Afterobtainingthesociallatentfactors ??Rn×kforeachlinked
+instance, USFS takes advantage of them as a constraint to perform selection. At a specific time
+stept,l e tX(t),W(t)denote the corresponding feature matrix and feature coefficient respectively.
+To model feature information, USFS constructs a graph Gto represent feature similarity and A(t)
+denotes the adjacency matrix of the graph, L(t)is the corresponding Laplacian matrix from X(t).
+Thentheobjectivefunctiontoachievefeatureselectionatthetime step tisgiven as follows:
+min
+W(t)1
+2?X(t)W(t)-??2
+F+ak?
+i=1?(w(t))i?1+ß
+2?W(t)?2
+F+?
+2?(X(t)W(t))'(L(t))1
+2?2
+F,(56)
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:33
+whereais a sparse regularization parameter, ßcontrols the robustness of the model, and ?bal-
+ances link information and feature information. Assume at the next time step t+1 a new feature
+arrives, to test the new feature, and USFS takes a similar strategy as Grafting to perform gradi-
+ent test. Specifically, if the inclusion of the new feature is going to reduce the objective function
+in Equation ( 56), then the feature is accepted; otherwise, the new feature can be removed. When
+newfeaturesarecontinuouslybeinggenerated,someexistingfeaturesmaybecomeoutdated,and,
+therefore,USFSalsoinvestigatesifitisnecessarytoremoveanyexistingfeaturesbyre-optimizing
+themodelthroughaBFGS method(Boyd and Vandenberghe 2004).
+5.2 Feature Selection Algorithmswith Data Streams
+Inthissubsection,wereviewtheproblemoffeatureselectionwithdatastreams,whichisconsid-
+ereda dualproblemof streamingfeatureselection.
+5.2.1 Online Feature Selection. In Wang et al. ( 2014b), an online feature selection algorithm
+(OFS) for binary classification is proposed. Let {x1,x2,...,xt...}and{y1,y2,...,yt...}denote
+a sequence of input data instances and input class labels, respectively, where each data instance
+xi?Rdisinad-dimensionalspaceandclasslabel yi?{-1,+1}.ThetaskofOFSistolearnalinear
+classifier w(t)?Rdthatcanbeusedtoclassifyeachinstance xibyalinearfunctionsign( w(t)'xi).
+To achieve feature selection, it requires that the linear classifier w(t)has at most B-nonzero el-
+ements such that?w(t)?0=B. It indicates that at most Bfeatures will be used for classification.
+Witharegularizationparameter ?andastepsize ?,thealgorithmofOFSworksasfollows:(1)get
+anewdatainstance xtanditsclasslabel yt;(2)makeaclasslabelpredictionsign( w(t)'xt)forthe
+new instance; (3) if xtis misclassified such that yiw(t)'xt<0, then˜wt+1=(1-??)wt+?ytxt,
+ˆwt+1=min{1,1/v
+??˜wt+1?2}˜wt+1,a n dwt+1=Truncate (ˆwt+1,B);( 4 )wt+1=(1-??)wt.I np a r -
+ticular,eachtimewhenatraininginstance xtismisclassified, wtisfirstupdatedbyonlinegradient
+descentandthenitisprojectedtoa l2-normballtoensurethattheclassifierisbounded.Afterthat,
+the new classifier ˆwt+1is truncated by taking the most important Bfeatures. A subset of Bfea-
+turesisreturnedateachtimestep.Theprocessrepeatsuntiltherearenonewdatainstancesarrive
+anymore.
+5.2.2 UnsupervisedFeatureSelectiononDataStreams. Totimelyselectasubsetofrelevantfea-
+tures when unlabeled data are continuously being generated, Huang et al. ( 2015)p r o po s ean o v e l
+unsupervised feature selection method (FSDS) with only one pass of the data and with limited
+storage. The basic idea of FSDS is to use matrix sketching to efficiently maintain a low-rank ap-
+proximationofthecurrentobserveddataandthenapplyregularizedregressiontoobtainthefea-
+ture coefficients, which can further be used to obtain the importance of features. The authors
+empirically show that when some orthogonality conditions are satisfied, the ridge regression can
+replace the Lasso for feature selection, which is more computationally efficient. Assume at a spe-
+cifictimestep t,X(t)?Rnt×ddenotesthedatamatrixatthattimestep,thefeaturecoefficientscan
+beobtainedby minimizing thefollowing:
+min
+W(t)?B(t)W(t)-{e1,...,ek}?2
+F+a?W(t)?2
+F, (57)
+whereB(t)?Rl×ddenote the sketching matrix of X(t)(l«nt),ei?Rlis a vector with its ith
+location as 1 and other locations as 0. By solving the optimization problem in Equation ( 57), the
+importanceofeachfeature fiisscore(j)=maxi|W(t)(j,i)|.Thehigherthefeaturescore,themore
+importantthefeatureis.
+Discussion:As data are oftennot staticand are generated ina streamingfashion,feature selection
+algorithms for both feature and data streams are often more desired in practical usage. Most of the
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:34 J. Liet al.
+existingalgorithmsinthisfamilyemployvariousstrategiestospeeduptheselectionprocesssuchthat
+it can deal with new data samples or new features on the arrival. However, it should be mentioned
+that most of these algorithms require multiple pass of the data and some even need to store all the
+historicallygenerateddata,whichjeopardizestheusageofthesealgorithmswhenweonlyhavelimited
+memory or disk storage. It requires further efforts to design streaming algorithms that are effective
+and efficientwithlimitedstoragecosts .
+6 PERFORMANCE EVALUATION
+Wefirstintroduceoureffortsindevelopinganopen-sourcefeatureselectionrepository.Thenwe
+usealgorithmsincludedintherepositoryasanexampletoshowhowtoevaluatedifferentfeature
+selectionalgorithms.
+6.1 Feature Selection Repository
+First, we introduce our attempt in developing a feature selection repository— scikit-feature .T h e
+purpose of this feature selection repository is to collect some widely used feature selection algo-
+rithms that have been developed in the feature selection research to serve as a platform to facili-
+tatetheirapplication,comparison,andjointstudy.Thefeatureselectionrepositoryalsoeffectively
+assists researchers to achieve more reliable evaluation in the process of developing new feature
+selectionalgorithms.
+Wedeveloptheopensourcefeatureselectionrepository scikit-feature byoneofthemostpopular
+programminglanguages—python.Itcontainsaround40popularfeatureselectionalgorithms.Itis
+builtononewidelyusedmachine-learningpackage scikit-learn andtwoscientificcomputingpack-
+ages,NumpyandScipy.Atthesametime,wealsomaintainawebsite( http://featureselection.asu.
+edu/)forthisprojectwhichoffersseveralsourcessuchaspublicallyavailablebenchmarkdatasets,
+performanceevaluationofalgorithms,andtestcasestoruneachalgorithm.Thesourcecodeofthis
+repository is available at Github ( https://github.com/jundongl/scikit-feature ). An interactive tool
+oftherepositoryisalsoavailable(Chengetal. 2016).Wewelcomeresearchersinthiscommunity
+to contributealgorithmsand datasetstoourrepository.
+6.2 EvaluationMethodsand Metrics
+As an example, we empirically show how to evaluate the performance of feature selection algo-
+rithms in the repository. The experimental results can be obtained from our repository project
+website(http://featureselection.asu.edu/datasets.php ).Inourprojectwebsite,foreachdataset,we
+list all applicable feature selection algorithms along with its evaluation on either classification or
+clustering. Next, we will provide detailed information about how these algorithms are evaluated,
+includingevaluationcriteriaandexperimentalsetup.Differentfeatureselectionalgorithmscanbe
+categorized by the following two criteria: (1) labels: supervised or unsupervised; (2) output: fea-
+tureweightingorsubsetselection.Thefirstcriteriondetermineswhetherweneedtousethelabel
+informationtoperformfeatureselectionornot.Thesecondcriterioncategorizesthesealgorithms
+basedontheoutput.Featureweighingalgorithmsgiveeachfeatureascoreforrankingandfeature
+subsetalgorithmsonly showwhichfeaturesare selected.
+Next,weintroducethewidelyadoptedwaytoevaluatetheperformanceoffeatureselectional-
+gorithms.Wehavedifferentevaluationmetricsforsupervisedandunsupervisedmethods.Fordif-
+ferentoutputtypes,differentevaluationstrategiesareused:(1)Ifitisafeatureweightingmethod
+that outputs the feature scores, then the quality of the first {5,10,15,...,295,300}features are
+evaluated respectively; (2) if it is a feature subset selection method that only outputs which fea-
+turesareselected,thenwe usealltheselectedfeaturestoperformtheevaluation.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:35
+Supervised Methods . To test the performance of supervised feature selection algorithms, we
+divide the whole dataset into two parts: the training set Tand test setU. Feature selection
+algorithmswillbefirstappliedtothetrainingset Ttoobtainasubsetofrelevantfeatures S.Then
+the test set on the selected features acts as input to a classification model for the testing purpose.
+In the experiments, we use classification accuracy to evaluate the classification performance
+and three classification models, Linear SVM, Decision Tree, and Naïve Bayes are used. To get
+more reliable results, 10-fold cross-validation is used. Normally, the higher the classification
+performance,thebettertheselectedfeaturesare.
+Unsupervised Methods . Following the standard way to assess unsupervised feature selection,
+we evaluate unsupervised algorithms in terms of clustering performance. Two commonly used
+clusteringperformancemetrics(Caietal. 2010),thatis,normalizedmutualinformation (NMI)and
+accuracy (ACC), are used. Each feature selection algorithm is first applied to select features; then
+k-meansclusteringisperformedbasedontheselectedfeatures.Werepeatthe k-meansalgorithm
+20timesandreporttheaverageclusteringresults,since k-meansmayconvergetoalocaloptimal.
+Thehighertheclusteringperformance,thebettertheselectedfeaturesare.
+We also list the following information of main algorithms reviewed in this article in Table 2:
+(1) the type of data: conventional data or other types of data; (2) usage of labels: supervised or
+unsupervised1; (3) output: feature weighting or subset selection; (4) feature type: numerical vari-
+ables or discrete variables (numerical variables can also be divided into continuous variables and
+discrete variables). For supervised feature selection methods, we also list if the methods are de-
+signed to tackle binary-class or multi-class classification problems. Based on the aforementioned
+information, the practitioners can have a more intuitive sense about the applicable scenarios of
+differentmethods.
+7 OPEN PROBLEMSANDCHALLENGES
+Since the mid-1990s, there has been a significant number of attempts in developing feature selec-
+tionalgorithmsforboththeoreticalanalysisandreal-worldapplications.However,westillbelieve
+thereismoreworkthatcanbedoneinthisfield.Hereareseveralchallengesandconcernsthatwe
+needtomention and discuss.
+7.1 Scalability
+With the tremendous growth in the size of data, the scalability of most current feature selection
+algorithms may be jeopardized. In many scientific and business applications, data are usually
+measured in terabyte (1TB =1012bytes). Normally, datasets in the scale of terabytes cannot
+be loaded into the memory directly and therefore limits the usability of most feature selection
+algorithms. Currently, there are some attempts to use distributed programming frameworks to
+perform parallel feature selection for large-scale datasets (Singh et al. 2009; Zhao et al. 2013;
+Yamada et al. 2014; Zadeh et al. 2017). In addition, most of the existing feature selection methods
+have a time complexity proportional to O(d2)or evenO(d)3,w h e r edis the feature dimension.
+Recently,big data of ultrahigh-dimensionality has emerged in many real-world applicationssuch
+as text mining and information retrieval. Most feature selection algorithms do not scale well on
+the ultrahigh-dimensional data whose efficiency deteriorates quickly or is even computationally
+infeasible. In this case, well-designed feature selection algorithms in linear or sublinear running
+time are preferred (Fan et al. 2009; Tan et al. 2014). Moreover, in some online classification or
+online clustering tasks, the scalability of feature selection algorithms is also a big issue. For
+1Feature selection for regression can also be regarded as a supervised method, and here we focus on feature selection for
+classificationproblems.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:36 J. Liet al.Table 2. Detailed Informationof Main Feature Selection AlgorithmsReviewed in theArticle
+Data MethodsSupervision Output ofFeatures Feature Type
+Binary Multi-class Unsupervised Ranking SubsetNumerical
+Categorical Continuous Discrete
+Conventional–FlatFeaturesFisher Score(Duda et al.2012) ? ? ? ? ?
+ReliefF (Robnik-Sikonjaand Kononenko2003) ? ? ? ? ?
+TraceRatio(Nie et al.2008) ? ? ? ? ?
+LaplacianScore(Heet al.2005) ? ? ? ?
+SPEC(Zhaoand Liu2007) ? ? ? ? ? ?
+MIM (Lewis 1992) ? ? ? ? ?
+MIFS(Battiti1994) ? ? ? ? ?
+MRMR (Peng etal.2005) ? ? ? ? ?
+CIFE(Lin and Tang2006) ? ? ? ? ?
+JMI(Meyer et al.2008) ? ? ? ? ?
+CMIM(Fleuret 2004) ? ? ? ? ?
+IF (Vidal-Naquetand Ullman 2003) ? ? ? ? ?
+ICAP(Jakulin2005) ? ? ? ? ?
+DISR(Meyer andBontempi 2006) ? ? ? ? ?
+FCBF(Yuand Liu2003) ? ? ? ? ?
+lp-regularized (Liuet al.2009b) ? ? ? ?
+lp,q-regularized (Liu et al.2009b) ? ? ? ?
+REFS(Nieet al.2010) ? ? ? ? ?
+MCFS(Cai et al.2010) ? ? ? ?
+UDFS (Yanget al. 2011) ? ? ? ?
+NDFS(Li et al.2012) ? ? ? ?
+LowVariance (Pedregosa et al.2011) ? ? ? ?
+T-score(Davis and Sampson1986) ? ? ? ?
+Chi-square(Liuand Setiono1995) ? ? ? ? ?
+Gini(Gini 1912) ? ? ? ? ?
+CFS(Halland Smith1999) ? ? ? ? ?
+(Continued)
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:37
+Table 2. (Continued)
+Data MethodsSupervision Output of Features Feature Type
+Binary Multi-class Unsupervised Ranking SubsetNumerical
+Categorical Continuous Discrete
+Conventional–Structured FeatureGroupLasso ? ? ? ?
+Sparse GroupLasso (Friedman et al.2010) ? ? ? ?
+Tree Lasso(Liu and Ye2010) ? ? ? ?
+Graph Lasso (Yeand Liu 2012) ? ? ? ?
+GFLasso (Kimand Xing 2009) ? ? ? ?
+GOSCAR(Yanget al.2012) ? ? ? ?
+Linked DataFSNet(Guand Han2011) ? ? ? ? ?
+LinkedFS (Tangand Liu2012a) ? ? ? ? ?
+LUFS (TangandLiu 2012b) ? ? ? ?
+NetFS (Lieal.2016) ? ? ? ?
+Multi-Source GDCOV(Zhaoand Liu2008) ? ? ? ?
+Multi-ViewAUMFS(Fenget al.2013) ? ? ? ?
+MVFS (Tanget al.2013) ? ? ? ?
+StreamingFeatureGrafting (Perkins and Theiler 2003) ? ? ? ?
+Alpha-Investing(Zhouet al.2005) ? ? ? ?
+OSFS(Wu et al.2010) ? ? ? ?
+USFS (Li etal.2015) ? ? ? ?
+Streaming DataOFS(Wang et al.2014b) ? ? ? ?
+FSDS (Huanget al.2015) ? ? ? ?
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:38 J. Liet al.
+example, the data streams or feature streams may be infinite and cannot be loaded into the
+memory,hencewecanonlymakeonepassofthedatawherethesecondpassiseitherunavailable
+or computationally expensive. Even though feature selection algorithms can reduce the issue of
+scalability for online classification or clustering, these methods either require to keep all features
+in the memory or require iterative processes to visit data instances more than once, which limits
+their practical usage. In conclusion, even though there is some preliminary work to increase
+the scalability of feature selection algorithms, we believe that more focus should be given to the
+scalabilityproblemtokeepingpacewiththerapidgrowthofverylarge-scaleandstreamingdata.
+7.2 Stability
+For supervised feature selection algorithms, their performance is usually evaluated by the clas-
+sification accuracy. In addition to accuracy, the stability of these algorithms is also an important
+considerationwhendevelopingnewfeatureselectionalgorithms.Itisdefinedasthesensitivityof
+a feature selection algorithm to perturbation in the training data (Kalousis et al. 2007;H ea n dY u
+2010; Saeys et al. 2008; Loscalzo et al. 2009; Yang and Mao 2011). The perturbation of data could
+be in various format such as addition/deletion of data samples and the inclusion of noisy/outlier
+samples. More rigorous definition on the stability of feature selection algorithms can be referred
+toKalousisetal.( 2007).Thestabilityoffeatureselectionalgorithmshassignificantimplicationsin
+practiceasitcanhelpdomainexpertsgainmoreconfidenceontheselectedfeatures.Amotivating
+example in bioinformatics indicates that domain experts would like to see the same set or similar
+setofgenes(features)selectedeachtimewhentheyobtainnewdatasamples.Otherwise,domain
+expertswouldnottrustthesealgorithmsandmayneverusethemagain.Itisobservedthatmany
+well-knownfeatureselectionalgorithmssufferfromthelowstabilityproblemafterthesmalldata
+perturbationisintroducedinthetrainingset.ItisalsofoundinAlelyanietal.( 2011)thattheunder-
+lyingcharacteristicsofdatamaygreatlyaffectthestabilityoffeatureselectionalgorithmsandthe
+stabilityissuemayalsobedatadependent.Thesefactorsincludethedimensionalityofthefeature,
+the number of data instances, and so on. In contrast to supervised feature selection, the stability
+of unsupervised feature selection algorithms has not been well studied yet. Studying stability for
+unsupervised feature selection is much more difficult than that of the supervised methods. The
+reason is that in unsupervised feature selection, we do not have enough prior knowledge about
+the cluster structure of the data. Thus, we are uncertain that if the new data instance, that is, the
+perturbation belongs to any existing clusters or will introduce new clusters. While in supervised
+featureselection,wehavepriorknowledgeaboutthelabelofeachdatainstance,andanewsample
+that does not belong to any existing classes will be considered as an outlier and we do not need
+to modify the selected feature set to adapt to the outliers. In other words, unsupervised feature
+selectionismore sensitivetonoise andthenoisewillaffectthestabilityof thesealgorithms.
+7.3 ModelSelection
+For most feature selection algorithms especially for feature weighting methods, we have to spec-
+ify the number of selected features. However, it is often unknown what is the optimal number
+of selected features. A large number of selected features will increase the risk in including noisy,
+redundant,andirrelevantfeatures,whichmayjeopardizethelearningperformance.Ontheother
+hand, it is also not good to include too-small a number of selected features, since some relevant
+featuresmaybeeliminated.Inpractice,weusuallyadoptaheuristicwaytogridsearchthenumber
+ofselectedfeaturesandpickthenumberthathasthebestclassificationorclusteringperformance,
+but the whole process is computationally expensive. It is still an open and challenging problem
+to determine the optimal number of selected features. In addition to the optimal number of se-
+lectedfeatures,wealsoneedtospecifythenumberofclustersorpseudoclassesforunsupervised
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:39
+feature selection algorithms. In real-world problems, we usually have limited knowledge about
+the clustering structure of the data. Choosing different numbers of clusters may merge totally
+different small clusters into one big cluster or split one big cluster into smaller ones. As a conse-
+quence, it may result in finding totally different subsets of features. Some work has been done to
+estimatethesetrickyparameters.Forinstance,inTibshiranietal.( 2001),aprincipledwaytoesti-
+mate the number of suitable clusters in a dataset is proposed. However, it is still not clear how to
+find the best number of clusters directly for unsupervised feature selection. All in all, we believe
+thatthemodelselectionis animportantissueandneedsdeeperinvestigation.
+8 CONCLUSION
+Featureselectionis effective in preprocessingdata and reducingdata dimensionality.Meanwhile,
+itisessentialtosuccessfuldata-miningandmachine-learningapplications.Ithasbeenachalleng-
+ingresearchtopicwithpracticalsignificanceinmanyareassuchasstatistics,patternrecognition,
+machine learning, and data mining (including web, text, image, and microarrays). The objectives
+of feature selection include building simpler and more comprehensive models, improving data-
+miningperformance,andhelpingpreparecleanandunderstandabledata.Thepastfewyearshave
+witnessed the development of many new feature selection methods. This survey article aims to
+provideacomprehensivereviewaboutrecentadvancesinfeatureselection.Wefirstintroduceba-
+sicconceptsoffeatureselectionandemphasizetheimportanceofapplyingfeatureselectionalgo-
+rithmstosolvepracticalproblems.Thenweclassifyconventionalfeatureselectionmethodsfrom
+thelabelperspectiveandtheselectionstrategyperspective.Ascurrentcategorizationcannotmeet
+therapiddevelopmentoffeatureselectionresearchespeciallyintheeraofbigdata,weproposeto
+review recent advances in feature selection algorithms from a data perspective. In particular, we
+surveyfeatureselectionalgorithmsinfourparts:(1)featureselectionwithconventionaldatawith
+flatfeatures;(2)featureselectionwithstructuredfeatures;(3)featureselectionwithheterogeneous
+data; and (4) feature selection with streaming data. Specifically, we further classify conventional
+featureselectionalgorithmsforconventionaldata(flatfeatures)intosimilarity-based,information-
+theoretical-based, sparse-learning-based, and statistical-based methods, and other types of meth-
+ods according to the used techniques. For feature selection with structured features, we consider
+three types of structured features, namely group, tree, and graph features. The third part studies
+featureselectionwithheterogeneousdata,includingfeatureselectionwithlinkeddataandmulti-
+source and multi-view feature selection. The last part consists of feature selection algorithms for
+streamingdataandstreamingfeatures.Weanalyzetheadvantagesandshortcomingsofthesedif-
+ferent types of feature selection algorithms. To facilitate the research on feature selection, this
+surveyisaccompaniedbyafeatureselectionrepository, scikit-feature ,whichincludessomeofthe
+mostpopularfeatureselectionalgorithmsthathavebeendevelopedinthepastfewdecades.Some
+suggestions are given on how to evaluate these feature selection algorithms, either supervised or
+unsupervisedmethods.Attheendofthesurvey,wepresentsomeopenproblemsthatrequirefu-
+tureresearch.Italsoshouldbementionedthattheaimofthesurveyisnottoclaimthesuperiority
+of some feature selection algorithms over others but to provide a comprehensive structured list
+of recent advances in feature selection algorithms from a data perspectiveand a feature selection
+repositoryto promotetheresearchin thiscommunity.
+REFERENCES
+ThomasAbeel,ThibaultHelleputte,YvesVandePeer,PierreDupont,andYvanSaeys.2010.Robustbiomarkeridentification
+forcancer diagnosis withensemblefeatureselectionmethods. Bioinformatics 26,3 (2010),392–398.
+EdoardoM.Airoldi,DavidM.Blei,StephenE.Fienberg,andEricP.Xing.2009.Mixedmembershipstochasticblockmodels.
+InNIPS.33–40.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:40 J. Liet al.
+Salem Alelyani, Huan Liu,and LeiWang.2011.The effect of the characteristics of thedataseton the selection stability.In
+ICTAI.970–977.
+Salem Alelyani, Jiliang Tang, and Huan Liu. 2013. Feature selection for clustering: A review. Data Clustering: Algorithms
+and Applications 29(2013).
+JunChinAng,AndriMirzal,HabibollahHaron,andHazaNuzlyAbdullHamed.2016.Supervised,unsupervised,andsemi-
+supervised featureselection:A review on geneselection. IEEE/ACMTCBB 13,5(2016),971–989.
+HiromasaArai,CrystalMaung,KeXu,andHaimSchweitzer.2016.Unsupervisedfeatureselectionbyheuristicsearchwith
+provablebounds on suboptimality.In AAAI.666–672.
+FrancisR.Bach.2008.Consistencyofthegrouplassoandmultiplekernellearning. J.Mach.Learn.Res. 9(2008),1179–1225.
+LarsBackstromandJureLeskovec.2011.Supervisedrandomwalks:Predictingandrecommendinglinksinsocialnetworks.
+InWSDM.635–644.
+RobertoBattiti.1994.Usingmutualinformationforselectingfeaturesinsupervisedneuralnetlearning. IEEETrans.Neural
+Network. 5,4(1994),537–550.
+MustafaBilgic,LilyanaMihalkova,andLise Getoor.2010.Active learningfornetworked data.In ICML.79–86.
+Stephen BoydandLievenVandenberghe.2004. ConvexOptimization . CambridgeUniversity Press.
+GavinBrown,AdamPocock,Ming-JieZhao,andMikelLuján.2012.Conditionallikelihoodmaximisation:Aunifyingframe-
+work for information-theoretic featureselection. J.Mach. Learn.Res. 13,1(2012),27–66.
+DengCai,Chiyuan Zhang,andXiaofeiHe. 2010.Unsupervised featureselection for multi-clusterdata.In KDD.333–342.
+XiaoCai,FeipingNie,andHengHuang.2013.Exacttop-kfeatureselectionvia l2,0-normconstraint.In IJCAI.1240–1246.
+GirishChandrashekarandFeratSahin.2014.Asurveyonfeatureselectionmethods. Comput.Electr.Eng. 40,1(2014),16–28.
+XiaojunChang,FeipingNie,YiYang,andHengHuang.2014.Aconvexformulationforsemi-supervisedmulti-labelfeature
+selection.In AAAI.1171–1177.
+ChenChen,HanghangTong,LeiXie,LeiYing,andQingHe.2016.FASCINATE:Fastcross-layerdependencyinferenceon
+multi-layerednetworks. In KDD.765–774.
+KeweiCheng,JundongLi,andHuanLiu.2016.FeatureMiner:Atoolforinteractivefeatureselection.In CIKM.2445–2448.
+KeweiCheng,JundongLi,andHuanLiu.2017.Unsupervisedfeatureselectioninsignedsocialnetworks.In KDD.777–786.
+Alexandre d’Aspremont, Laurent El Ghaoui, Michael I. Jordan, and Gert R. G. Lanckriet. 2007. A direct formulation for
+sparse PCA usingsemidefiniteprogramming. SIAMRev. 49,3(2007),434–448.
+John C.DavisandRobert J.Sampson.1986. Statistics andData Analysisin Geology .Vol. 646.Wiley.NewYork.
+ChrisDing,DingZhou,XiaofengHe,andHongyuanZha.2006.R1-PCA:Rotationalinvariant l1-normprincipalcomponent
+analysisfor robust subspacefactorization. In ICML.281–288.
+LiangDuandYi-Dong Shen. 2015.Unsupervised featureselectionwithadaptivestructure learning.In KDD.209–218.
+LiangDu,ZhiyongShen,XuanLi,PengZhou,andYi-DongShen.2013.Localandglobaldiscriminativelearningforunsu-
+pervisedfeatureselection.In ICDM.131–140.
+Richard O.Duda,Peter E.Hart, andDavidG.Stork. 2012. Pattern Classification . John Wiley& Sons.
+Janusz Dutkowski andAnnaGambin.2007.Onconsensus biomarker selection. BMC Bioinform. 8,5(2007),S5.
+AliElAkadi,AbdeljalilElOuardighi,andDrissAboutajdine.2008.Apowerfulfeatureselectionapproachbasedonmutual
+information. Int.J.Comput.Sci. Netw.Secur. 8,4(2008),116.
+JianqingFan,RichardSamworth,andYichaoWu.2009.Ultrahighdimensionalfeatureselection:Beyondthelinearmodel.
+J.Mach. Learn.Res. 10(2009),2013–2038.
+AhmedK.Farahat,AliGhodsi,andMohamedS.Kamel.2011.Anefficientgreedymethodforunsupervisedfeatureselection.
+InICDM.161–170.
+Christiane Fellbaum.1998. WordNet.WileyOnlineLibrary.
+Yinfu Feng, Jun Xiao, Yueting Zhuang, and Xiaoming Liu. 2013. Adaptive unsupervised multi-view feature selection for
+visual conceptrecognition.In ACCV.343–357.
+François Fleuret.2004.Fastbinary featureselectionwithconditional mutualinformation. JMLR5(2004),1531–1555.
+Jerome Friedman, Trevor Hastie, and Robert Tibshirani. 2010. A note on the group lasso and a sparse group lasso. arXiv
+preprint arXiv:1001.0736 (2010).
+Keinosuke Fukunaga. 2013. Introduction toStatistical Pattern Recognition . AcademicPress.
+Shuyang Gao, Greg Ver Steeg, and Aram Galstyan. 2016. Variational information maximization for feature selection. In
+NIPS.487–495.
+C. W. Gini. 1912. Variability and mutability, contribution to the study of statistical distribution and relaitons. Studi
+Economico-Giuricici DellaR (1912).
+DavidE. Golberg.1989.Geneticalgorithms insearch, optimization,andmachinelearning.Addison-Wesley.
+Quanquan Gu, Marina Danilevsky, Zhenhui Li, and Jiawei Han. 2012. Locality preserving feature learning. In AISTATS.
+477–485.
+Quanquan GuandJiaweiHan.2011.Towards featureselection innetwork. In CIKM.1175–1184.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:41
+QuanquanGu,Zhenhui Li,and JiaweiHan.2011a.Correlated multi-labelfeatureselection.In CIKM.ACM, 1087–1096.
+QuanquanGu,Zhenhui Li,and JiaweiHan.2011b.Generalized fisher score for featureselection.In UAI. 266–273.
+QuanquanGu,Zhenhui Li,and JiaweiHan.2011c.Jointfeatureselection andsubspacelearning.In IJCAI.1294–1299.
+Baofeng Guo and Mark S. Nixon. 2009. Gait feature subset selection by mutual information. IEEE TMSC(A) 39, 1 (2009),
+36–46.
+IsabelleGuyon andAndré Elisseeff. 2003.An introduction to variableandfeatureselection. JMLR3(2003),1157–1182.
+IsabelleGuyon,SteveGunn,MasoudNikravesh,andLoftiAZadeh.2008. FeatureExtraction:FoundationsandApplications .
+Springer.
+Mark A. Hall and Lloyd A. Smith. 1999. Feature selection for machine learning: Comparing a correlation-based filter ap-
+proachto the wrapper.In FLAIRS.235–239.
+Satoshi HaraandTakanori Maehara.2017.Enumeratelasso solutions forfeatureselection. In AAAI.1985–1991.
+Trevor Hastie, Robert Tibshirani, Jerome Friedman, and James Franklin. 2005. The elements of statistical learning: Data
+mining,inferenceandprediction. Math.Intell. 27,2(2005),83–85.
+XiaofeiHe, DengCai,andParthaNiyogi. 2005.Laplacianscore forfeatureselection. In NIPS.507–514.
+Zengyou He and Weichuan Yu. 2010. Stable feature selection for biomarker discovery. Comput. Biol. Chem. 34, 4 (2010),
+215–225.
+Chenping Hou, Feiping Nie, Dongyun Yi, and Yi Wu. 2011. Feature selection via joint embedding learning and sparse
+regression. In IJCAI.1324–1329.
+Xia Hu, Jiliang Tang, Huiji Gao, and Huan Liu. 2013. ActNeT: Active learning for networked texts in microblogging. In
+SDM.306–314.
+Hao Huang, Shinjae Yoo, and S Kasiviswanathan. 2015. Unsupervised feature selection on data streams. In CIKM. 1031–
+1040.
+JunzhouHuang,TongZhang,andDimitrisMetaxas.2011.Learningwithstructuredsparsity. J.Mach.Learn.Res. 12(2011),
+3371–3412.
+Laurent Jacob, Guillaume Obozinski, and Jean-Philippe Vert. 2009. Group lasso with overlap and graph lasso. In ICML.
+433–440.
+Aleks Jakulin. 2005. Machine Learning Based onAttribute Interactions .Ph.D. Dissertation.Univerza vLjubljani.
+RodolpheJenatton,Jean-YvesAudibert,andFrancisBach.2011.Structuredvariableselectionwithsparsity-inducingnorms.
+J.Mach.Learn. Res. 12(2011),2777–2824.
+Rodolphe Jenatton, Julien Mairal, Francis R. Bach, and GuillaumeR. Obozinski. 2010. Proximal methods for sparse hierar-
+chicaldictionary learning.In ICML.487–494.
+LingJian,Jundong Li,KaiShu, andHuan Liu.2016.Multi-labelinformed featureselection. In IJCAI.1627–1633.
+Yi JiangandJiangtaoRen.2011.Eigenvaluesensitivefeatureselection. In ICML.89–96.
+Alexandros Kalousis, Julien Prados, and Melanie Hilario. 2007. Stability of feature selection algorithms: A study on high-
+dimensionalspaces. Knowl.Inf. Syst. 12,1(2007),95–116.
+SeyoungKimandEricPXing.2009.Statisticalestimationofcorrelatedgenomeassociationstoaquantitativetraitnetwork.
+PLoSGenet. 5,8(2009).
+Seyoung Kim and Eric P Xing. 2010. Tree-guided group lasso for multi-task regression with structured sparsity. In ICML.
+543–550.
+KenjiKira andLarry A. Rendell.1992.Apracticalapproachto featureselection. In ICMLWorkshop .249–256.
+RonKohavi andGeorgeH. John. 1997.Wrappersfor featuresubset selection. Artif. Intell. 97,1(1997),273–324.
+DaphneKoller andMehran Sahami.1995.Towardoptimalfeatureselection. In ICML.284–292.
+Gert R. G. Lanckriet, Nello Cristianini, Peter Bartlett, Laurent El Ghaoui, and Michael I. Jordan. 2004. Learning the kernel
+matrixwithsemidefiniteprogramming. J.Mach. Learn.Res. 5 (2004),27–72.
+David D. Lewis. 1992. Feature selection and feature extraction for text categorization. In Proceedings of the Workshop on
+Speech and Natural Language . 212–217.
+JundongLi,HarshDani,XiaHu,andHuanLiu.2017.Radar:Residualanalysisforanomalydetectioninattributednetworks.
+InIJCAI.2152–2158.
+JundongLi,XiaHu,LingJian,andHuanLiu.2016.Towardtime-evolvingfeatureselectionondynamicnetworks.In ICDM.
+1003–1008.
+JundongLi,XiaHu,JiliangTang,andHuanLiu.2015.Unsupervised streamingfeatureselectioninsocialmedia.In CIKM.
+1041–1050.
+Jundong Li, Xia Hu, Liang Wu, and Huan Liu. 2016. Robust unsupervised feature selection on networked data. In SDM.
+387–395.
+Jundong LiandHuan Liu.2017.Challengesof featureselection forbigdataanalytics. IEEEIntell.Syst. 32,2(2017),9–15.
+Jundong Li, Jiliang Tang, and Huan Liu. 2017a. Reconstruction-based unsupervised feature selection: An embedded ap-
+proach.In IJCAI.2159–2165.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:42 J. Liet al.
+Jundong Li,LiangWu, OsmarR.Zaïane,and HuanLiu.2017b.Towardpersonalized relationallearning.In SDM.444–452.
+Yifeng Li, Chih-Yu Chen, and Wyeth W. Wasserman. 2015. Deep feature selection: Theory and application to identify
+enhancers andpromoters. In RECOMB.205–217.
+Zechao Li, Yi Yang, Jing Liu, Xiaofang Zhou, and Hanqing Lu. 2012. Unsupervised feature selection using nonnegative
+spectralanalysis. In AAAI.1026–1032.
+DavidLiben-NowellandJonKleinberg.2007.Thelink-predictionproblemforsocialnetworks. J.AssistInf.Sci.Technol. 58,
+7(2007),1019–1031.
+Dahua Lin and Xiaoou Tang. 2006. Conditional infomax learning: An integrated framework for feature extraction and
+fusion. In ECCV.68–82.
+Hongfu Liu,Haiyi Mao,andYun Fu. 2016a.Robust multi-viewfeatureselection. In ICDM.281–290.
+Huan LiuandHiroshi Motoda.2007. Computational Methods ofFeature Selection . CRCPress.
+Huan LiuandRudy Setiono. 1995.Chi2: Feature selectionand discretization of numeric attributes.In ICTAI.388–391.
+Hongfu Liu,MingShao, and Yun Fu. 2016b.Consensus guidedunsupervised featureselection. In AAAI.1874–1880.
+Jun Liu, Shuiwang Ji, and Jieping Ye. 2009a. Multi-task feature learning via efficient l2,1-norm minimization. In UAI. 339–
+348.
+Jun Liu, Shuiwang Ji, and Jieping Ye. 2009b. SLEP: Sparse Learning with Efficient Projections . Arizona State University. Re-
+trievedfrom http://www.public.asu.edu/ ~jye02/Software/SLEP .
+Jun LiuandJiepingYe. 2010.Moreau-Yosida regularizationfor grouped tree structure learning.In NIPS.1459–1467.
+XinwangLiu, LeiWang,JianZhang,JianpingYin, andHuan Liu. 2014.Globalandlocal structure preservation for feature
+selection. Trans. Neur.Netw.Learn. Syst. 25,6(2014),1083–1095.
+Bo Long, Zhongfei Mark Zhang, Xiaoyun Wu, and Philip S. Yu. 2006. Spectral clustering for multi-type relational data. In
+ICML.585–592.
+BoLong,ZhongfeiMarkZhang,andPhilipSYu.2007.Aprobabilisticframeworkforrelationalclustering.In KDD.470–479.
+Steven Loscalzo,LeiYu, andChris Ding.2009.Consensus group stablefeatureselection. In KDD.567–576.
+Shuangge Ma, Xiao Song, and Jian Huang. 2007. Supervised group Lasso with applications to microarray data analysis.
+BMC Bioinf. 8,1(2007),60.
+Sofus A Macskassy and Foster Provost. 2007. Classification in networked data: A toolkit and a univariate case study. J.
+Mach. Learn.Res. 8(2007),935–983.
+PeterV.MarsdenandNoahEFriedkin.1993.Networkstudiesofsocialinfluence. Sociol.MethodsRes. 22,1(1993),127–151.
+Mahdokht Masaeli, Yan Yan, Ying Cui, Glenn Fung, and Jennifer G. Dy. 2010. Convex principal feature selection. In SDM.
+619–628.
+Crystal Maungand Haim Schweitzer. 2013.Pass-efficient unsupervised featureselection.In NIPS.1628–1636.
+JamesMcAuley,JiMing,DarrylStewart,andPhilipHanna.2005.Subbandcorrelationandrobustspeechrecognition. IEEE
+Trans.Speech AudioProcess. 13,5(2005),956–964.
+MillerMcPherson,LynnSmith-Lovin,andJamesMCook.2001.Birdsofafeather:Homophilyinsocialnetworks. Ann.Rev.
+Sociol.(2001),415–444.
+LukasMeier,SaraVanDeGeer,andPeterBühlmann.2008.Thegrouplassoforlogisticregression. J.Roy .Stat.Soc.B 70,1
+(2008),53–71.
+Patrick E. Meyer and Gianluca Bontempi. 2006. On the use of variable complementarity for feature selection in cancer
+classification.In Applications ofEvolutionary Computing . 91–102.
+Patrick Emmanuel Meyer, Colas Schretter, and Gianluca Bontempi. 2008. Information-theoretic feature selection in mi-
+croarray datausing variablecomplementarity. IEEEJ.Select.Top. Sign. Process. 2,3(2008),261–274.
+PatrenahalliMNarendraandKeinosukeFukunaga.1977.Abranchandboundalgorithmforfeaturesubsetselection. IEEE
+Trans.Comput. 100,9(1977),917–922.
+Michael Netzer, Gunda Millonig, Melanie Osl, Bernhard Pfeifer, Siegfried Praun, Johannes Villinger, Wolfgang Vogel, and
+Christian Baumgartner. 2009. A new ensemble-based algorithm for identifying breath gas marker candidates in liver
+disease usingion moleculereaction massspectrometry. Bioinformatics 25,7(2009),941–947.
+Xuan Vinh Nguyen, Jeffrey Chan, Simone Romano, and James Bailey. 2014. Effective global approaches for mutual infor-
+mationbasedfeatureselection.In KDD.512–521.
+Feiping Nie, Heng Huang, Xiao Cai, and Chris H Ding. 2010. Efficient and robust feature selection via joint l2,1-norms
+minimization.In NIPS.1813–1821.
+Feiping Nie, Shiming Xiang, Yangqing Jia, Changshui Zhang, and Shuicheng Yan. 2008. Trace ratio criterion for feature
+selection.In AAAI.671–676.
+FeipingNie,WeiZhu,XuelongLi,andothers.2016.Unsupervisedfeatureselectionwithstructuredgraphoptimization.In
+AAAI.1302–1308.
+GuillaumeObozinski,BenTaskar,andMichaelJordan.2007. JointCovariateSelectionforGroupedClassification .Technical
+Report.Technical Report,Statistics Department,UC Berkeley.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:43
+FabianPedregosa,GaëlVaroquaux,AlexandreGramfort,VincentMichel,BertrandThirion,OlivierGrisel,MathieuBlondel,
+Peter Prettenhofer, Ron Weiss, Vincent Dubourg, and others. 2011. Scikit-learn: Machine learning in python. J. Mach.
+Learn.Res. 12,Oct(2011),2825–2830.
+Hanyang Peng and Yong Fan. 2016. Direct sparsity optimization based feature selection for multi-class classification. In
+IJCAI.1918–1924.
+HanyangPengandYongFan.2017.Ageneralframeworkforsparsityregularizedfeatureselectionviaiterativelyreweighted
+leastsquare minimization.In AAAI.2471–2477.
+Hanchuan Peng, Fuhui Long, and Chris Ding. 2005. Feature selection based on mutual information criteria of max-
+dependency,max-relevance,and min-redundancy. IEEETrans.Pattern Anal.Mach. Intell. 27,8(2005),1226–1238.
+JiePeng,JiZhu,AnnaBergamaschi,WonshikHan,Dong-YoungNoh,JonathanRPollack,andPeiWang.2010.Regularized
+multivariateregressionforidentifyingmasterpredictorswithapplicationtointegrativegenomicsstudyofbreastcancer.
+Ann.Appl.Stat. 4,1(2010),53.
+SimonPerkins,KevinLacker,andJamesTheiler.2003.Grafting:Fast,incrementalfeatureselectionbygradientdescentin
+functionspace. J.Mach.Learn. Res. 3(2003),1333–1356.
+Simon Perkins andJamesTheiler. 2003.Onlinefeatureselection using grafting.In ICML.592–599.
+MingjieQianandChengxiangZhai. 2013.Robust unsupervised featureselection.In IJCAI.1621–1627.
+AriadnaQuattoni,XavierCarreras,MichaelCollins,andTrevorDarrell.2009.Anefficientprojectionfor l1,8regularization.
+InICML.857–864.
+Marko Robnik-Šikonja and Igor Kononenko. 2003. Theoretical and empirical analysis of relieff and rrelieff. Mach. Learn.
+53,1-2 (2003),23–69.
+Debaditya Roy, K Sri Rama Murty, and C Krishna Mohan. 2015. Feature selection using deep neural networks. In IJCNN.
+1–6.
+Yvan Saeys, Thomas Abeel, and Yves Van de Peer. 2008. Robust feature selection using ensemble feature selection tech-
+niques. In ECMLPKDD (2008),313–325.
+YvanSaeys,IñakiInza,andPedroLarrañaga.2007.Areviewoffeatureselectiontechniquesinbioinformatics. Bioinformatics
+23,19(2007),2507–2517.
+Ted Sandler, John Blitzer, Partha P. Talukdar, and Lyle H. Ungar. 2009. Regularized learning with networks of features. In
+NIPS.1401–1408.
+PrithvirajSen,GalileoNamata,MustafaBilgic,LiseGetoor,BrianGalligher,andTinaEliassi-Rad.2008.Collectiveclassifi-
+cationinnetwork data. AIMag.29,3 (2008),93.
+QiangShen, Ren Diao,andPanSu. 2012.Feature selectionensemble. Turing-100 10(2012),289–306.
+Jianbo Shi and Jitendra Malik. 2000.Normalized cuts and image segmentation. IEEE Trans. Pattern Anal. Mach. Intell. 22, 8
+(2000),888–905.
+LeiShi,LiangDu,andYi-DongShen.2014.Robustspectrallearningforunsupervisedfeatureselection.In ICDM.977–982.
+Alexander Shishkin, Anastasia Bezzubtseva, Alexey Drutsa, Ilia Shishkov, Ekaterina Gladkikh, Gleb Gusev, and Pavel
+Serdyukov. 2016. Efficient high-order interaction-aware feature selection based on conditional mutual information.
+InNIPS.4637–4645.
+Sameer Singh, Jeremy Kubica, Scott Larsen, and Daria Sorokina. 2009. Parallel large scale feature selection for logistic
+regression. In SDM.1172–1183.
+Mingkui Tan, Ivor W Tsang, and Li Wang. 2014. Towards ultrahigh dimensional feature selection for big data. J. Mach.
+Learn.Res. 15,1(2014),1371–1429.
+Jiliang Tang, Salem Alelyani, and Huan Liu. 2014. Feature selection for classification: A review. Data Classification: Algo-
+rithms and Applications (2014),37.
+Jiliang Tang, Xia Hu, Huiji Gao, and Huan Liu. 2013. Unsupervised feature selection for multi-view data in social media.
+InSDM.270–278.
+Jiliang Tang, Xia Hu, Huiji Gao, and Huan Liu. 2014. Discriminant analysis for unsupervised feature selection. In SDM.
+938–946.
+JiliangTangandHuan Liu.2012a.Feature selectionwithlinked datainsocial media.In SDM.118–128.
+JiliangTangandHuan Liu.2012b.Unsupervised featureselectionfor linked social mediadata.In KDD.904–912.
+JiliangTangandHuanLiu.2013.Coselect:Featureselectionwithinstanceselectionforsocialmediadata.In SDM.695–703.
+LeiTangandHuan Liu.2009.Relationallearningvia latentsocial dimensions.In KDD.817–826.
+RobertTibshirani.1996.Regression shrinkage andselection viathe lasso. J .R o y .S t a t .S oc .B (1996),267–288.
+RobertTibshirani,MichaelSaunders,SaharonRosset,JiZhu,andKeithKnight.2005.Sparsityandsmoothnessviathefused
+lasso.J.Roy. Stat. Soc.B 67,1(2005),91–108.
+Robert Tibshirani, Guenther Walther, and Trevor Hastie. 2001. Estimating the number of clusters in a data set via the gap
+statistic.J .R o y .S t a t .S oc .B 63,2(2001),411–423.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.94:44 J. Liet al.
+WilliamT.Vetterling,SaulA.Teukolsky,andWilliamH.Press.1992. NumericalRecipes:ExampleBook(C) .PressSyndicate
+of the University of Cambridge.
+Michel Vidal-Naquet and Shimon Ullman. 2003. Object recognition with informative features and linear classification. In
+ICCV.281–288.
+HuaWang,FeipingNie,andHengHuang.2013.Multi-viewclusteringandfeaturelearningviastructuredsparsity.In ICML.
+352–360.
+HuanWang,ShuichengYan,DongXu,XiaoouTang,andThomasHuang.2007.Traceratiovs.ratiotracefordimensionality
+reduction. In CVPR.1– 8.
+Jie Wang and Jieping Ye. 2015. Multi-layer feature reduction for tree structured group lasso via hierarchical projection. In
+NIPS.1279–1287.
+Jialei Wang, Peilin Zhao, Steven C. H. Hoi, and Rong Jin. 2014b. Online feature selection and its applications. IEEE TKDE
+26,3(2014),698–710.
+Qian Wang, Jiaxing Zhang, Sen Song, and Zheng Zhang. 2014a. Attentional neural network: Feature selection using cog-
+nitivefeedback.In NIPS.2033–2041.
+Xiaokai Wei, BokaiCao, andPhilip S.Yu. 2016a.Nonlinearjointunsupervised featureselection. In SDM.414–422.
+XiaokaiWei,BokaiCao,andPhilipS.Yu.2016b.Unsupervisedfeatureselectiononnetworks:Agenerativeview.In AAAI.
+2215–2221.
+Xiaokai Wei, Sihong Xie, and Philip S. Yu. 2015. Efficient partial order preserving unsupervised feature selection on net-
+works. In SDM.82–90.
+Xiaokai Wei and Philip S. Yu. 2016. Unsupervised feature selection by preserving stochastic neighbors. In AISTATS. 995–
+1003.
+Liang Wu, Jundong Li, Xia Hu, and Huan Liu. 2017. Gleaning wisdom from the past: Early detection of emerging rumors
+insocial media.In SDM.SIAM, 99–107.
+Xindong Wu, KuiYu, HaoWang,andWei Ding.2010.Onlinestreamingfeatureselection. In ICML.1159–1166.
+Zhixiang Xu, Gao Huang, Kilian Q. Weinberger, and Alice X. Zheng. 2014. Gradient boosted feature selection. In KDD.
+522–531.
+Makoto Yamada, Avishek Saha, Hua Ouyang, Dawei Yin, and Yi Chang. 2014. N3LARS: Minimum redundancy maximum
+relevancefeatureselection for largeandhigh-dimensional data. arXiv preprint arXiv:1411.2331 (2014).
+Feng Yang and K. Z. Mao. 2011. Robust feature selection for microarray data based on multicriterion fusion. IEEE/ACM
+Trans.Comput. Biol.Bioinform. 8,4 (2011),1080–1092.
+Howard Hua Yang and John E. Moody. 1999. Data visualization and feature selection: New algorithms for nongaussian
+data.InNIPS.687–693.
+Sen Yang, Lei Yuan, Ying-Cheng Lai, Xiaotong Shen, Peter Wonka, and Jieping Ye. 2012. Feature grouping and selection
+over anundirected graph.In KDD.922–930.
+Yi Yang, Heng Tao Shen, Zhigang Ma, Zi Huang, and Xiaofang Zhou. 2011. l2,1-norm regularized discriminative feature
+selection forunsupervised learning.In IJCAI.1589–1594.
+YiYang,DongXu,FeipingNie,ShuichengYan,andYuetingZhuang.2010.Imageclusteringusinglocaldiscriminantmodels
+andglobalintegration. IEEETrans.Inf. Process. 19,10(2010),2761–2773.
+YeeHwaYang,YuanyuanXiao,andMarkR.Segal.2005.Identifyingdifferentiallyexpressedgenesfrommicroarrayexper-
+imentsviastatistic synthesis. Bioinformatics 21,7(2005),1084–1093.
+JiepingYe andJun Liu.2012.Sparse methods for biomedicaldata. ACMSIGKDDExplor.Newslett. 14,1(2012),4–15.
+Kui Yu, Xindong Wu, Wei Ding, and Jian Pei. 2014. Towards scalable and accurate online feature selection for big data. In
+ICDM.660–669.
+Lei Yu and Huan Liu. 2003. Feature selection for high-dimensional data: A fast correlation-based filter solution. In ICML.
+856–863.
+StellaX. Yu andJianboShi. 2003.Multiclassspectral clustering.In ICCV.313–319.
+LeiYuan, Jun Liu,andJiepingYe.2011.Efficient methods for overlappinggroup lasso.In NIPS.352–360.
+Ming Yuan and Yi Lin. 2006. Model selection and estimation in regression with grouped variables. J. Roy Stat. Soc. B 68, 1
+(2006),49–67.
+SepehrAbbasiZadeh,MehrdadGhadiri,VahabS.Mirrokni,andMortezaZadimoghaddam.2017.Scalablefeatureselection
+viadistributed diversity maximization.In AAAI.2876–2883.
+Jian Zhang, Zoubin Ghahramani, and Yiming Yang. 2008. Flexible latent variable models for multi-task learning. Mach.
+Learn.73,3(2008),221–242.
+MiaoZhang,ChrisH.Q.Ding,YaZhang,andFeipingNie.2014.Featureselectionatthediscretelimit.In AAAI.1355–1361.
+Qin Zhang, Peng Zhang, Guodong Long, Wei Ding, Chengqi Zhang, and Xindong Wu. 2015. Towards mining trapezoidal
+datastreams.In ICDM.1111–1116.
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.Feature Selection: A Data Perspective 94:45
+LeiZhao,QinghuaHu,andWenwuWang.2015.Heterogeneousfeatureselectionwithmulti-modaldeepneuralnetworks
+andsparse group lasso. IEEETrans.Multimedia 17,11(2015),1936–1948.
+Peng Zhao, Guilherme Rocha, and Bin Yu. 2009. The composite absolute penalties family for grouped and hierarchical
+variableselection. TheAnnalsof Statistics (2009),3468–3497.
+ZhouZhao,XiaofeiHe,DengCai,LijunZhang,WilfredNg,andYuetingZhuang.2016.Graphregularizedfeatureselection
+withdatareconstruction. IEEETrans. Knowl.Data Eng. 28,3(2016),689–700.
+ZhengZhaoandHuanLiu.2007.Spectralfeatureselectionforsupervisedandunsupervisedlearning.In ICML.1151–1157.
+Zheng Zhao and Huan Liu. 2008. Multi-source feature selection via geometry-dependent covariance analysis. In FSDM.
+36–47.
+ZhengZhao,LeiWang,HuanLiu,andothers.2010.Efficientspectralfeatureselectionwithminimumredundancy.In AAAI.
+673–678.
+Zheng Zhao, Ruiwen Zhang, James Cox, David Duling, and Warren Sarle. 2013. Massively parallel feature selection: An
+approachbasedon variancepreservation. Mach. Learn. 92,1(2013),195–220.
+Jing Zhou, Dean Foster, Robert Stine, and Lyle Ungar. 2005. Streaming feature selection using alpha-investing. In KDD.
+384–393.
+JiayuZhou, Jun Liu,VaibhavA Narayan,andJiepingYe. 2012.Modelingdisease progression viafused sparse group lasso.
+InKDD.1095–1103.
+YaoZhou andJingrui He.2017.A randomized approachfor crowdsourcing inthe presenceof multipleviews.In ICDM.
+Zhi-Hua Zhou. 2012. EnsembleMethods:Foundationsand Algorithms .CRCPress.
+JiZhu, Saharon Rosset,Robert Tibshirani,andTrevor J. Hastie.2004.1-norm support vector machines. In NIPS.49–56.
+Pengfei Zhu, Qinghua Hu, Changqing Zhang, and Wangmeng Zuo. 2016. Coupled dictionary learning for unsupervised
+featureselection. In AAAI.2422–2428.
+Received September 2016; revisedJuly 2017; accepted August 2017
+ACM ComputingSurveys, Vol. 50,No. 6,Article 94.Publicationdate:December2017.

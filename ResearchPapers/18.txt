@@ -1,0 +1,669 @@
+Proceedings of the 2020 EMNLP (Systems Demonstrations) , pages 38–45
+November 16-20, 2020. c?2020 Association for Computational Linguistics38
+Transformers: State-of-the-Art Natural Language Processing
+Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue,
+Anthony Moi, Pierric Cistac, Tim Rault, R ´emi Louf, Morgan Funtowicz, Joe Davison,
+Sam Shleifer, Patrick von Platen, Clara Ma, Yacine Jernite, Julien Plu, Canwen Xu,
+Teven Le Scao, Sylvain Gugger, Mariama Drame, Quentin Lhoest, Alexander M. Rush
+Hugging Face, Brooklyn, USA / {first-name}@huggingface.co
+Abstract
+Recent progress in natural language process-
+ing has been driven by advances in both model
+architecture and model pretraining. Trans-
+former architectures have facilitated building
+higher-capacity models and pretraining has
+made it possible to effectively utilize this ca-
+pacity for a wide variety of tasks. Trans-
+formers is an open-source library with the
+goal of opening up these advances to the
+wider machine learning community. The li-
+brary consists of carefully engineered state-
+of-the art Transformer architectures under a
+uni?ed API. Backing this library is a cu-
+rated collection of pretrained models made
+by and available for the community. Trans-
+formers is designed to be extensible by re-
+searchers, simple for practitioners, and fast
+and robust in industrial deployments. The li-
+brary is available at https://github.com/
+huggingface/transformers .
+1 Introduction
+The Transformer (Vaswani et al., 2017) has rapidly
+become the dominant architecture for natural lan-
+guage processing, surpassing alternative neural
+models such as convolutional and recurrent neural
+networks in performance for tasks in both natural
+language understanding and natural language gen-
+eration. The architecture scales with training data
+and model size, facilitates ef?cient parallel training,
+and captures long-range sequence features.
+Model pretraining (McCann et al., 2017; Howard
+and Ruder, 2018; Peters et al., 2018; Devlin et al.,
+2018) allows models to be trained on generic cor-
+pora and subsequently be easily adapted to speci?c
+tasks with strong performance. The Transformer
+architecture is particularly conducive to pretrain-
+ing on large text corpora, leading to major gains in
+accuracy on downstream tasks including text classi-
+?cation (Yang et al., 2019), language understanding(Liu et al., 2019b; Wang et al., 2018, 2019), ma-
+chine translation (Lample and Conneau, 2019a),
+coreference resolution (Joshi et al., 2019), com-
+monsense inference (Bosselut et al., 2019), and
+summarization (Lewis et al., 2019) among others.
+This advance leads to a wide range of practical
+challenges that must be addressed in order for these
+models to be widely utilized. The ubiquitous use of
+the Transformer calls for systems to train, analyze,
+scale, and augment the model on a variety of plat-
+forms. The architecture is used as a building block
+to design increasingly sophisticated extensions and
+precise experiments. The pervasive adoption of pre-
+training methods has led to the need to distribute,
+?ne-tune, deploy, and compress the core pretrained
+models used by the community.
+Transformers is a library dedicated to supporting
+Transformer-based architectures and facilitating the
+distribution of pretrained models. At the core of
+the libary is an implementation of the Transformer
+which is designed for both research and production.
+The philosophy is to support industrial-strength im-
+plementations of popular model variants that are
+easy to read, extend, and deploy. On this founda-
+tion, the library supports the distribution and usage
+of a wide-variety of pretrained models in a cen-
+tralized model hub. This hub supports users to
+compare different models with the same minimal
+API and to experiment with shared models on a
+variety of different tasks.
+Transformers is an ongoing effort maintained by
+the team of engineers and researchers at Hugging
+Face with support from a vibrant community of
+over 400 external contributors. The library is re-
+leased under the Apache 2.0 license and is available
+on GitHub1. Detailed documentation and tutorials
+are available on Hugging Face’s website2.
+1https://github.com/huggingface/
+transformers
+2https://huggingface.co/transformers/39
+Figure 1: Average daily unique downloads of the most downloaded pretrained models, Oct. 2019 to May 2020.
+2 Related Work
+The NLP and ML communities have a strong cul-
+ture of building open-source research tools. The
+structure of Transformers is inspired by the pi-
+oneering tensor2tensor library (Vaswani et al.,
+2018) and the original source code for BERT (De-
+vlin et al., 2018), both from Google Research.
+The concept of providing easy caching for pre-
+trained models stemmed from AllenNLP (Gard-
+ner et al., 2018). The library is also closely re-
+lated to neural translation and language modeling
+systems, such as Fairseq (Ott et al., 2019), Open-
+NMT (Klein et al., 2017), Texar (Hu et al., 2018),
+Megatron-LM (Shoeybi et al., 2019), and Mar-
+ian NMT (Junczys-Dowmunt et al., 2018). Build-
+ing on these elements, Transformers adds extra
+user-facing features to allow for easy downloading,
+caching, and ?ne-tuning of the models as well as
+seamless transition to production. Transformers
+maintains some compatibility with these libraries,
+most directly including a tool for performing infer-
+ence using models from Marian NMT and Google’s
+BERT.
+There is a long history of easy-to-use, user-
+facing libraries for general-purpose NLP. Two core
+libraries are NLTK (Loper and Bird, 2002) and
+Stanford CoreNLP (Manning et al., 2014), which
+collect a variety of different approaches to NLP in
+a single package. More recently, general-purpose,
+open-source libraries have focused primarily on
+machine learning for a variety of NLP tasks, these
+include Spacy (Honnibal and Montani, 2017), Al-
+lenNLP (Gardner et al., 2018), ?air (Akbik et al.,
+2019), and Stanza (Qi et al., 2020). Transform-
+ersprovides similar functionality as these libraries.
+Additionally, each of these libraries now uses theTransformers library and model hub as a low-level
+framework.
+Since Transformers provides a hub for NLP mod-
+els, it is also related to popular model hubs includ-
+ing Torch Hub and TensorFlow Hub which collect
+framework-speci?c model parameters for easy use.
+Unlike these hubs, Transformers is domain-speci?c
+which allows the system to provide automatic sup-
+port for model analysis, usage, deployment, bench-
+marking, and easy replicability.
+3 Library Design
+Transformers is designed to mirror the standard
+NLP machine learning model pipeline: process
+data, apply a model, and make predictions. Al-
+though the library includes tools facilitating train-
+ing and development, in this technical report we
+focus on the core modeling speci?cations. For
+complete details about the features of the library
+refer to the documentation available on https:
+//huggingface.co/transformers/ .
+Every model in the library is fully de?ned by
+three building blocks shown in the diagram in Fig-
+ure 2: (a) a tokenizer, which converts raw text to
+sparse index encodings, (b) a transformer, which
+transforms sparse indices to contextual embed-
+dings, and (c) a head, which uses contextual em-
+beddings to make a task-speci?c prediction. Most
+user needs can be addressed with these three com-
+ponents.
+Transformers Central to the library are carefully
+tested implementations of Transformer architecture
+variants which are widely used in NLP. The full list
+of currently implemented architectures is shown in
+Figure 2 (Left). While each of these architectures40Heads
+Name Input Output Tasks Ex. Datasets
+Language Modeling x1:n-1 xn?V Generation WikiText-103
+Sequence Classi?cation x1:N y?C Classi?cation,
+Sentiment AnalysisGLUE, SST,
+MNLI
+Question Answering x1:M,xM:Nyspan[1 :N]QA, Reading
+ComprehensionSQuAD,
+Natural Questions
+Token Classi?cation x1:N y1:N?CNNER, Tagging OntoNotes, WNUT
+Multiple Choice x1:N,X y?X Text Selection SWAG, ARC
+Masked LM x1:N\n xn?V Pretraining Wikitext, C4
+Conditional Generation x1:N y1:M?VMTranslation,
+SummarizationWMT, IWSLT,
+CNN/DM, XSum
+Transformers
+Masked [x1:N\n?xn]
+BERT (Devlin et al., 2018)
+RoBERTa (Liu et al., 2019a)
+Autoregressive [x1:n-1?xn]
+GPT / GPT-2 (Radford et al., 2019)
+Trans-XL (Dai et al., 2019)
+XLNet (Yang et al., 2019)
+Seq-to-Seq [~x1:N?x1:N]
+BART (Lewis et al., 2019)
+T5 (Raffel et al., 2019)
+MarianMT (J.-Dowmunt et al., 2018)
+Specialty: Multimodal
+MMBT (Kiela et al., 2019)
+Specialty: Long-Distance
+Reformer (Kitaev et al., 2020)
+Longformer (Beltagy et al., 2020)
+Specialty: Ef?cient
+ALBERT (Lan et al., 2019)
+Electra (Clark et al., 2020)
+DistilBERT (Sanh et al., 2019)
+Specialty: Multilingual
+XLM/RoBERTa (Lample and Conneau, 2019b)
+T ransformer 
+T okenizer Head Head Tokenizers
+Name Ex. Uses
+Character-Level BPE NMT, GPT
+Byte-Level BPE GPT-2
+WordPiece BERT
+SentencePiece XLNet
+Unigram LM
+Character Reformer
+Custom Bio-Chem
+Figure 2: The Transformers library. (Diagram-Right) Each model is made up of a Tokenizer, Transformer, and
+Head. The model is pretrained with a ?xed head and can then be further ?ne-tuned with alternate heads for different
+tasks. (Bottom) Each model uses a speci?c Tokenizer either implemented in Python or in Rust. These often differ
+in small details, but need to be in sync with pretraining. (Left) Transformer architectures specialized for different
+tasks, e.g. understanding versus generation, or for speci?c use-cases, e.g. speed, image+text. (Top) heads allow a
+Transformer to be used for different tasks. Here we assume the input token sequence is x1:Nfrom a vocabulary V,
+andyrepresents different possible outputs, possibly from a class set C. Example datasets represent a small subset
+of example code distributed with the library.41shares the same multi-headed attention core, there
+are signi?cant differences between them including
+positional representations, masking, padding, and
+the use of sequence-to-sequence design. Addition-
+ally, various models are built to target different
+applications of NLP such as understanding, gener-
+ation, and conditional generation, plus specialized
+use cases such as fast inference or multi-lingual
+applications.
+Practically, all models follow the same hierarchy
+of abstraction: a base class implements the model’s
+computation graph from an encoding (projection
+on the embedding matrix) through the series of self-
+attention layers to the ?nal encoder hidden states.
+The base class is speci?c to each model and closely
+follows the model’s original implementation which
+gives users the ?exibility to easily dissect the inner
+workings of each individual architecture. In most
+cases, each model is implemented in a single ?le
+to enable ease of extensibility.
+Wherever possible, different architectures fol-
+low the same API allowing users to switch easily
+between different models. A set of Auto classes
+provides a uni?ed API that enables very fast switch-
+ing between models and even between frameworks.
+These classes automatically instantiate with the
+con?guration speci?ed by the user-speci?ed pre-
+trained model.
+Tokenizers A critical NLP-speci?c aspect of the
+library is the implementations of the tokenizers nec-
+essary to use each model. Tokenizer classes (each
+inheriting from a common base class) can either be
+instantiated from a corresponding pretrained model
+or can be con?gured manually. These classes store
+the vocabulary token-to-index map for their corre-
+sponding model and handle the encoding and de-
+coding of input sequences according to a model’s
+speci?c tokenization process. The tokenizers im-
+plemented are shown in Figure 2 (Right). Users
+can easily modify tokenizer with interfaces to add
+additional token mappings, special tokens (such as
+classi?cation or separation tokens), or otherwise
+resize the vocabulary.
+Tokenizers can also implement additional useful
+features for the users. These range from token type
+indices in the case of sequence classi?cation to
+maximum length sequence truncating taking into
+account the added model-speci?c special tokens
+(most pretrained Transformer models have a maxi-
+mum sequence length).
+For training on very large datasets, Python-basedtokenization is often undesirably slow. In the
+most recent release, Transformers switched its im-
+plementation to use a highly-optimized tokeniza-
+tion library by default. This low-level library,
+available at https://github.com/huggingface/
+tokenizers , is written in Rust to speed up the
+tokenization procedure both during training and
+deployment.
+Heads Each Transformer can be paired with
+one out of several ready-implemented heads
+with outputs amenable to common types of
+tasks. These heads are implemented as ad-
+ditional wrapper classes on top of the base
+class, adding a speci?c output layer, and op-
+tional loss function, on top of the Transformer’s
+contextual embeddings. The full set of im-
+plemented heads are shown in Figure 2 (Top).
+These classes follow a similar naming pattern:
+XXXForSequenceClassification where
+XXX is the name of the model and can be used
+for adaptation (?ne-tuning) or pretraining. Some
+heads, such as conditional generation, support extra
+functionality like sampling and beam search.
+For pretrained models, we release the heads used
+to pretrain the model itself. For instance, for BERT
+we release the language modeling and next sen-
+tence prediction heads which allows easy for adap-
+tation using the pretraining objectives. We also
+make it easy for users to utilize the same core Trans-
+former parameters with a variety of other heads for
+?netuning. While each head can be used generally,
+the library also includes a collection of examples
+that show each head on real problems. These ex-
+amples demonstrate how a pretrained model can be
+adapted with a given head to achieve state-of-the-
+art results on a large variety of NLP tasks.
+4 Community Model Hub
+Transformers aims to facilitate easy use and dis-
+tribution of pretrained models. Inherently this is
+a community process; a single pretraining run fa-
+cilitates ?ne-tuning on many speci?c tasks. The
+Model Hub makes it simple for any end-user to ac-
+cess a model for use with their own data. This hub
+now contains 2,097 user models, both pretrained
+and ?ne-tuned, from across the community. Fig-
+ure 1 shows the increase and distribution of popular
+transformers over time. While core models like
+BERT and GPT-2 continue to be popular, other spe-
+cialized models including DistilBERT (Sanh et al.,
+2019), which was developed for the library, are42
+Figure 3: Transformers Model Hub. (Left) Example of a model page and model card for SciBERT (Beltagy
+et al., 2019), a pretrained model targeting extraction from scienti?c literature submitted by a community contrib-
+utor. (Right) Example of an automatic inference widget for the pretrained BART (Lewis et al., 2019) model for
+summarization. Users can enter arbitrary text and a full version of the model is deployed on the ?y to produce a
+summary.
+now widely downloaded by the community.
+The user interface of the Model Hub is designed
+to be simple and open to the community. To upload
+a model, any user can sign up for an account and
+use a command-line interface to produce an archive
+consisting a tokenizer, transformer, and head. This
+bundle may be a model trained through the library
+or converted from a checkpoint of other popular
+training tools. These models are then stored and
+given a canonical name which a user can use to
+download, cache, and run the model either for ?ne-
+tuning or inference in two lines of code. To load
+FlauBERT (Le et al., 2020), a BERT model pre-
+trained on a French training corpus, the command
+is:
+1tknzr = AutoTokenizer.from_pretrained(
+2 "flaubert/flaubert_base_uncased")
+3model = AutoModel.from_pretrained(
+4 "flaubert/flaubert_base_uncased")
+When a model is uploaded to the Model Hub, it
+is automatically given a landing page describing its
+core properties, architecture, and use cases. Addi-
+tional model-speci?c metadata can be provided via
+a model card (Mitchell et al., 2018) that describes
+properties of its training, a citation to the work,
+datasets used during pretraining, and any caveats
+about known biases in the model and its predictions.
+An example model card is shown in Figure 3 (Left).
+Since the Model Hub is speci?c to transformer-
+based models, we can target use cases that wouldbe dif?cult for more general model collections. For
+example, because each uploaded model includes
+metadata concerning its structure, the model page
+can include live inference that allows users to ex-
+periment with output of models on a real data. Fig-
+ure 3 (Right) shows an example of the model page
+with live inference. Additionally, model pages in-
+clude links to other model-speci?c tools like bench-
+marking and visualizations. For example, model
+pages can link to exBERT (Hoover et al., 2019), a
+Transformer visualization library.
+Community Case Studies The Model Hub high-
+lights how Transformers is used by a variety of
+different community stakeholders. We summarize
+three speci?c observed use-cases in practice. We
+highlight speci?c systems developed by users with
+different goals following the architect, trainer, and
+end-user distinction of Strobelt et al. (2017):
+Case 1: Model Architects AllenAI, a major NLP
+research lab, developed a new pretrained model for
+improved extraction from biomedical texts called
+SciBERT (Beltagy et al., 2019). They were able
+to train the model utilizing data from PubMed to
+produce a masked language model with state-of-
+the-art results on targeted text. They then used the
+Model Hub to distribute the model and promote
+it as part of their CORD - COVID-19 challenge,
+making it trivial for the community to use.
+Case 2: Task Trainers Researchers at NYU were43interested in developing a test bed for the per-
+formance of Transformers on a variety of differ-
+ent semantic recognition tasks. Their framework
+Jiant (Pruksachatkun et al., 2020) allows them to
+experiment with different ways of pretraining mod-
+els and comparing their outputs. They used the
+Transformers API as a generic front-end and per-
+formed ?ne-tuning on a variety of different models,
+leading to research on the structure of BERT (Ten-
+ney et al., 2019).
+Case 3: Application Users Plot.ly, a company fo-
+cused on user dashboards and analytics, was in-
+terested in deploying a model for automatic doc-
+ument summarization. They wanted an approach
+that scaled well and was simple to deploy, but had
+no need to train or ?ne-tune the model. They were
+able to search the Model Hub and ?nd DistilBART ,
+a pretrained and ?ne-tuned summarization model
+designed for accurate, fast inference. They were
+able to run and deploy the model directly from the
+hub with no required research or ML expertise.
+5 Deployment
+An increasingly important goal of Transformers is
+to make it easy to ef?ciently deploy model to pro-
+duction. Different users have different production
+needs, and deployment often requires solving sig-
+ni?cantly different challenges than training. The
+library thereforce allows for several different strate-
+gies for production deployment.
+One core propery of the libary is that models
+are available both in PyTorch and TensorFlow, and
+there is interoperability between both frameworks.
+A model trained in one of frameworks can be saved
+through standard serialization and be reloaded from
+the saved ?les in the other framework seamlessly.
+This makes it particularly easy to switch from one
+framework to the other one along the model life-
+time (training, serving, etc.).
+Each framework has deployment recommenda-
+tions. For example, in PyTorch, models are compat-
+ible with TorchScript, an intermediate representa-
+tion of a PyTorch model that can then be run either
+in Python in a more ef?cient way, or in a high-
+performance environment such as C++. Fine-tuned
+models can thus be exported to production-friendly
+environment, and run through TorchServing. Ten-
+sorFlow includes several serving options within its
+ecosystem, and these can be used directly.
+Transformers can also export models to interme-
+diate neural network formats for further compila-
+Figure 4: Experiments with Transformers inference in
+collaboration with ONNX.
+tion. It supports converting models to the Open
+Neural Network Exchange format (ONNX) for de-
+ployment. Not only does this allow the model to
+be run in a standardized interoperable format, but
+also leads to signi?cant speed-ups. Figure 4 shows
+experiments run in collaboration with the ONNX
+team to optimize BERT, RoBERTa, and GPT-2
+from the Transformers library. Using this interme-
+diate format, ONNX was able to achieve nearly a
+4x speedup on this model. The team is also ex-
+perimenting with other promising intermediate for-
+mats such as JAX/XLA (Bradbury et al., 2018) and
+TVM (Chen et al., 2018).
+Finally, as Transformers become more widely
+used in all NLP applications, it is increasingly im-
+portant to deploy to edge devices such as phones
+or home electronics. Models can use adapters to
+convert models to CoreML weights that are suit-
+able to be embedded inside a iOS application, to
+enable on-the-edge machine learning. Code is also
+made available3. Similar methods can be used for
+Android devices.
+6 Conclusion
+As Transformer and pretraining play larger roles in
+NLP, it is important for these models to be acces-
+sible to researchers and end-users. Transformers
+is an open-source library and community designed
+to facilitate users to access large-scale pretrained
+models, to build and experiment on top of them,
+and to deploy them in downstream tasks with state-
+of-the-art performance. Transformers has gained
+signi?cant organic traction since its release and is
+set up to continue to provide core infrastructure
+while helping to facilitate access to new models.
+3https://github.com/huggingface/
+swift-coreml-transformers44References
+a. PyTorch Hub. https://pytorch.org/hub/ . Ac-
+cessed: 2020-6-29.
+b. TensorFlow hub. https://www.tensorflow.
+org/hub . Accessed: 2020-6-29.
+Alan Akbik, Tanja Bergmann, Duncan Blythe, Kashif
+Rasul, Stefan Schweter, and Roland V ollgraf. 2019.
+Flair: An easy-to-use framework for state-of-the-art
+nlp. In Proceedings of the 2019 Conference of the
+North American Chapter of the Association for Com-
+putational Linguistics (Demonstrations) , pages 54–
+59. aclweb.org.
+Iz Beltagy, Kyle Lo, and Arman Cohan. 2019. SciB-
+ERT: A pretrained language model for scienti?c text.
+InProceedings of the 2019 Conference on Empirical
+Methods in Natural Language Processing and the
+9th International Joint Conference on Natural Lan-
+guage Processing (EMNLP-IJCNLP) , pages 3615–
+3620.
+Iz Beltagy, Matthew E Peters, and Arman Cohan. 2020.
+Longformer: The Long-Document transformer.
+Antoine Bosselut, Hannah Rashkin, Maarten Sap, Chai-
+tanya Malaviya, Asli C ¸ elikyilmaz, and Yejin Choi.
+2019. Comet: Commonsense transformers for auto-
+matic knowledge graph construction. In ACL.
+James Bradbury, Roy Frostig, Peter Hawkins,
+Matthew James Johnson, Chris Leary, Dou-
+gal Maclaurin, and Skye Wanderman-Milne.
+2018. JAX: composable transformations of
+Python+NumPy programs.
+Tianqi Chen, Thierry Moreau, Ziheng Jiang, Lianmin
+Zheng, Eddie Yan, Haichen Shen, Meghan Cowan,
+Leyuan Wang, Yuwei Hu, Luis Ceze, et al. 2018.
+{TVM}: An automated end-to-end optimizing com-
+piler for deep learning. In 13th{USENIX}Sympo-
+sium on Operating Systems Design and Implementa-
+tion ({OSDI}18), pages 578–594.
+Kevin Clark, Minh-Thang Luong, Quoc V Le, and
+Christopher D Manning. 2020. ELECTRA: Pre-
+training text encoders as discriminators rather than
+generators.
+Zihang Dai, Zhilin Yang, Yiming Yang, Jaime Car-
+bonell, Quoc V Le, and Ruslan Salakhutdinov. 2019.
+Transformer-XL: Attentive language models beyond
+a Fixed-Length context.
+Jacob Devlin, Ming-Wei Chang, Kenton Lee, and
+Kristina Toutanova. 2018. BERT: Pre-training of
+deep bidirectional transformers for language under-
+standing.
+Matt Gardner, Joel Grus, Mark Neumann, Oyvind
+Tafjord, Pradeep Dasigi, Nelson Liu, Matthew Pe-
+ters, Michael Schmitz, and Luke Zettlemoyer. 2018.
+AllenNLP: A deep semantic natural language pro-
+cessing platform.Matthew Honnibal and Ines Montani. 2017. spacy 2:
+Natural language understanding with bloom embed-
+dings, convolutional neural networks and incremen-
+tal parsing. To appear , 7(1).
+Benjamin Hoover, Hendrik Strobelt, and Sebastian
+Gehrmann. 2019. exBERT: A visual analysis tool to
+explore learned representations in transformers mod-
+els.
+Jeremy Howard and Sebastian Ruder. 2018. Universal
+language model ?ne-tuning for text classi?cation. In
+ACL.
+Zhiting Hu, Haoran Shi, Bowen Tan, Wentao Wang,
+Zichao Yang, Tiancheng Zhao, Junxian He, Lianhui
+Qin, Di Wang, Xuezhe Ma, Zhengzhong Liu, Xiao-
+dan Liang, Wangrong Zhu, Devendra Singh Sachan,
+and Eric P Xing. 2018. Texar: A modularized, ver-
+satile, and extensible toolkit for text generation.
+Mandar Joshi, Danqi Chen, Yinhan Liu, Daniel S Weld,
+Luke Zettlemoyer, and Omer Levy. 2019. Spanbert:
+Improving pre-training by representing and predict-
+ing spans. arXiv preprint arXiv:1907.10529 .
+Marcin Junczys-Dowmunt, Roman Grundkiewicz,
+Tomasz Dwojak, Hieu Hoang, Kenneth Hea?eld,
+Tom Neckermann, Frank Seide, Ulrich Germann, Al-
+ham Fikri Aji, Nikolay Bogoychev, Andr ´e F T Mar-
+tins, and Alexandra Birch. 2018. Marian: Fast neu-
+ral machine translation in c++.
+Douwe Kiela, Suvrat Bhooshan, Hamed Firooz, and
+Davide Testuggine. 2019. Supervised multimodal
+bitransformers for classifying images and text.
+Nikita Kitaev, Lukasz Kaiser, and Anselm Levskaya.
+2020. Reformer: The ef?cient transformer.
+Guillaume Klein, Yoon Kim, Yuntian Deng, Jean Senel-
+lart, and Alexander Rush. 2017. OpenNMT: Open-
+source toolkit for neural machine translation. In
+Proceedings of ACL 2017, System Demonstrations ,
+pages 67–72, Vancouver, Canada. Association for
+Computational Linguistics.
+Guillaume Lample and Alexis Conneau. 2019a. Cross-
+lingual language model pretraining. In NeurIPS .
+Guillaume Lample and Alexis Conneau. 2019b. Cross-
+lingual language model pretraining.
+Zhenzhong Lan, Mingda Chen, Sebastian Goodman,
+Kevin Gimpel, Piyush Sharma, and Radu Soricut.
+2019. ALBERT: A lite BERT for self-supervised
+learning of language representations.
+Hang Le, Lo ¨ic Vial, Jibril Frej, Vincent Segonne, Max-
+imin Coavoux, Benjamin Lecouteux, Alexandre Al-
+lauzen, Beno ˆit Crabb ´e, Laurent Besacier, and Didier
+Schwab. 2020. Flaubert: Unsupervised language
+model pre-training for french. In Proceedings of
+The 12th Language Resources and Evaluation Con-
+ference , pages 2479–2490, Marseille, France. Euro-
+pean Language Resources Association.45Mike Lewis, Yinhan Liu, Naman Goyal, Mar-
+jan Ghazvininejad, Abdelrahman Mohamed, Omer
+Levy, Ves Stoyanov, and Luke Zettlemoyer.
+2019. BART: Denoising Sequence-to-Sequence pre-
+training for natural language generation, translation,
+and comprehension.
+Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Man-
+dar Joshi, Danqi Chen, Omer Levy, Mike Lewis,
+Luke Zettlemoyer, and Veselin Stoyanov. 2019a.
+RoBERTa: A robustly optimized BERT pretraining
+approach.
+Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Man-
+dar S. Joshi, Danqi Chen, Omer Levy, Mike Lewis,
+Luke S. Zettlemoyer, and Veselin Stoyanov. 2019b.
+Roberta: A robustly optimized bert pretraining ap-
+proach. ArXiv , abs/1907.11692.
+Edward Loper and Steven Bird. 2002. NLTK: The nat-
+ural language toolkit.
+Christopher D Manning, Mihai Surdeanu, John Bauer,
+Jenny Rose Finkel, Steven Bethard, and David Mc-
+Closky. 2014. The stanford CoreNLP natural lan-
+guage processing toolkit. In Proceedings of 52nd
+annual meeting of the association for computational
+linguistics: system demonstrations , pages 55–60.
+aclweb.org.
+Bryan McCann, James Bradbury, Caiming Xiong, and
+Richard Socher. 2017. Learned in translation: Con-
+textualized word vectors. In I Guyon, U V Luxburg,
+S Bengio, H Wallach, R Fergus, S Vishwanathan,
+and R Garnett, editors, Advances in Neural Informa-
+tion Processing Systems 30 , pages 6294–6305. Cur-
+ran Associates, Inc.
+Margaret Mitchell, Simone Wu, Andrew Zaldivar,
+Parker Barnes, Lucy Vasserman, Ben Hutchinson,
+Elena Spitzer, Inioluwa Deborah Raji, and Timnit
+Gebru. 2018. Model cards for model reporting.
+Myle Ott, Sergey Edunov, Alexei Baevski, Angela
+Fan, Sam Gross, Nathan Ng, David Grangier, and
+Michael Auli. 2019. fairseq: A fast, extensible
+toolkit for sequence modeling.
+Matthew E Peters, Mark Neumann, Mohit Iyyer, Matt
+Gardner, Christopher Clark, Kenton Lee, and Luke
+Zettlemoyer. 2018. Deep contextualized word repre-
+sentations.
+Yada Pruksachatkun, Phil Yeres, Haokun Liu, Jason
+Phang, Phu Mon Htut, Alex Wang, Ian Tenney, and
+Samuel R Bowman. 2020. jiant: A software toolkit
+for research on general-purpose text understanding
+models. arXiv preprint arXiv:2003.02249 .
+Peng Qi, Yuhao Zhang, Yuhui Zhang, Jason Bolton,
+and Christopher D Manning. 2020. Stanza: A
+python natural language processing toolkit for many
+human languages.Alec Radford, Jeffrey Wu, Rewon Child, David Luan,
+Dario Amodei, and Ilya Sutskever. 2019. Language
+models are unsupervised multitask learners. OpenAI
+Blog , 1(8):9.
+Colin Raffel, Noam Shazeer, Adam Roberts, Katherine
+Lee, Sharan Narang, Michael Matena, Yanqi Zhou,
+Wei Li, and Peter J Liu. 2019. Exploring the limits
+of transfer learning with a uni?ed Text-to-Text trans-
+former.
+Victor Sanh, Lysandre Debut, Julien Chaumond, and
+Thomas Wolf. 2019. DistilBERT, a distilled version
+of BERT: smaller, faster, cheaper and lighter.
+Mohammad Shoeybi, Mostofa Patwary, Raul Puri,
+Patrick LeGresley, Jared Casper, and Bryan Catan-
+zaro. 2019. Megatron-lm: Training multi-billion
+parameter language models using gpu model paral-
+lelism. arXiv preprint arXiv:1909.08053 .
+Hendrik Strobelt, Sebastian Gehrmann, Hanspeter P?s-
+ter, and Alexander M Rush. 2017. Lstmvis: A tool
+for visual analysis of hidden state dynamics in recur-
+rent neural networks. IEEE transactions on visual-
+ization and computer graphics , 24(1):667–676.
+Ian Tenney, Dipanjan Das, and Ellie Pavlick. 2019.
+Bert rediscovers the classical nlp pipeline. In ACL.
+Ashish Vaswani, Samy Bengio, Eugene Brevdo, Fran-
+cois Chollet, Aidan N. Gomez, Stephan Gouws,
+Llion Jones, Lukasz Kaiser, Nal Kalchbrenner, Niki
+Parmar, Ryan Sepassi, Noam Shazeer, and Jakob
+Uszkoreit. 2018. Tensor2tensor for neural machine
+translation. CoRR , abs/1803.07416.
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob
+Uszkoreit, Llion Jones, Aidan N Gomez, L Ukasz
+Kaiser, and Illia Polosukhin. 2017. Attention is all
+you need. In I Guyon, U V Luxburg, S Bengio,
+H Wallach, R Fergus, S Vishwanathan, and R Gar-
+nett, editors, Advances in Neural Information Pro-
+cessing Systems 30 , pages 5998–6008. Curran Asso-
+ciates, Inc.
+Alex Wang, Yada Pruksachatkun, Nikita Nangia,
+Amanpreet Singh, Julian Michael, Felix Hill, Omer
+Levy, and Samuel R. Bowman. 2019. Superglue: A
+stickier benchmark for general-purpose language un-
+derstanding systems. ArXiv , abs/1905.00537.
+Alex Wang, Amanpreet Singh, Julian Michael, Felix
+Hill, Omer Levy, and Samuel R. Bowman. 2018.
+Glue: A multi-task benchmark and analysis platform
+for natural language understanding. In ICLR .
+Zhilin Yang, Zihang Dai, Yiming Yang, Jaime G. Car-
+bonell, Ruslan Salakhutdinov, and Quoc V . Le. 2019.
+Xlnet: Generalized autoregressive pretraining for
+language understanding. ArXiv , abs/1906.08237.

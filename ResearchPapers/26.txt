@@ -1,0 +1,1453 @@
+1388 IEEE TRANSACTIONS ON NEURAL NETWORKS AND LEARNING SYSTEMS, VOL. 26, NO. 7, JULY 2015
+FREL: A Stable Feature Selection Algorithm
+Yun Li, Member, IEEE , Jennie Si, Fellow, IEEE , Guojing Zhou, Shasha Huang, and Songcan Chen
+Abstract — Two factors characterize a good feature selection
+algorithm: its accuracy and stability. This paper aims at intro-ducing a new approach to stable feature selection algorithms.The innovation of this paper centers on a class of stable featureselection algorithms called feature weighting as regularizedenergy-based learning (FREL). Stability properties of FRELusing L1 or L2 regularization are investigated. In addition,as a commonly adopted implementation strategy for enhancedstability, an ensemble FREL is proposed. A stability bound forthe ensemble FREL is also presented. Our experiments usingopen source real microarray data, which are challenging highdimensionality small sample size problems demonstrate that ourproposed ensemble FREL is not only stable but also achievesbetter or comparable accuracy than some other popular stablefeature weighting methods.
+Index Terms — Energy-based learning, ensemble, feature
+selection, feature weighting, uniform weighting stability.
+I. I NTRODUCTION
+FEATURE selection has been an active research area in
+machine learning and data m ining for decades. It is an
+important and frequently used technique for data dimensionreduction by removing irrelevant and redundant information
+from a data set. It is also a knowledge discovery tool for
+providing insights on the problem through interpretations of
+the most relevant features [1]. Discussions on feature selec-
+tion usually center on two technical aspects: search strategyand evaluation criteria. Algorithms designed with different
+strategies broadly fall into three categories: ?lter, wrapper,
+and hybrid or embedded models [2]. On the other hand,if the categorization is based on output characteristics, fea-
+ture selection algorithms can be divided into either feature
+weighting/ranking algorithms or subset selection algorithms.
+In this paper, we focus on feature weighting. A comprehensive
+survey of existing feature selection techniques and a generalframework for their uni?cation can be found in [1]–[3].
+In addition to classi?cation accuracy, another important
+measure is stability when evaluating the quality of a feature
+Manuscript received August 20, 2013; revised April 21, 2014; accepted
+July 15, 2014. Date of publication August 12, 2014; date of current versionJune 16, 2015. This work was supported in part by the National NaturalScience Foundation of China unde r Grant 60973097, Grant 61035003, Grant
+61073114, Grant 61170151, and Grant 61300165, in part by the National
+Science Foundation of Jiangsu Provi nce under Grant BK20131378 and Grant
+BK20140885, in part by the Jiangsu Government Scholarship, and in part by
+the Jiangsu Qinglan Project.
+Y . Li, G. Zhou, and S. Huang are with the Jiangsu High Technology
+Research Key Laboratory for Wireless Sensor Networks, College of Com-puter Science, Nanjing University of Posts and Telecommunications, Nanjing
+210023, China (e-mail: liyun@njupt.edu.cn).
+J. Si is with the School of Electrical, Computer and Energy Engineering,
+Arizona State University, Tempe, AZ 85287 USA (e-mail: si@asu.edu).
+S. Chen is with the College of Computer Science and Technology, Nanjing
+University of Aeronautics and Astronautics, Nanjing 210016, China (e-mail:s.chen@nuaa.edu.cn).
+Digital Object Identi?er 10.1109/TNNLS.2014.2341627selection algorithm. Here, stability means the insensitivity of
+the result of a feature selection algorithm to variations in
+the training data set [4]. This issue is particularly important
+for some applications where feature selection is used as a
+knowledge discovery tool for identifying characteristic mark-
+ers to explain the observed phenomena. A feature selectionalgorithm without stability constraint usually results in signif-
+icantly different feature subsets due to variations in the training
+data. Even though most of these feature subsets are as goodas they can be in terms of classi?cation accuracy, unstable
+feature selection results can shake the con?dence of domain
+experts when experimentally validating the selected features to
+interpret important discoveries [5]. For instance, in analyzing
+cancer biomarkers, such as leukemia, the available data setsusually are high dimensional yet with small sample size.
+Among the thousands of genetic expression levels, a critical
+subset is to be discovered that links to two leukemia labels.It is therefore necessary that th e selected predictive genes
+are common to variations of training samples. Otherwise, the
+results will lead to less con?dent diagnosis. In consideration of
+the importance of stability in applications, several stable fea-
+ture selection algorithms have been proposed. The ensemblemethods [4], [6]–[8], sample weighting [9], [10], and feature
+grouping [5], [11] are a few examples. A comprehensive
+survey of earlier work can be found in [12]. Those existingstable feature selection algorithms make use of empirical
+criteria for stability measurements, and they fell short of
+explicitly providing a stability analysis. The pressing need for
+an analytical examin ation of stable feature selection algorithms
+beyond the simple empirical approach is thus evident.
+In this paper, guided by energy-based learning [13], a new
+algorithm framework for featur e weighting as regularized
+energy-based learning (FREL) is proposed. Stability of theproposed FREL algorithms under an L1 or L2 regularizer is
+examined. In addition, an ensemble FREL is also introduced
+and analyzed for its stability. The proposed FREL is then
+applied to open source real microarray data to demonstrate its
+effectiveness for both stability and accuracy in high dimen-sionality small sample size (HDSSS) application problems.
+This paper is organized as follows. The framework of
+FREL and ensemble FREL are introduced in Section II.Section III analyzes the stability of feature weighting with
+an L1 or L2 regularizer. In addition, the stability analysis
+of ensemble FREL is presented. The experimental results on
+microarray data are shown in Section IV . This paper concludes
+in Section V .
+II. E
+NERGY -BASED LEARNING FOR FEATURE WEIGHTING
+Energy-based learning [13] provides a uni?ed framework
+for many probabilistic and nonprobabilistic approaches to
+2162-237X © 2014 I EEE. Personal u se is perm itted, but republication/redistri bution requires IEEE permission.
+See http://www.ieee.org/publications_standards/publications/rights/index.html for more information.
+Authorized licensed use limited to: National University Fast. Downloaded on February 14,2024 at 14:18:01 UTC from IEEE Xplore.  Restrictions apply. LIet al. : FREL: A STABLE FEATURE SELECTION ALGORITHM 1389
+learning for prediction, classi?cation, decision-making, sample
+ranking, detection, and conditional density estimation. In this
+paper, we consider an energy-based learning framework for
+the design of feature weighting algorithms. Speci?cally, wewill focus on developing FREL. An ensemble FREL will also
+be discussed. In addition to these feature weighting algorithms
+as well as the implementations of these algorithms, this paperprovides stability analysis for these algorithms.
+A. Energy-Based Learning
+Consider an inference model between input variable xand
+inferred variable y. The goodness of ?t of each possible
+model con?guration relating xtoycan be measured by an
+energy function E(y,x). The value of this energy function
+can be viewed as the degree of compatibility of a given
+con?guration between xandy. Conventionally, small energy
+values correspond to highly compatible con?gurations, while
+large energy values correspond to highly incompatible con?g-
+urations. When applying such an inference model, for a giveninput x, the model produces the most compatible answer y
+?
+such that y?=argminy?YE(y,x). The energy-based learning
+entails ?nding an energy function that produces the best yfor
+ag i v e n x. To search for the best energy function, a family of
+parameterized energy functions of the form F={E(w,y,x):
+w?W}is proposed, where wis the model parameter [13].
+B. Regularized Energy-Based Learning
+To train an energy-based model, we are given a training
+setDcontaining nsamples, D={ X,Y}={ xi,yi}n
+i=1,
+where xiis the ith training input and yiis the corresponding
+desired answer such as a label, but not limited to that. Each
+sample input is represented by a d-dimensional vector, i.e.,
+xi? Rd. To ?nd the best energy function in the family
+F, we need to assess the quality of an energy function,
+only with information from the training set Dand possible
+prior knowledge about the task where data were collected.This quality measure is a loss functional, i.e., a function of
+functions, denoted by L
+D(w). We call it the objective loss
+function. Accordingly, the learning problem becomes ?nding
+thew'that minimizes the objective loss
+w'=argminw?WLD(w). (1)
+Usually, an objective loss function based on data set Dis
+de?ned as follows:
+LD(w)=1
+nn?
+i=1L(w,xi)+?R(w). (2)
+On the right-hand side of (2), L(w,xi)is the per-sample
+loss function. Then, the ?rst term (1/n)?n
+i=1L(w,xi)is
+the sample-averaged loss function, which is taken over n
+respective per-sample loss function, and is denoted by JD(w)
+for simplicity
+JD(w)=1
+nn?
+i=1L(w,xi). (3)
+TheR(w) in (2) is a regularizing term that can be used
+to embed prior knowledge about which energy functions arepreferable to others. In this paper, the classical L1 and L2
+regularizer are respectiv ely examined. Parameter ?in (2) is a
+cost balancing factor.
+Based on the discussion of energy-based learning above, it is
+evident that the per-sample loss function should be designed
+in such a way that it assigns a low loss to well-behaved energy
+functions, i.e., the energy functions that give the lowest energyto the correct answers and higher energy to all other including
+incorrect answers. Conversely, the energy functions that do
+not assign the lowest energy to the correct answers would
+have a high loss [13]. The generalized margin loss functions,
+for example, meet those conditions [13]. It is thus used asthe per-sample loss function L(w,x
+i). Before introducing the
+generalized margin loss function, the following de?nition is
+needed.
+De?nition 1: Letybe a discrete variable. The most offending
+incorrect answer is the one that has the lowest energy among
+all the answers that are incorrect
+yi=argminy?Y,y?=yiE(w,y,xi). (4)
+Then, a generalized margin loss function for per-sample loss
+can be described as follows :
+L(w,xi)=Q?(E(w,yi,xi),E(w,
+yi,xi)) (5)
+where E(w,yi,xi), which is consequently denoted as Eifor
+notation simpli?cation, is the energy of a correct answer
+forxi;E(w,
+yi,xi), denoted by
+ Ei, is the energy of the most
+offending incorrect answer for xi;?is a positive parameter
+called the margin, and it is the energy gap between theincorrect answers and the correct ones. As discussed in [13],
+the function Q
+?(Ei,
+Ei)? Ris assumed to be convex, which
+can be easily satis?ed. Moreover, consider the energy spacede?ned by E
+i×
+Ei,a n dl e t ?Q?/?Eiand?Q?/?
+Eidenote the
+gradient of Q?along Eiand
+Ei, respectively. Then, in general,
+it holds true that ?Q?/?Ei-?Q?/?
+Ei>0 in the region where
+Ei+?>
+ Eiin the energy space. This means wherever
+ Eiis
+smaller than Eiplus?, the gradient along Eiis larger than
+the gradient along
+ Ei. Then, Q?pushes down the value of
+Eiand pulls up the value of
+ Ei. This causes the Q?loss
+surface to be slanted toward low values of Eiand high values
+of
+Ei[13]. This meets the speci?cation in Section II-A that
+the energy value between xiand its compatible answer yibe
+small, while the energy value between xiand its incompatible
+answer
+ yiis large.
+Remark 1: There are many possible realizations of Q?
+in (5) such as the hinge, log, s quare-square, and square-
+exponential losses [13]. For example, when the log loss with
+in?nite margin and the square-square loss with margin ?are
+selected, the corresponding per-sample loss functions in (5)
+are as follows :
+L(w,xi)=log(1+exp(E(w,yi,xi)-E(w,
+yi,xi))) (6)
+L(w,xi)=E(w,yi,xi)2+(max(0,?-E(w,
+yi,xi)))2.(7)
+If the parameter win energy function Eis de?ned as
+the feature weight vector, then a feature weighting algorithmsimply ?nds the w
+'that minimizes the objective loss func-
+tion de?ned in (2). In Section IV-D, the log and square-
+square losses are chosen as two representative per-sample loss
+Authorized licensed use limited to: National University Fast. Downloaded on February 14,2024 at 14:18:01 UTC from IEEE Xplore.  Restrictions apply. 1390 IEEE TRANSACTIONS ON NEURAL NETWORKS AND LEARNING SYSTEMS, VOL. 26, NO. 7, JULY 2015
+functions to construct the objective loss functions and to derive
+speci?c feature weighting algor ithms. However, the theoretical
+results obtained in this paper are not limited to log and square-
+square losses in the feature weighting stability analysis.
+C. Feature Weighting as Regularized Energy-Based Learning
+In short, for a feature weighting problem to be considered
+an energy-based learning problem, ?rst, the parameter win
+the energy function should be relevant to the feature weightvectors. Second, a generalized margin loss function should be
+selected as per-sample loss function L(w,x
+i)a ss h o w ni n( 2 )
+to construct the objective loss function LD(w). After that,
+the correct answer and the most offending incorrect answer
+for a sample should be explic itly identi?ed. To summarize,
+the following issues are critical to the feature weightingalgorithm design: 1) using appropriate criteria to determine
+the correct answer and the most offending incorrect answer
+for each sample and 2) properly designing the structure of an
+energy function E, which is needed in the per-sample loss
+function of (5) and consequently (2). By properly addressingthese issues, learning leads to ?nding the appropriate energy
+function such that the per-sample loss function of (5) will be
+pushed down for correct answers and pulled up for incorrectanswers while maintaining an energy gap or margin.
+To address the ?rst issue of developing appropriate cri-
+teria to determine the correct answer and the most offend-
+ing incorrect answer for each sample, we resort to the
+nearest neighbor (NN) classi?cation scheme. Note that, theNN classi?er is a nonlinear mapping between input patterns
+and class labels. It is a simple algorithm but has received
+considerable attention aga in recently since they have been
+demonstrated highly ef?cient in some state-of-the-art real-
+world applications [14], [15]. Additionally, the NN classi?er
+can be viewed as an energy-based learning where the energy
+function is a sample distance measure. Consider a sample
+x
+i, its NN in the same class denoted by NH(xi)can be
+determined easily so long as a distance measure is de?ned.
+Also, the NH(xi)can be considered as the nearest correct
+answer. Similarly, the NN with a different label denoted by
+NM(xi), can be considered as the most offending incorrect
+answer based on De?nition 1.
+Once the correct and the most offending incorrect answers
+are identi?ed as NH(xi)and NM(xi), respectively, parame-
+terized energy functions E(w,yi,xi)andE(w,
+yi,xi)needed
+in the generalized margin loss function of (5) can be de?ned
+as weighted Manhattan distances as shown in the following:
+E(w,yi,xi)=E(w,NH(xi),xi)=wT|xi-NH(xi)|(8)
+E(w,
+yi,xi)=E(w,NM(xi),xi)=wT|xi-NM(xi)|(9)
+where |·| denotes an element-wise ab solute value operator
+on each component of the argument vector, which is of
+dimension din the cases of (8) and (9), Tdenotes transpose,
+andwis the parameter associated with the energy function.
+As discussed above, the solution to the general energy-basedlearning problem with energy function shown in (2) becomes
+the feature weighting vector w={w(1),w( 2) ,...,w( d)}in
+our current problem setting.
+Algorithm 1 FREL Algorithm
+Step 1 . Input training data set D={xi,yi}n
+i=1,xi?Rd,
+margin ?in (5) and regularization parameter
+?in (2).
+Step 2 . Initialize w=(1,1,..., 1)?Rd.
+Step 3 .F o r i=1,2,..., n
+(a) Given xi,? n dt h e NH(xi)andNM(xi)based
+on NN algorithm.
+(b) From (8) and (9), calculate
+E(w,NH(xi),xi), E(w,NM(xi),xi)
+and obtain the generalized margin loss Q?,
+i.e., L(w,xi),i n( 5 ) .
+(c)?=1
+n?L(w,xi)
+?w+??R(w)
+?w.
+(d)w=w-?
+||?|| 2.
+Step 4 . Output the feature weighting vector w'=w.
+The optimal feature weight w'can then be found by many
+different optimization approaches. As an example, the gradientdescent algorithm is used to illustrate the minimization of the
+objective loss function (2) next. With the above discussions in
+place, we are in a position to summarize our proposed FRELas Algorithm 1.
+Once the parameterized energy functions Ein (8) and (9)
+are de?ned, respectively, we can employ a generalized margin
+loss function of the form (5) as the per-sample loss function
+L(w,x
+i). As discussed, many different generalized margin
+loss functions mentioned in Remark 1 such as the hinge and
+the log losses can be integrated with different regularizers,
+(e.g., L1 or L2 regularizer) to make up different objectiveloss functions L
+D(w) in (2). Therefore, a family of feature
+weighting algorithms could consequently be derived. Note that
+the local learning-based featur e weighting algorithm described
+in [16] is a special case of FREL when the log loss and L1
+regularizer are adopted. Moreover, if the log loss is combinedwith L2 regularizer, which is used to enhance diversity among
+base feature selectors in ensemble feature selection, the algo-
+rithm in [7] can be obtained and it is another special case ofFREL. Note, however, this is the ?rst time that the algorithms,
+including those in [7] and [16], are analyzed from an energy-
+based learning perspective under the proposed framework of
+FREL, and their respective stability properties are provided.
+It also should be pointed out that for the purposes of this
+paper, we use Manhattan distance to determine the NNs and
+to de?ne energy functions in (8) and (9). Nonetheless, other
+standard distance measures such as Euclidean distance are alsoeligible candidates without creating any problem in obtaining
+the results in this paper.
+To summarize, resorting to NN classi?cation, the feature
+weighting problem is described as regularized energy-based
+learning and the feature weighting vector corresponds to the
+parameter win the objective loss function de?ned in (2).
+The generalized margin loss function Q
+?, which is convex,
+in (5) is adopted as per-sample loss function L(w,xi)in
+energy-based learning. For the regularizer in the objective
+loss function (2), the classical L1 and L2 regularizers are
+considered in this paper.
+Authorized licensed use limited to: National University Fast. Downloaded on February 14,2024 at 14:18:01 UTC from IEEE Xplore.  Restrictions apply. LIet al. : FREL: A STABLE FEATURE SELECTION ALGORITHM 1391
+Algorithm 2 Ensemble FREL
+Step 1 . Input training data set D={xi,yi}n
+i=1,xi?Rd,
+margin ?in (5), regularization parameter ?in
+(2), random sampling parameters aandm.
+Step 2 . Initialize wE=(0,0,..., 0)?Rd.
+Step 3 .F o r t=1,2,..., m
+(a) Produce a bootstrap subset D(rt)with size
+?an?.
+(b) Perform FREL on D(rt)to obtain a base
+weighting result wD(rt).
+(c)wE=wE+1
+mwD(rt).
+Step 4 . Output the ensemble feature weighting result wE.
+D. Ensemble FREL
+Ensemble learning is an effective approach for producing
+robust and accurate learning solutions in machine learn-
+ing [17], [18] as demonstrated by many signi?cant applica-
+tions [19]–[21]. For instance, a popular ensemble learningmaking use of the bagging approach [22] consists in averaging
+several estimators built from random subsamples of the
+original data set.
+Similar to the ensemble models for supervised learning,
+there are two essential steps in ensemble feature selection.
+The ?rst step involves creating a set of different base feature
+selectors, each provides its output, while the second step
+aggregates the results of all base feature selectors [4].
+In our case, bootstrap-based strategy as in [4] and [7]
+is used to train base feature selectors derived from FREL
+onmdifferent bootstrap subsets of the original training set
+D={x
+i,yi}n
+i=1. Ensemble feature weighting result is achieved
+by averaging the obtained solutions from the base feature
+selectors. Let 0 <a< 1a n d ?an?be the integer closest to
+an.F o r t=1,..., m,l e t rt={rt(1),rt(2) ,..., rt(?an?)}be
+an index sequence randomly draw n from the natural sequence
+{1,..., n}without replacement. We denote the mbootstrap
+subsets by D(rt)={xrt(k),yrt(k)}?an?
+k=1fort=1,..., mand
+the subsets are all drawn independently.
+LetwD(rt)denote the outcome of the feature weighting
+algorithm after FREL is applied on the tth bootstrap training
+subset D(rt). Therefore, we obtain mbase feature weight-
+ing results {wD(r1),wD(r2),...,w D(rm)}. In this paper, the
+ensemble result is obtained as
+wE=1
+mm?
+t=1wD(rt) (10)
+which is aggregated by averaging the outputs of base feature
+selectors. The pseudocode for the above discussed ensemble
+FREL is provided in Algorithm 2.
+III. S TABILITY ANALYSIS
+In this paper, the stability of FREL is considered in the
+following sense: variations in outputs are small or boundedin response to small variations in the input of the data set.
+This may entail the following two scenarios. The ?rst is
+perturbation at the instance level caused by, for example,removing samples from or adding samples to the data set.
+The second is perturbation at the feature level caused by,
+for example, adding noise to the features in the data set.
+In addition, a combination of both types of perturbations mayimpose on a data set and cause stability concerns [4].
+The stability of several classi?cation, regression, and sample
+ranking methods has been analyzed thoroughly [23]–[25] inthe sense similar to that descr ibed above. However, the sta-
+bility of feature selection algorithms has only been examined
+empirically. This paper aims at pr oviding a theoretical analysis
+for the stability of so me feature weighting algorithms under
+FREL.
+To account for small instance level perturbations, we only
+need to consider removing one sample from the data set and
+then analyzing the stability property of a feature weightingalgorithm. Stability consideration after adding a sample fol-
+lows directly from the result of removing a sample. To account
+for small feature level perturbations, we need to consider
+changing one sample and examine its impact on the stability of
+the algorithm. Before we proceed to analyzing both scenarios
+described above, consider the following.
+For a given training set Dof size nfrom a certain
+distribution P, its samples are drawn independent identically
+distributed (i.i.d.) from P.L e t D
+\idenote a modi?ed training
+data set by removing the ith training sample (xi,yi)from the
+original training data set D,w h e r e i?{1,···,n}. We denote
+byDi, the training set obtained by changing one sample from
+(xi,yi)to(x'
+i,y'
+i).
+De?nition 2: Consider a feature weighting algorithm Awith
+output feature weight vectors denoted by wDandwD\ifor
+data set Dand D\i, respectively. Algorithm Aisuniformly
+weighting stable with stability bound ß(ß=0) if for any D
+of size nand any i?{1,..., n},w eh a v e
+||wD-wD\i||2=ß. (11)
+Intuitively, a smaller value of ßcorresponds to greater
+stability. To consider stability properties of algorithm Awith
+theith data sample distorted from the original ith data sample,
+i.e., the training data set is changed from DtoDi,w el e tt h e
+feature weight vector wDidenote the output of algorithm A
+for data set Di. Based on the uniform weighting stability de?-
+nition in (11) and by applying the triangle inequality, we have
+||wD-wDi||2=| |(wD-wD\i)-(wDi-wD\i)||2
+=| |wD-wD\i||2+| |wDi-wD\i||2
+=2ß. (12)
+Therefore, according to (12), the stability of changing one
+sample can be reduced for analyzing the stability of removingone sample. In other words, the uniform weighting stability
+formulated under the removal of one training data sample
+implies the same stability con cept under the condition of one
+sample deviates from the original data sample. As such, stabil-
+ity in the sense of De?nition 2 can be used for analyzing thestability of algorithm Aunder the perturbations at both instance
+and feature levels, which are described at the beginning of this
+section.
+Authorized licensed use limited to: National University Fast. Downloaded on February 14,2024 at 14:18:01 UTC from IEEE Xplore.  Restrictions apply. 1392 IEEE TRANSACTIONS ON NEURAL NETWORKS AND LEARNING SYSTEMS, VOL. 26, NO. 7, JULY 2015
+In the following sections, we will discuss the stability
+of FREL with L2 and L1 regularizers, and the stability of
+ensemble FREL, respectively.
+A. Stability Analysis for FREL With L2 Regularizer
+In this section, we examine stability properties of FREL
+withR(w)in (2) being an L2 regularizer.
+Remark 2: For this part of the stability analysis, given the
+choice of the energy functions as in (8) and (9), we use the
+shorthand notation of L(wTzi)in place of the per-sample
+loss function L(w,xi)in (5), where ziis considered a trans-
+formation of xi. For different loss functions in Remark 1,
+the expressions of ziare different. For instance, if the log
+loss is used, then zi=|xi-NH(xi)|-| xi-NM(xi)|.
+Furthermore, if the training samples xi’s are bounded and can
+be normalized, then ||zi||2should be as well. We denote this
+by||zi||2=f.
+Then, according to (2) and Remark 2 above, the objective
+functions LD(w)andLD\i(w)with L2 regularizer are, respec-
+tively, de?ned as follows :
+LD(w)=1
+nn?
+j=1L(wTzj)+?||w||2
+2 (13)
+LD\i(w)=1
+nn?
+j=1,j?=iL(wTzj)+?||w||2
+2. (14)
+Theorem 1: Consider the FREL with L2 regularizer and
+a given training set D.L e t Dcontain ninput samples
+xi? Rdwith its corresponding transformation ziprovided as
+in Remark 2, and that ||zi||2=f(i=1,..., n). Assume that
+the per-sample loss function L(wTzi)in (5) is Lipchitz with
+constant d.L e twDandwD\ibe the feature weighting results
+through minimizing the convex objective functions LD(w)
+andLD\i(w)in (13) and (14), respectively. Then, FREL with
+L2 regularizer is uniformly weighting stable with stabilitybound ß=df/n?.
+Proof: Refer to Appendix A.
+Remark 3: Theorem 1 shows that FREL with L2 regularizer
+has uniform weighting stability. Furthermore, the stability
+bound approaches zero as O(1/n). Therefore, this is a tight
+bound.
+Remark 4: To consider stability in the sense of De?nition 2,
+for the case of removing qsamples, the corresponding stability
+bound can be obtained similarly to that for a single sample
+removed and the bound is qtimes that of a single sample
+removed as well.
+B. Stability Analysis for FREL With L1 Regularizer
+Now, we turn to stability analysis for FREL with L1 regu-
+larizer. Due to the nature of the L1-norm, the feature selection
+algorithm with L1 regularizer usually results in sparse solu-
+tions, i.e., the feature vector output contains some elements
+that are zero. Xu et al. [26] proved that sparsity and stability
+are at odds with each other for classi?cation and regression
+problems. They show that sparse algorithms are not stable,
+as de?ned in [23]. Speci?cally, if an algorithm encouragessparsity, then it is susceptible to small variations in input. They
+also proved that a sparse algorithm can identify redundant
+features (IRFs). Being IRF means that if the two features are
+highly dependent on each othe r, then removing one of the
+features would not affect the class-discriminative power of the
+algorithm. Therefore, a sparse algorithm may have nonunique
+optimal solutions and thus may be ill-posed. In this paper, weprovide some constraints so that the stability of FREL with
+L1 regularizer in the sense of De?nition 2 can be preserved.
+For a given training set Dfrom distribution P, assume
+that there exists a true unique unknown feature weighting
+vector w
+?.L e twDandwD\ibe the optimal estimates of w?,
+respectively, where the optimality refers to that wDandwD\i
+are optimal solutions as a result of minimizing the objective
+loss functions LD(w)andLD\i(w), respectively
+LD(w)=1
+nn?
+j=1L(w,xj)+?||w||1 (15)
+LD\i(w)=1
+nn?
+j=1,j?=iL(w,xj)+?||w||1. (16)
+Then, we have
+||wD-wD\i||2=| |wD-w?-(wD\i-w?)||2
+=| |wD-w?||2+| |wD\i-w?||2.(17)
+Let||?w1||2=| |wD-w?||2and||?w2||2=| |wD\i-w?||2.
+Then
+||wD-wD\i||2=| |? w1||2+| |? w2||2. (18)
+To carry on the discussion of uniform weighting stability
+for FREL with L1 regularizer, we de?ne the exactly sparse
+model below.
+De?nition 3: If some feature weights in the feature weight-
+ing vector are exactly zero, then this feature weighting model
+isexactly sparse.
+Moreover, to analyze the stability of FREL with L1 regu-
+larizer, we also need some additional conditions, such as the
+sample-averaged loss functions JD(w)=1/n?n
+j=1L(w,xj)
+andJD\i(w)=1/n?n
+j=1,j?=iL(w,xj)as in (3) are differ-
+entiable and they satisfy the strong convexity condition [27]de?ned below.
+De?nition 4: The sample-averaged loss function J
+D(w)has
+thestrong convexity with parameter ?D=0, if
+JD(w?+?w1)-JD(w?)=? ?JD(w?),?w1?
++?D|| ?w1||2
+2 (19)
+where ?,?is the inner product. Similarly, we can de?ne strong
+convexity for JD\i(w)on?w2with parameter ?D\i=0.
+Remark 5: Refer to Remark 1 where we elaborated on some
+per-sample loss functions for L(w,xj). Among these func-
+tions, the log, square-square, a nd square-exponential losses are
+differentiable. Therefore, the corresponding sample-averaged
+loss functions JD(w)andJD\i(w)are also differentiable.
+Remark 6: For those differentiable per-sample loss functions
+in Remark 5, it is evident that the square-exponential and
+square-square losses are strongly convex. Just as introduced
+Authorized licensed use limited to: National University Fast. Downloaded on February 14,2024 at 14:18:01 UTC from IEEE Xplore.  Restrictions apply. LIet al. : FREL: A STABLE FEATURE SELECTION ALGORITHM 1393
+in [28], the log loss is also strongly convex. Then, their
+corresponding sample-averaged loss functions JD(w) and
+JD\i(w)are also strongly convex.
+Theorem 2: Consider FREL with L1 regularizer and a
+given training set Dfrom distribution P.L e t Dcontain n
+input samples xi?Rd(i=1,..., n)andw?be the true
+unique unknown feature weighting vector, and it is exactlysparse. Assume the sample-averaged loss function J
+D(w)and
+JD\i(w)are differentiable and have the strong convexity with
+parameter ?D=0a n d ?D\i=0 as in De?nition 4, respec-
+tively. Let wDandwD\ibe the sparse feature weighting results
+from minimizing the convex objective functions LD(w) and
+LD\i(w) in (15) and (16), respectively. Then, for parameter
+?=max[|| ?JD(w?)||8,|| ?JD\i(w?)||8], FREL with
+L1 regularizer is uniformly weighting stable with stabilitybound ß=2v
+d?(1/?D+1/?D\i).
+Proof: Refer to Appendix B.
+Remark 7: For FREL with L1 regularizer, if its output
+is exactly sparse and the sample-averaged loss functions
+are strongly convex, then th e feature weighting stability
+bound is inversely affected by the strong convexity constants
+?Dand?D\i.
+Remark 8: The bound also scales with the regularization
+parameter ?. This makes sense since the more sparse solutions
+lead to less feature weighting stability properties.
+Remark 9: Consider stability in De?nition 2 for the case of
+removing qsamples. Let the corresponding sample-averaged
+loss function be strongly convex with parameter ?D\\q=0.
+Then, the st ability bound for qremoved samples can be
+obtained similarly to that for a single sample remove, and
+the stability bound is 2v
+d?(1/?D+1/?D\\q).
+C. Stability for Ensemble FREL
+Based on De?nition 2, the uniform weighting stability of
+the ensemble FREL proposed in Section II-D is de?ned asfollows.
+De?nition 5: For a given training data set D={x
+i,yi}n
+i=1
+and any i?{1,..., n}, the ensemble FREL is uniformly
+weighting stable with stability bound ßE,i f
+?????E
+r1,...,rm[
+1
+mm?
+t=1wD(rt)]
+-Er1,...,rm[
+1
+mm?
+t=1wD\i(rt)]?????
+2
+=ßE(20)
+where wD(rt)is the base feature weighting result of FREL on
+bootstrap subset D(rt)whose size is ?an?(0<a< 1),
+andwD\i(rt)is the base feature weighting result of FREL
+on bootstrap subset D(rt)with xi,i?{1,..., n}, removed,
+mis the number of bootstrap subsets, Eis the expectation,
+and for t=1,..., m,rt={rt(1),rt(2) ,..., rt(?an?)}is an
+index sequence randomly draw n from the natural sequence
+{1,..., n}without replacement.
+Theorem 3: Consider ensemble FREL described in
+Algorithm 2 and a given data set Dcontaining ninput
+samples xi(i=1,..., n). Bootstrap strategy is adopted
+with the samp ling parameter a(0<a< 1)to create
+mbootstrap subsets D(rt)with size ?an?fort=1,..., m,
+where rt={rt(1),rt(2) ,..., rt(?an?)}is an index sequencerandomly drawn from the natural sequence {1,..., n}without
+replacement, and r1,..., rmare i.i.d. Let ßbe the uniform
+stability bound of the base feature weighting algorithm FREL.
+Then, ensemble FREL is uniformly weighting stable withstability bound ß
+E=aß.
+Proof: Refer to Appendix C.
+Remark 10: Theorem 3 indicates that ensemble feature
+weighting has tighter stability bound than its base feature
+weighting, which is consistent with observations from exper-
+iments in [4] and [6] that ensemble strategy usually improves
+feature selection stability.
+Remark 11: For the case of removing qsamples, the
+corresponding stability bound can be obtained similarly to that
+for a single removed sample and the bound is approximately
+aqß\\q,w h e r e ß\\qis the stability bound for the base feature
+weighting with qsamples removed.
+IV . E XPERIMENTS
+In this section, we evaluate stability and accuracy of
+(ensemble) FREL in comparisons with some popular fea-
+ture weighting algorithms. Four real life problems areconsidered.
+The HDSSS problem is among the most challenging prob-
+lems for feature selection, particularly if output stability is
+desired. To evaluate and illustrate algorithm accuracy and
+stability of FREL for HDSSS problems, we analyzed real-world microarray data including TOX, SMK, leukemia [29],
+and prostate [30]. The ?rst two data sets are downloaded from
+http://featureselection.asu.edu/datasets.php, while the later twoare available in [29] and [30]. The goal of analyzing these four
+HDSSS problems is to identify those genetic expressions that
+are linked to respective diseases.
+The TOX data set contains 171 instances with 5748 genes.
+They consist of myocarditis and dilated cardiomyopathy
+(DCM) infected males and females as well as uninfected
+males and females. The DCM is often caused by viral infec-
+tions and can occur more frequently in men than women.DCM infection increases a person’s risk of dying from heart
+failure.
+The SMK data set contains 187 smokers either with or
+without lung cancer. The total number of genes to be tested
+is 19 993.
+Leukemias are primary disorders of the bone marrow. They
+are malignant neoplasms of hematopoietic stem cells. The
+leukemia data set to be analyzed includes 72 samples to betested, which are from acute le ukemia patients, either acute
+lymphoblastic leukemia or acute myelogenous leukemia. The
+total number of genes to be tested is 7129.
+The prostate data set contai ns 136 samples of prostate
+cancer patients, which have 12 600 genes to be studied. Among
+the samples, 77 are tumor and 59 are normal.
+As described, the four data sets (TOX, SMK, leukemia, and
+prostate) share the common traits of small samples (171, 187,72, and 136) with an extremely high dimensionality in latent
+variables (5748, 19 993, 7129, and 12 600). They are typical
+HDSSS problems.
+Authorized licensed use limited to: National University Fast. Downloaded on February 14,2024 at 14:18:01 UTC from IEEE Xplore.  Restrictions apply. 1394 IEEE TRANSACTIONS ON NEURAL NETWORKS AND LEARNING SYSTEMS, VOL. 26, NO. 7, JULY 2015
+A. Algorithms for Comparison
+For HDSSS problems, it is generally accepted that conven-
+tional feature selection algorithm should not be used directlyfor obtaining stable feature outputs [6], [7], [10]. Instead,
+ensemble algorithms are expected to improve stability proper-
+ties of feature selection. We therefore focus on the ensembleFREL provided in Algorithm 2 when conducting comparisons
+in this paper. However, we still provide classi?cation accuracy
+results using the original FREL presented in Algorithm 1.
+For comparison purposes, we consider three speci?c
+FREL-based algorithms, as described in Algorithm 1:Log+L2, Log +L1, and Square +L2. The Log +L2 consists of
+log loss in (6) as per-sample loss function and L2 regularizer
+||w||
+2
+2is used. For the Log +L1 algorithm, the per-sample loss
+function is the same as in Log +L2, but L1 regularizer ||w||1is
+used. The Square +L2 is based on square-square loss function
+in (7) and L2 regularizer. For a sample xi,t h em a r g i n ?in
+Square+L2 is set as the Manhattan distance between NM(xi)
+and NH(xi). The ensemble versions of these three algo-
+rithms according to Algor ithm 2 are named as En-Log +L2,
+En-Log +L1, and En-Square +L2, respectively.
+Since the focus of this paper is on feature weighting, we
+therefore chose some popular feature weighting algorithms for
+comparison. The algorithms include Relief, ReliefF [31]–[33],
+Fisher score [34], En-Relief [4], En-ReliefF, En-Fisher,
+and variance reduction (VR)-Lmba. En-Relief, En-ReliefF, and
+En-Fisher are the ensemble versions of Relief, ReliefF,and Fisher score, respectivel y. The implementations of the
+En-Relief, En-ReliefF, and En-Fisher are similar to the ensem-
+ble FREL as described in Algorithm 2 with Relief, ReliefF,and Fisher score in place of the FREL, respectively.
+The Relief algorithm is considered one of the most suc-
+cessful feature selection algorithms due to its simplicity and
+effectiveness [35]. The key idea of Relief is to iteratively
+estimate feature weights according to their ability to discrim-inate between the neighboring samples. In each iteration, a
+sample x
+iis randomly selected and then two NNs of xiare
+found, one from the same class and the other from a differentclass. The weight of the pth feature is then updated based on
+the distance between x
+iand its two NNs on the pth feature.
+The ReliefF is an extension of Relief by considering several
+NNs to deal with multiple class problems.
+Here, we would like to highlight the relationship between
+FREL and Relief (ReliefF). First of all, both algorithms can be
+viewed as hypothesis-margin-based approaches [36]. However,
+the differences between the two algorithms are evident: 1) ourproposed FREL is a systematic framework for stable feature
+selection based on energy-base d learning and regularization.
+Many speci?c algorithms can be viewed as realizations ofFREL; 2) regularizations are considered in FREL but not in
+Relief; 3) Relief directly calculates the feature weights based
+on margins (distances) while FREL obtains feature weights
+based on margin losses, and the loss functions can be selected
+from a pool of candidate functions ; and 4) a stability analysis
+for FREL is provided for the ?rst time.
+Fisher score is one of the most widely used feature selection
+methods. The key idea of Fisher score is to ?nd feature weightssuch that in the data space spanned by the weighted features,
+the distances between data points in different classes are as
+large as possible, while the distances between data points in
+the same class are as small as possible. Then, the criterionfor Fisher score prefers features that have similar values for
+the samples from the same class and different values for the
+samples from different classes. Feature weights are obtainedby computing the deviation of each feature from its mean value
+on all classes.
+The VR-Lmba is a nonensemble stable feature
+weighting algorithm. VR-Lmba uses a sample weighting
+strategy [9], [10] to improve the stability of feature weightingalgorithm—Lmba [37]. The sample weighting strategy
+introduced in [9] and [10] is an effective approach to
+improve the stability for any feature selection methods.
+It assigns different weights to samples before performing
+feature selection with the aim of VR. In this paper, we
+combine the sample weighting strategy with Lmba to obtain
+a stable feature weighting algorithm VR-Lmba, as presented
+in [7]. The feature weighting algorithm—Lmba is derivedfrom energy-based model without regularization. In other
+words, the objective function for Lmba is similar to that
+in (2) without R(w). The square-square loss mentioned in
+Remark 1 is used as per-sample loss function L(w,x
+i)in (5).
+Several NNs in the prede?ned range are considered in Lmba.
+B. Stability Measurement
+Since in almost all feature selection applications, the ulti-
+mate outputs of a feature selector should be a subset of features
+that are considered most prominent. Therefore, in the litera-ture, one usually makes use of the corresponding feature ranks
+in place of the feature weights for performance evaluation.
+Under the same consideration to evaluate the stability of FREL
+in this paper, we ?rst compute the feature weights as outputs
+of FREL, then these weights are turned into feature ranks, asin [4] and [7]. Therefore, our stability measure used in this
+paper is based on feature ranks.
+To be statistically signi?cant, several different sets of
+feature ranking results are obtained to empirically compute
+the stability measure. We theref ore use the bootstrap-based
+strategy without replacement. Consider the data set Dwith
+ninstances and dfeatures. Then, csampling subsets D(r
+l),
+l=1,..., c,o fs i z e ?µn?(0<µ< 1)are drawn randomly
+from Dbased on bootstrap sampling without replacement.
+Note that, we name the sampling subset D(rl)as a sample
+subset to distinguish it from a bootstrap subset in ensemblefeature weighting procedure. Subsequently, feature weighting
+algorithms are performed on each of the csample subsets. Just
+as emphasized earlier, the feature weighting results should betransformed to feature ranking results to calculate the stability
+measure. As such, each algorithm will result in cfeature
+ranking results {R
+1,R2,..., Rc}oncsample subsets. For
+nonensemble feature weighting algorithm, such as VR-Lmba,
+Log+L2, and so on, to transform its feature weighting result
+on each sample subset into feature ranking result, the rank
+value for a feature is determined as follows. The best feature
+with the largest weight is assigned rank 1, and the worst rank d.
+Authorized licensed use limited to: National University Fast. Downloaded on February 14,2024 at 14:18:01 UTC from IEEE Xplore.  Restrictions apply. LIet al. : FREL: A STABLE FEATURE SELECTION ALGORITHM 1395
+For ensemble feature weighting, feature ranking is obtained as
+described below.
+Similar to the ensemble procedure described in
+Algorithm 2, each sample subset D(rl)with size s=?µn?
+(0<µ< 1), is still randomly sampled using bootstrap
+strategy without replacement to produce mbootstrap subsets
+D(rlt)(t=1,..., m)with size ?as?(0<a< 1),a n d
+feature weighting algorithms (Relief, ReliefF, Fisher score,
+and our proposed FREL), are performed on each bootstrap
+subset D(rlt)(t=1,..., m)to obtain mbase feature
+weighting vectors {wD(rl1),...,w D(rlm)}. To obtain the
+ensemble feature ranking result for the ensemble featureweighting algorithm on each sample subset D(r
+l),mbase
+feature weighting vectors are correspondingly transformed to
+mbase feature ranking vectors {vD(rl1),..., vD(rlm)}based on
+the assignment rule above. The ?nal feature rank for each
+sample subset D(rl),l=1,..., c, is obtained by averaging
+over the respective bootstrapping subset-based feature ranks,
+i.e., Rl=1/m?m
+t=1vD(rlt)[4].
+Consider a feature ranking vector set {R1,R2,..., Rc},
+where Rl=(R1
+l,R2
+l,..., Rd
+l),l=1,2,..., c, is the feature
+ranking result for the dfeatures on the lth sample subset. Fea-
+ture selection stability is measured by comparing similaritiesamong the feature outputs on the csample subsets. The more
+similar the outputs are, the higher the stability measure is.
+The overall stability is de?ned as the average similarity based
+on all pairwise similarities between different feature ranking
+results
+R
+sta=2
+c(c-1)c-1?
+l=1c?
+l'=l+1Sim(Rl,Rl') (21)
+where Sim (Rl,Rl')represents a similarity measure between
+feature ranking results Rland Rl'. For feature ranking, the
+Spearman rank correlation coef?cient [4], [38] is used to
+calculate the similarity
+Sim(Rl,Rl')=1-6d?
+p=1(Rp
+l-Rp
+l')2
+d(d2-1). (22)
+C. Experiments Performed for Stability
+Based on the stability measurement procedure described in
+Section IV-B, for a given data set, c=10 sample subsets
+containing µ=90% of the data are randomly drawn without
+replacement using bootstrap-based strategy. This percentage
+was chosen as in [4] to assess stability with respect to relatively
+small changes in the data set. For example, leukemia dataset is randomly drawn using bootstrap-based strategy without
+replacement to create 10 sam ple subsets, thus each sample
+subset contains 64 patient samples with 7129 genes.
+Then, for each sample subset, ensemble feature weighting
+algorithms (En-Log +L2 with ?=1, En-Log +L1 with ?=
+0.01, En-Square +L2 with ?=0.1, En-Relief, En-ReliefF
+with 10 NNs, and En-Fisher) are applied as described in
+Section IV-B with a=0.9 to obtain feature ranking results.
+Simultaneously, the nonensemble feature weighting algorithm
+VR-Lmba, which is another method for improving the stability
+of feature selection, is also applied to each sample subset. For
+Fig. 1. Experimental evaluation of stability for m=20, the number of
+base feature selectors, for each of the seven candidate stable feature selectionalgorithms.
+10 sample subsets, we obtain 10 feature ranking results for
+each feature weighting algorith m. For each feature weighting
+algorithm, the similarity between feature ranking result pairs is
+calculated using Spearman rank c orrelation coef?cient in (22).
+The stability of each feature weighting algorithm is thus
+the average similarity over all pairwise similarities calculated
+by (21).
+Moreover, we examine the effect of the regularization
+parameter ?in (2) on the stability of our FREL. As examples,
+one original algorithm derived from FREL, i.e., Log +L2, and
+one ensemble algorithm derived from ensemble FREL, i.e.,
+En-Log +L2 with m=20, are chosen.
+D. Experimental Results for Stability
+We ?rst examine the effect of the number of bootstrap
+subsets used in ensemble methods, namely, how maffects
+the stability measure. We see that all algorithms display anupward trend in stability as mincreases, but saturates at around
+m=20. Since VR-Lmba is not an ensemble method, its
+stability remains constants. The stability results for ensemble
+feature weighting algorithms with m=20 and VR-Lmba
+are therefore shown in Fig. 1. From Fig. 1, we observethat the proposed ensemble FREL with L2 regularizer
+(En-log +L2 and En-Square +L2), always have the highest sta-
+bility among all the algorithms. Our algorithm with L1 regular-izer (En-log +L1), has the lowest stability, which is consistent
+with the observation in [26] that sparsity and stability are at
+odds with each other.
+On the other hand, we examine the effect of the regular-
+ization parameter ?in (2) on the stability of FREL (Log +L2
+and En-Log +L2). Results on leukemia and prostate data sets
+are included. Similar results were obtained for the other two
+data sets. They are not included here due to space limitations.The experimental results are shown in Fig. 2. We observe that
+along with the increase in ?, the stability of Log +L2 and
+En-Log +L2 are improved, which is consistent with our
+theoretical analysis.
+E. Experiments Performed for Accuracy
+A good feature selector has to b e both stable and accurate.
+Once stable features are selected , an important consideration
+Authorized licensed use limited to: National University Fast. Downloaded on February 14,2024 at 14:18:01 UTC from IEEE Xplore.  Restrictions apply. 1396 IEEE TRANSACTIONS ON NEURAL NETWORKS AND LEARNING SYSTEMS, VOL. 26, NO. 7, JULY 2015
+Fig. 2. Experimental evaluation of stability as a function of ?,t h e
+regularization parameter in (2), for Log +L2 and En-Log +L2 on leukemia
+and prostate.
+in many applications is the classi?cation accuracy using the
+selected features. The accuracy has to be evaluated in conjunc-
+tion with a classi?cation model based on the selected features.
+In experiments conducted in this paper, 1-NN (1NN) classi?er,
+3-NNs (3NN) classi?er, the linear support vector machine
+(SVM) with C=1 [39], and SVM with polynomial kernel are
+used as classi?cation models since they are generally consid-
+ered easy to apply and good classi?ers. Each classi?er is used
+for classi?cation based on each of the feature weighting algo-rithms introduced in Section IV- A. Classi?cation accuracy is
+assessed using a 10-fold cross-validation. For each fold, a fea-
+ture weighting algorithm was applied to the training data to
+obtain the feature ranking result. For ensemble feature weight-
+ing algorithms (En-log +L2, En-log +L1, En-Square +L2,
+En-Relief, En-ReliefF, and En-Fisher), based on the exper-
+imental results in Sec tion IV-D, for each fold, m=20
+bootstrap subsets of training data were randomly drawn witha=0.9 to create the ensemble feat ure weighting algorithms.
+After the features are ranked in descending order, different
+numbers of important features are selected with top ranks one
+by one to create classi?ers. Note that it is often observed in
+microarray data that only a small amount ( ˜50) of features,
+i.e., genes, is relevant [9], [10], [16], thus the number of
+selected important features from ranking results is less than
+100 in our experiments. Once test result based on testingdata is obtained for each fold, the ?nal classi?cation accuracy
+results are obtained by averaging over the 10 folds.
+F . Experimental Results for Accuracy
+Our accuracy results are provided for the case of using
+50 selected features. Fig. 3 shows a summary of the accu-
+racy values for regular featur e selection algorithms (Lmba,
+Relief, ReliefF with 10 NNs, Fisher score, Log +L2, Log +L1,
+and Square +L2) using 1NN, 3NN, linear SVM, and poly-
+nomial kernel SVM classi?er. Fig. 4 shows a summary ofaccuracy values for algorithms designed to improve stability
+(En-Relief, En-ReliefF, En-Fisher, En-Log +L2, En-Log +L1,
+En-Square +L2, and VR-Lmba) using 1NN, 3NN, linear SVM,
+and polynomial kernel SVM classi?er.
+These results as summarized in Figs. 3 and 4 show that
+no one algorithm is consistently better than any other on the
+four tested data sets. However, FREL and ensemble FREL are
+comparable with other algorithms most of the time.
+Fig. 3. Experimental results for accuracy of original feature selection methods
+using different classi?ers. (a) 1NN. (b) 3NN. (c) Linear SVM. (d) Polynomial
+SVM.
+G. Evaluation of Tradeoff Between Stability and Accuracy
+To measure the tradeoff between stability and classi?-
+cation accuracy of a feature selection algorithm, we take
+reference of the robustness-performance tradeoff in [4] to
+Authorized licensed use limited to: National University Fast. Downloaded on February 14,2024 at 14:18:01 UTC from IEEE Xplore.  Restrictions apply. LIet al. : FREL: A STABLE FEATURE SELECTION ALGORITHM 1397
+Fig. 4. Experimental results for accuracy of methods designed for stable
+feature selection using different classi?ers. (a) 1NN. (b) 3NN. (c) Linear SVM.(d) Polynomial SVM.
+measure the tradeoff between feature stability and clas-
+si?cation accuracy in this paper. Speci?cally, we de?ne
+stability-accuracy trade-off (SAT) as SAT =(2×stability ×
+accuracy )/(stability +accuracy )where stability can be imple-
+Fig. 5. Experimental results about tradeoff between stability and accuracy
+for methods designed for stable feature s election using different classi?ers.
+(a) 1NN. (b) 3NN. (c) Linear SVM. (d) Polynomial SVM.
+mented by Rstain (21), accuracy is evaluated using the classi-
+?cation outcome based on the selected features. The stability
+value for ensemble feature weighting when m=20 and the
+corresponding accuracy when the number of selected feature is
+Authorized licensed use limited to: National University Fast. Downloaded on February 14,2024 at 14:18:01 UTC from IEEE Xplore.  Restrictions apply. 1398 IEEE TRANSACTIONS ON NEURAL NETWORKS AND LEARNING SYSTEMS, VOL. 26, NO. 7, JULY 2015
+50 are used to calculate their tradeoff. The experimental results
+for different classi?ers are shown in Fig. 5 where ensemble
+FREL with L2 regularizer is shown providing a better tradeoff
+between stability and accuracy than other compared methods.
+V. C ONCLUSION
+In this paper, we have proposed a new framework for
+FREL, which includes many useful stable feature weighting
+algorithms as its realizations. We also provide for the ?rst
+time the theoretical results for the uniform weighting stabilityof FREL with L1 and L2 regularizers. Ensemble FREL is
+introduced as a means of further improvement of stability, the
+stability of which is also provided. To evaluate FREL andensemble FREL performance, we make use of three speci?c
+realizations, Log +L1, Log +L2, and Square +L2, respectively.
+Several other popular feature selection algorithms are included
+in comparison with benchmark performances based on chal-
+lenging HDSSS problems. Our experimental results show thatour ensemble FREL when using the L2 regularizer outper-
+forms other algorithms in stability while providing comparable
+classi?cation accuracy.
+A
+PPENDIX A
+PROOF OF THE THEOREM 1
+Proof: Let?wD=wD-wD\i,w h e r e wDandwD\iare
+the feature weighting results through minimizing the convex
+objective functions LD(w) and LD\i(w) in (13) and (14),
+respectively. As such LD(wD)and LD\i(wD\i)retain mini-
+mum values at wDandwD\i, respectively. Accordingly, this
+leads to the following for any a?[0,1]:
+LD(wD)-LD(wD-a?wD)=0 (23)
+LD\i(wD\i)-LD\i(wD\i+a?wD)=0. (24)
+Equations (13) and (14) are used to replace the
+corresponding terms in (23) and (24). It is evidentthat 1 /n?
+n
+j=1L(wT
+Dzj)= 1/n?n
+j=1,j?=iL(wT
+Dzj)+
+1/nL(wT
+Dzi). We use a shorthand notation 1 /n?
+j\ifor
+1/n?n
+j=1,j?=ifor the ease of discussion. Then, using (23)
+and (24) together, we have
+1
+n?
+j\iL(wT
+Dzj)+1
+nL(wT
+Dzi)
+-1
+n?
+j\iL((w D-a?wD)Tzj)
+-1
+nL((w D-a?wD)Tzi)+1
+n?
+j\iL(wT
+D\izj)
+-1
+n?
+j\iL((wD\i+a?wD)Tzj)+?.||wD||2
+2
+-?||wD-a?wD||2
+2+?||wD\i||2
+2
+-?||wD\i+a?wD||2
+2
+=0. (25)Since the per-sample loss function in (5) is convex, then by
+Jensen’s inequality
+L((w D-a?wD)Tzj)=L((1-a)wT
+Dzj+awT
+D\izj)
+=(1-a)L(wT
+Dzj)+aL(wT
+D\izj)
+=L(wT
+Dzj)
+-a(L(wT
+Dzj)-L(wT
+D\izj)).(26)
+Similarly, we also can obtain
+L((wD\i+a?wD)Tzj))=L(wT
+D\izj)+a(L(wT
+Dzj)
+-L(wT
+D\izj)). (27)
+Substituting two identities (26) and (27) into (25) leads to
+||wD||2
+2-| |wD-a?wD||2
+2-| |wD\i+a?wD||2
+2
++||wD\i||2
+2
+=a
+n?(L(wT
+D\izi)-L(wT
+Dzi)). (28)
+Note that the inequality L(wT
+D\izi)-L(wT
+Dzi)=d|wT
+D\izi-
+wT
+Dzi|holds because the per-sample loss function L(wTzi)is
+Lipchitz with d[40]. Therefore
+||wD||2
+2-| |wD-a?wD||2
+2-| |wD\i+a?wD||2
+2
++||wD\i||2
+2=ad
+n?|wT
+D\izi-wT
+Dzi|
+=ad
+n?|?wT
+Dzi|. (29)
+If we set a=1/2, the left-hand side of (29) amounts to
+||wD||2
+2+| |wD\i||2
+2-1
+2||wD+wD\i||2
+2
+=1
+2||wD||2
+2+1
+2||wD\i||2
+2-wT
+DwD\i
+=1
+2||wD-wD\i||2
+2
+=1
+2|| ?wD||2
+2. (30)
+Thus
+|| ?wD||2
+2=d
+n?|?wT
+Dzi|. (31)
+Then, based on the Cauchy–Schwarz inequality, we have
+|?wT
+Dzi|=| |? wD||2||zi||2. (32)
+Combining (31) and (32) above, and using ||zi||2=f,w e
+obtain the uniform stability bound for FREL with L2 regular-
+izer
+||wD-wD\i||2=| |? wD||2=df
+n?. (33)
+¦
+Authorized licensed use limited to: National University Fast. Downloaded on February 14,2024 at 14:18:01 UTC from IEEE Xplore.  Restrictions apply. LIet al. : FREL: A STABLE FEATURE SELECTION ALGORITHM 1399
+APPENDIX B
+PROOF OF THE THEOREM 2
+Proof: LetwDandwD\ibe the optimal estimates of w?,
+respectively, where the optimality refers to that wDand
+wD\iare optimal solutions as a result of minimizing the
+objective loss functions LD(w)andLD\i(w)in (15) and (16),
+respectively. We have ||wD-wD\i||2=| |? w1||2+||? w2||2,
+as in (18).
+To analyze the two terms || ?w1||2and|| ?w2||2in (18),
+we start with the decomposability property of L1 regularizer
+below.
+In consideration of exact sparsity as de?ned in
+De?nition 3, the feature weighting results are d-dimensional
+vectors {w(1),w( 2) ,...,w( d)}with some weights being
+exactly zero. Suppose the number of features with nonzero
+weights is b.L e t Sbe an index set whose bcomponents
+correspond to the index of those features with nonzeroweights. For example, S={1,2}indicates that those weights
+fromw(3)through w(d)are zeros while b=2. Let R
+dbe
+thed-dimension real space. Then, we de?ne the subspace M
+as
+M:= {s?Rd|sp=0f o r a l l p/?S}. (34)
+The orthogonal complement subspace of Mis
+M?:= {??Rd|?p=0f o r a l l p?S}. (35)
+Remark 12: Subspace Mis the model subspace capturing
+the constraints speci?ed by the L1 regularizer in LD(w) or
+LD\i(w), while M?is the orthogonal complement subspace
+ofM, and it is considered a perturbation subspace deviating
+away from the model subspace M. Then, M?M?=Rd.
+We are ready to de?ne the decomposability property of
+L1 regularizer with respect to the model subspace and itsorthogonal complement subspace as in [41]–[43].
+De?nition 6: Given a subspace pair MandM
+?as de?ned
+in (34) and (35), respectively, an L1 regularizer is decompos-
+able with respect to (M,M?), such that
+||s+?||1=| |s||1+| |?||1 (36)
+for all s?Mand??M?.
+Next, we analyze the bound of ||?w1||2in (18). To simplify
+the notation, we drop the subscript of ?w1and use ?winstead
+in this proof. Let
+F(?w)=LD(w?+?w)-LD(w?). (37)
+Since wD=w?+?wis the minimizer of LD(w) in (15),
+then?wmust satisfy F(?w)=0.
+IfLD(w)is replaced by the right-hand side of (15), F(?w)
+is then changed as
+F(?w)=JD(w?+?w)-JD(w?)
++?(||w?+?w||1-| |w?||1). (38)
+Note that the function F(?w)consists of two differ-
+ences: one is between the sample-averaged loss functions,
+i.e.,JD(w?+?w)-JD(w?), and the other is between the
+regularizers, i.e., ||w?+?w||1-| |w?||1.Consider ?rst the difference between regularizers ||w?+
+?w||1-| |w?||1. Based on the subspaces MandM?de?ned
+above, it is evident that w?=w?
+M+w?
+M?,w h e r e w?
+M
+andw?
+M?are the projections of w?onto subspace Mand
+its orthogonal complement subspace M?, respectively. The
+projection operation is de?ned as
+w?
+M=/Pi1M(w?):=argminu?M||w?-u||2. (39)
+Similarly, we can obtain ?w=?wM+?wM?,w h e r e ?wM
+and?wM?are the projections of ?wonto subspaces Mand
+M?, respectively. The de?nitions for w?
+M?,?wM,a n d?wM?
+are given in an analogous manner to w?
+M.
+Then, by the triangle inequality, we have ||w?||1=| |w?
+M+
+w?
+M?||1=| |w?
+M||1+| |w?
+M?||1and
+||w?+?w||1=| |w?
+M+w?
+M?+?wM+?wM?||1
+=| |w?
+M+?wM?||1-| |w?
+M?+?wM||1
+=| |w?
+M+?wM?||1-| |w?
+M?||1
+-|| ? wM||1. (40)
+By the decomposability property of L1 regularizer as in
+De?nition 6, ||w?
+M+?wM?||1=| |w?
+M||1+| |? wM?||1is
+obtained, so that ||w?+?w||1=| |w?
+M||1+| |? wM?||1-
+||w?
+M?||1-| |? wM||1. Therefore
+||w?+?w||1-| |w?||1=| |? wM?||1-| |? wM||1
+-2||w?
+M?||1. (41)
+For an exactly sparse model as in De?nition 3, de?ne a
+model subspace Mcontaining w?, i.e.,w??M, to guarantee
+||w?
+M?||1=0 [41]–[43], and obtain
+||w?+?w||1-| |w?||1=| |? wM?||1-| |? wM||1.(42)
+Now, we turn to the difference b etween the sample-averaged
+loss functions JD(w?+?w)-JD(w?)inF(?w),a sd e ? n e d
+in (38). To analyze the differences between the sample-
+averaged loss functions in F(?w), we let the sample-averaged
+loss functions JD(w) be differentiable and satisfy strong
+convexity as in De?nition 4. Based on (42) and the strong
+convexity of JD(w) in De?nition 4, the function F(?w)is
+expressed as
+F(?w)=JD(w?+?w)-JD(w?)
++?(|| ?wM?||1-| |? wM||1)
+=? ?JD(w?),?w?+?D|| ?w||2
+2
++?(|| ?wM?||1-| |? wM||1). (43)
+By the Cauchy–Schwarz inequality application, we have
+|??JD(w?),?w?| = || ? JD(w?)||8|| ?w||1. (44)
+Without loss of generality, assume that
+?=| |? JD(w?)||8. (45)
+We can conclude that ??JD(w?),?w?=-?|| ?w||1. Thus
+F(?w)=?D|| ?w||2
+2+?(|| ?wM?||1-| |? wM||1)
+-?|| ?w||1. (46)
+Authorized licensed use limited to: National University Fast. Downloaded on February 14,2024 at 14:18:01 UTC from IEEE Xplore.  Restrictions apply. 1400 IEEE TRANSACTIONS ON NEURAL NETWORKS AND LEARNING SYSTEMS, VOL. 26, NO. 7, JULY 2015
+By the triangle inequality, ||?w||1=| | ? wM?+?wM||1=
+|| ?wM?||1+| |? wM||1, and hence
+F(?w)=?D|| ?w||2
+2-2?|| ?wM||1. (47)
+Note that, ||?wM||1=v
+d||?wM||2. Since the projection
+?wMis de?ned similarly to (39) in terms of the L2-norm, it
+is nonexpansive. Since 0 ?M
+|| ?wM||2=| |/Pi1M(?w)-/Pi1M(0)||2=| |? w-0||2
+=| |? w||2. (48)
+In the end, we obtain
+F(?w)=?D|| ?w||2
+2-2v
+d?|| ?w||2. (49)
+As discussed above, F(?w)=0
+?D|| ?w||2
+2-2v
+d?|| ?w||2=0. (50)
+Then, we obtain
+|| ?w||2=2v
+d?
+?D(51)
+and we change notation ?wback to ?w1,t h e n || ?w1||2=
+2v
+d?/? D.
+Now, we analyze the bound of ?w2. Similarly, we let
+F(?w2)be
+F(?w2)=LD\i(w?+?w2)-LD\i(w?). (52)
+Similar to the analysis for F(?w)above, we can obtain
+|| ?w2||2=2v
+d?
+?D\i(53)
+with?=| |? JD\i(w?)||8.
+Based on (18) and without loss of generality, assume
+?=max[|| ?JD(w?)||8,|| ?JD\i(w?)||8] (54)
+we obtain the stability bound of feature weighting with L1
+regularizer
+||wD-wD\i||2=| |? w1||2+| |? w2||2
+=2v
+d?(1
+?D+1
+?D\i)
+. (55)
+¦
+APPENDIX C
+PROOF OF THE THEOREM 3
+Proof: For the uniform stability of ensemble FREL in (20),
+the left side can be bounded by taking the L2 norm inside
+the expectation by Jensen’s inequality. According to Jensen’sinequality, let fbe a convex function and xbe a random
+variable. Then, f(E(x))=E(f(x)). For our case, L2-norm is
+convex, so we obtain
+ß
+E=?????E
+r1,...,rm[
+1
+mm?
+t=1wD(rt)-1
+mm?
+t=1wD\i(rt)]?????
+2
+=Er1,...,rm[?????1
+mm?
+t=1wD(rt)-1
+mm?
+t=1wD\i(rt)?????
+2]
+.(56)Since r1,..., rmare i.i.d. and suppose they have the same
+distribution as r, which models bootstrapping once, as in [24].
+By the triangle inequality
+ßE=1
+mm?
+t=1Ert[||wD(rt)-wD\i(rt)||2]
+=Er[||wD(r)-wD\i(r)||2]= Er[|| ?wD(r)||2].(57)
+Therefore, according to (57), t he ensemble stability bound may
+now be considered similarly as in De?nition 2 of removing a
+single sample xifrom the data set D.S i n c e ris a sampled
+subset of {1,2,..., n}, we need to consider two possibilities
+of whether ibelongs to ror not. To do so, we introduce
+an indicator function I(.). Note that if iis not in r,w h i c h
+means the sample xiis not in the bootstrap subset D(r), i.e.,
+D(r)=D\i(r), then the term Er[|| ?wD(r)||2I(i/?r)]=0.
+We have the following:
+ßE=Er[|| ?wD(r)||2(I(i?r)+I(i/?r))]
+=Er[|| ?wD(r)||2I(i?r)]+ Er[|| ?wD(r)||2I(i/?r)]
+=Er[|| ?wD(r)||2I(i?r)]. (58)
+The size of bootstrap subset D(r)is?an?(0<a< 1),
+then Er(I(i?r))=?an?/n˜abecause this sampling is
+done without replacement, and || ?wD(r)||2=ßdue to the
+uniform stability of the base feature weight result, then we
+have
+ßE=aß. (59)
+¦
+REFERENCES
+[1] Z. Zhao, “Spectral feature selectio n for mining ultrahigh dimensional
+data,” Ph.D. dissertation, Dept. S chool Comput., Informat., Decision
+Syst. Eng., Arizona State U niv., Phoenix, AZ, USA, 2010.
+[2] H. Liu and L. Yu, “Toward integrating feature selection algorithms for
+classi?cation and clustering,” IEEE Trans. Knowl. Data Eng. , vol. 17,
+no. 4, pp. 494–502, Apr. 2005.
+[3] I. Guyon and A. Elisseeff, “An introduction to variable and
+feature selection,” J .M a c h .L e a r n .R e s . , vol. 31, pp. 1157–1182,
+Jan. 2003.
+[4] Y . Saeys, T. Abeel, and Y . van de Peer, “Robust feature selection using
+ensemble feature selection techniques,” in Proc. 25th Eur. Conf. Mach.
+Learn. Knowl. Discovery Databases , 2008, pp. 313–325.
+[5] S. Loscalzo, L. Yu, and C. Ding, “Consensus group stable feature
+selection,” in Proc. 15th ACM SIGKDD Int. Conf. Knowl. Discovery
+Data Mining , 2009, pp. 567–575.
+[6] T. Abeel, T. Helleputte, Y . van de Peer, P. Dupont, and Y . Saeys,
+“Robust biomarker identi?cation f or cancer diagnosis with ensemble
+feature selection methods,” Bioinformatics , vol. 26, no. 3, pp. 392–398,
+2010.
+[7] Y . Li, S. Gao, and S. Chen, “Ensemble feature weighting based on local
+learning and diversity,” in Proc. 26th AAAI Conf. Artif. Intell. , 2012,
+pp. 1019–1025.
+[8] A. Woznica, P. Nguyen, and A. Kalousis, “Model mining for robust
+feature selection,” in Proc. 18th ACM SIGKDD Int. Conf. Knowl.
+Discovery Data Mining , 2012, pp. 913–921.
+[9] Y . Han and L. Yu, “A variance reduction framework for stable
+feature selection,” in Proc. 10th Int. Conf. Data Mining , Dec. 2010,
+pp. 206–215.
+[10] L. Yu, Y . Han, and M. E. Berens, “St able gene selection from microarray
+data via sample weighting,” IEEE/ACM Trans. Comput. Biol. Bioinform. ,
+vol. 9, no. 1, pp. 262–272, Jan./Feb. 2012.
+[11] L. Yu, C. Ding, and S. Loscalzo, “Stable feature selection via dense
+feature groups,” in Proc. 14th ACM SIGKDD Int. Conf. Knowl.
+Discovery Data Mining , 2008, pp. 803–811.
+Authorized licensed use limited to: National University Fast. Downloaded on February 14,2024 at 14:18:01 UTC from IEEE Xplore.  Restrictions apply. LIet al. : FREL: A STABLE FEATURE SELECTION ALGORITHM 1401
+[12] Z. He and W. Yu, “Stable feature selection for biomarker discovery,”
+Comput. Biol. Chem. , vol. 34, no. 4, pp. 215–225, 2010.
+[13] Y . LeCun, S. Chopra, R. Hadsell, M. A. Ranzato, and
+F. J. Huang, A Tutorial on Energy-Based Model . Cambridge, MA,
+USA: MIT Press, 2006.
+[14] A. S. Das, M. Data r, A. Garg, and S. Rajaram, “Google news
+personalization: Scalable onlin e collaborative ?ltering,” in Proc. 16th
+Int. Conf. World Wide Web , 2007, pp. 271–280.
+[15] S. Dudoit, J. Fridlyand, and T. P. Spee, “Comparison of discrimination
+methods for the classi?cation of tum ors using gene expression data,”
+J. Amer. Statist. Assoc. , vol. 97, no. 457, pp. 77–87, 2002.
+[16] Y . Sun, S. Todorovic, and S. Goodi son, “Local-learning-based feature
+selection for high-dimensional data analysis,” IEEE Trans. Pattern Anal.
+Mach. Intell. , vol. 32, no. 9, pp. 1610–1626, Sep. 2010.
+[17] P. Domingos, “A few useful things to know about machine learning,”
+Commun. ACM , vol. 55, no. 10, pp. 78–87, 2012.
+[18] B. Wang and H.-D. Chiang, “Elite: Ensemble of optimal input-pruned
+neural networks using TRUST-TECH,” IEEE Trans. Neural Netw. ,
+vol. 22, no. 1, pp. 96–109, Jan. 2011.
+[19] S. Tang, Y .-T. Zheng, Y . Wang, and T.-S. Chua, “Sparse ensemble
+learning for concept detection,” IEEE Trans. Multimedia , vol. 14, no. 1,
+pp. 43–54, Feb. 2012.
+[20] S. Gutta, J. R. J. Huang, P. Jonathon, and H. Wechsler, “Mixture of
+experts for classi?cation of gende r, ethnic origin, and pose of human
+faces,” IEEE Trans. Neural Netw. , vol. 11, no. 4, pp. 948–960, Jul. 2000.
+[21] L. I. Kuncheva, J. J. Rodriguez, C. O. Plumpton, D. E. J. Linden, and
+S. J. Johnston, “Random subspace ense mbles for fMRI classi?cation,”
+IEEE Trans. Med. Imag. , vol. 29, no. 2, pp. 531–542, Feb. 2010.
+[22] L. Breiman, “Bagging predictors,” Mach. Learn. , vol. 26, no. 2,
+pp. 123–140, Aug. 1996.
+[23] O. Bousquet and A. Elisseeff, “Stability and generalization,” J. Mach.
+Learn. Res. , vol. 2, pp. 499–526, Jan. 2002.
+[24] A. Elisseeff, T. Evgeniou, and M. Pontil, “Stability of randomized
+learning algorithm,” J .M a c h .L e a r n .R e s . , vol. 6, pp. 55–79, Jan. 2005.
+[25] S. Agarwal and P. Niyogi, “Genera lization bounds for ranking algorithm
+via algorithmic stability,” J .M a c h .L e a r n .R e s . , vol. 10, pp. 441–474,
+Feb. 2009.
+[26] H. Xu, C. Caramanis, and S. Mannor, “Sparse algorithms are not
+stable: A no-free-lunch theorem,” IEEE Trans. Pattern Anal. Mach.
+Intell. , vol. 34, no. 1, pp. 187–193, Jan. 2012.
+[27] Y . Nesterov, Introductory Lectures on Convex Optimization: A Basic
+Course . Boston, MA, USA: Kluwer, 2004.
+[28] M. Tan, I. W. Tsang, and L. Wang, “Minimax sparse logistic regression
+for very high-dimensional feature selection,” IEEE Trans. Neural Netw.
+Learn. Syst. , vol. 24, no. 10, pp. 1609–1622, Oct. 2013.
+[29] T. R. Golub et al. , “Molecular classi?cation of cancer: Class discovery
+and class prediction by gene expression monitoring,” Science , vol. 286,
+no. 5439, pp. 531–537, 1999.
+[30] D. Singh et al. , “Gene expression correlates of clinical prostate cancer
+behavior,” Cancer Cell , vol. 1, no. 2, pp. 203–209, 2002.
+[31] K. Kira and L. Rendell, “A practical approach to feature selection,” in
+Proc. 9th Int. Workshop Mach. Learn. , 1992, pp. 249–256.
+[32] I. Kononenko, “Estimating attributes: Analysis and extensions of
+RELIEF,” in Proc. Eur. Conf. Mach. Learn. , 1994, pp. 171–182.
+[33] M. Robnik- ?Sikonja and I. Kononenko, “Theoretical and empirical
+analysis of ReliefF and RReliefF,” Mach. Learn. , vol. 53, nos. 1–2,
+pp. 23–69, 2003.
+[34] R. O. Duda, P. E. Hart, and D. G. Stork, Pattern Classi?cation , 2nd ed.
+New York, NY , USA: Wiley, 2001.
+[35] T. G. Dietterich, “Machine learning research: Four current directions,”
+AI Mag. , vol. 18, no. 4, pp. 97–136, 1997.
+[36] K. Crammer, R. Gilad-Bachrach, A. Navot, and N. Tishby, “Margin
+analysis of the LVQ algorithm,” in Advances in Neural Information
+Processing Systems . Cambridge, MA, USA: MIT Press, 2002,
+pp. 462–469.
+[37] Y . Li and B.-L. Lu, “Feature selection based on loss margin of nearest
+neighbor classi?cation,” Pattern Recognit. , vol. 42, no. 9, pp. 1914–1921,
+2009.
+[38] A. Kalousis, J. Prados, and M. Hilario, “Stability of feature selection
+algorithms: A study on high-dimensional spaces,” Knowl. Inf. Syst. ,
+vol. 12, no. 1, pp. 95–116, 2007.
+[39] C. C. Chang and C. J. Lin. (2002). Libsvm: A Library
+for Support Vector Machines . [Online]. Available:
+http://www.csie.ntu.edu.tw/cjlin/papers/libsvm.ps.gz
+[40] S. A. van de Geer, “High-dimensional generalized linear models and the
+lasso,” Ann. Statist. , vol. 36, no. 2, pp. 614–645, 2008.[41] S. N. Negahban, P. Ravikumar , M. J. Wainwright, and B. Yu,
+“A uni?ed framework for high- dimensional analysis of M-estimators
+with decomposable regularizers,” Statist. Sci. , vol. 27, no. 4,
+pp. 538–557, 2012.
+[42] S. N. Negahban, P. Ravikumar , M. J. Wainwright, and B. Yu, “A
+uni?ed framework for high- dimensional analysis of M-estimators with
+decomposable regularizers,” Dept. EECS., Univ. California, Berkeley,
+Berkeley, CA, USA, Tech. Rep. 797, 2010.
+[43] S. N. Negahban, P. Ravikumar , M. J. Wainwright, and B. Yu,
+“A uni?ed framework for high- dimensional analysis of M-estimators
+with decomposable regularizers,” in Advances in Neural Information
+Processing Systems . Red Hook, NY , USA: Curran & Associates, Inc.,
+2009, pp. 1348–1356.
+Yun Li (M’10) received the Ph.D. degree in
+computer science from Chongqing University,
+Chongqing, China.
+He was a Post-Doctoral Fellow with the Depart-
+ment of Computer Science a nd Engineering, Shang-
+hai Jiao Tong University, Shanghai, China. He is a
+Professor with the College of Computer Science,Nanjing University of Posts and Telecommunica-
+tions, Nanjing, China. He has published more than
+30 refereed research papers. His current researchinterests include machine learning, data mining, and
+parallel computing.
+Dr. Li was the Co-Publication Chair of the 18th International Conference on
+Neural Information Processing in 2011. His research is currently sponsoredby the National Natural Science Founda tion of China and the Natural Science
+Foundation of Jiangsu.
+Jennie Si (F’08) received the B.S. and M.S. degrees
+from Tsinghua University, Beijing, China, and thePh.D. degree from the University of Notre Dame,Notre Dame, IN, USA.
+She has been with the faculty of the Department of
+Electrical Engineering at Arizona State University,Phoenix, AZ, USA, since 1991. She has also made
+new efforts to build a capability for studying some
+fundamental neuroscience questions in regards tothe frontal cortex. Her lab is now well equippedwith important techniques, such as multichannel
+single unit extracellular recording using a behaving rat model in chronic
+physiological experiments. Her current research interests include dynamic
+optimization using learning and neura l network approximation approaches,
+namely approximate dynamic programming.
+Dr. Si was an Associate Editor of the IEEE T
+RANSACTIONS ON SEMI-
+CONDUCTOR MANUFACTURING , the IEEE T RANSACTIONS ON AUTOMATIC
+CONTROL , and the IEEE T RANSACTIONS ON NEURAL NETWORKS . She has
+served on several professional organi zations’ executive boards and interna-
+tional conference committees. She was the Vice President of Education withthe IEEE Computation Intelligence Society from 2009 to 2012, an Advisor to
+the NSF Social Behavioral and Economi cal Directory, and served on several
+proposal review panels. She consulted f or Intel, Arizona Public Service, and
+Medtronic. She is a Distinguished Lect urer of the IEEE Computational Intel-
+ligence Society, and an Action Editor of Neural Networks . She was a recipient
+of the National Science Foundation/Wh ite House Presidential Faculty Fellow
+Award in 1995, and the Motorola Engineering Excellence Award in 1995.
+Guojing Zhou received the bachelor’s degree from the Nanjing University of
+Posts and Telecommunications, Nanjing, China, where he is currently pursuing
+the master’s degree in computer science.
+His current research interests include machine learning.
+Shasha Huang received the bachelor’s degree from Xuhai College, University
+of Mining and Technology, Xuzhou, China. She is currently pursuing the
+master’s degree in computer science with the Nanjing University of Posts andTelecommunications, Nanjing, China.
+Her current research interests include machine learning.
+Authorized licensed use limited to: National University Fast. Downloaded on February 14,2024 at 14:18:01 UTC from IEEE Xplore.  Restrictions apply. 1402 IEEE TRANSACTIONS ON NEURAL NETWORKS AND LEARNING SYSTEMS, VOL. 26, NO. 7, JULY 2015
+Songcan Chen received the B.S. degree in mathe-
+matics from Zhejiang University, Hangzhou, China,in 1983, the M.S. degree in computer applica-
+tions from Shanghai Jiao Tong University, Shanghai,
+China, in 1985, and the Ph.D. degree in communica-tion and information systems from the Nanjing Uni-versity of Aeronautics and Astronautics (NUAA),
+Nanjing, China, in 1997.
+He has been a full-time Professor with the Depart-
+ment of Computer Science and Engineering at
+NUAA since 1998. He has authored and co-authored
+over 170 scienti?c peer-reviewed papers. H is current research interests include
+pattern recognition, machine learning, and neural computing.
+Authorized licensed use limited to: National University Fast. Downloaded on February 14,2024 at 14:18:01 UTC from IEEE Xplore.  Restrictions apply. 

@@ -1,0 +1,1551 @@
+SPECIAL ISSUE
+Machinelearningadvancesfortimeseries
+forecasting
+RicardoP.Masini1,2MarceloC.Medeiros3EduardoF.Mendes4
+1CenterforStatisticsandMachine
+Learning,PrincetonUniversity,USA
+2SãoPauloSchoolofEconomics,Getulio
+VargasFoundation,Brazil
+3DepartmentofEconomics,Pontifical
+CatholicUniversityofRiodeJaneiro,
+Brazil
+4SchoolofAppliedMathematics,Getulio
+VargasFoundation,Brazil
+Correspondence
+MarceloC.Medeiros,PontificalCatholic
+UniversityofRiodeJaneiro,RuaMarquês
+deSãoVicente,225,Gávea,RiodeJaneiro,
+RJ,Brazil.
+Email:mcm@econ.puc-rio.br
+Fundinginformation
+CNPqandCAPES;ConselhoNacionalde
+DesenvolvimentoCientíficoeTecnológicoAbstract
+In this paper, we survey the most recent advances
+in supervised machine learning (ML) and high-
+dimensional models for time-series forecasting. We
+considerbothlinearandnonlinearalternatives.Among
+the linear methods, we pay special attention to penal-
+izedregressionsandensembleofmodels.Thenonlinear
+methods considered in the paper include shallow
+and deep neural networks, in their feedforward and
+recurrent versions, and tree-based methods, such as
+random forests and boosted trees. We also consider
+ensembleandhybridmodelsbycombiningingredients
+fromdifferentalternatives.Testsforsuperiorpredictive
+ability are briefly reviewed. Finally, we discuss appli-
+cationofMLineconomicsandfinanceandprovidean
+illustrationwithhigh-frequencyfinancialdata.
+KEYWORDS
+bagging, boosting, deep learning, forecasting, machine learning,
+neural networks, nonlinear models, penalized regressions, ran-
+domforests,regressiontrees,regularization,sieveapproximation,
+statisticallearningtheory
+JEL CLASSIFICATION:
+C22
+1INTRODUCTION
+Thispapersurveystherecentdevelopmentsinmachinelearning(ML)methodstoeconomicand
+financialtime-seriesforecasting.MLmethodshavebecomeanimportantestimation,modelselec-
+tion,andforecastingtoolforappliedresearchersinEconomicsandFinance.Withtheavailability
+76©2021JohnWiley&SonsLtd. JEconSurv. 2023;37:76–111. wileyonlinelibrary.com/journal/joes
+MASINIetal. 77
+ofvastdatasetsintheeraof BigData,producingreliableandrobustforecastsisofgreatimpor-
+tance.1
+However,whatisML?Itiscertainlyabuzzwordwhichhasgainedalotofpopularityduring
+the last few years. There are a myriad of definitions in the literature and one of the most well
+establishedisfromtheartificialintelligencepioneerArthurL.SamuelwhodefinesMLas“the
+fieldofstudythatgivescomputerstheabilitytolearnwithoutbeingexplicitlyprogrammed.”2We
+preferalessvaguedefinitionwhereMListhecombinationofautomatedcomputeralgorithms
+with powerful statistical methods to learn (discover) hidden patterns in rich data sets. In that
+sense,Statistical Learning Theory gives the statistical foundation of ML. Therefore, this paper
+is about Statistical Learning developments and not ML in general as we are going to focus on
+statisticalmodels.MLmethodscanbedividedintothreemajorgroups:supervised,unsupervised,
+andreinforcementlearning.Thissurveyisaboutsupervisedlearning,wherethetaskistolearn
+afunctionthatmapsaninput(explanatoryvariables)toanoutput(dependentvariable)basedon
+dataorganizedasinput–outputpairs.Regressionmodels,forexample,belongtothisclass.Onthe
+otherhand,unsupervisedlearningisaclassofMLmethodsthatuncoverundetectedpatternsina
+datasetwithnopreexistinglabelsas,forexample,clusteranalysisordatacompressionalgorithms.
+Finally,inreinforcementlearning,anagentlearnstoperformcertainactionsinanenvironment
+whichleadittomaximumreward.Itdoessobyexplorationandexploitationofknowledgeitlearns
+byrepeatedtrialsofmaximizingthereward.Thisisthecoreofseveralartificialintelligencegame
+players(AlfaGo,forinstance)aswellasinsequentialtreatments,likeBanditproblems.
+The supervised ML methods presented here can be roughly divided in two groups. The first
+oneincludeslinearmodelsandisdiscussedinSection 2.Wefocusmainlyonspecificationsesti-
+matedbyregularization,alsoknownasshrinkage.SuchmethodsdatebackatleasttoTikhonov
+(1943).InStatisticsandEconometrics,regularizedestimatorsgainedattentionaftertheseminal
+papers by Willard James and Charles Stein who popularized the bias-variance trade-off in sta-
+tistical estimation (James & Stein, 1961;S t e i n ,1956). We start by considering the Ridge Regres-
+sionestimatorputforwardbyHoerlandKennard( 1970).Afterthat,wepresenttheleastabsolute
+shrinkageandselection(LASSO)estimatorofTibshirani( 1996)anditsmanyextensions.Wealso
+includeadiscussionofotherpenalties.Theoreticalderivationsandinferencefordependentdata
+arealsoreviewed.
+ThesecondgroupofMLtechniquesfocusesonnonlinearmodels.WecoverthistopicinSec-
+tion3andstartbypresentingaunifiedframeworkbasedonsievesemiparametricapproximation
+as in Grenander ( 1981). We continue by analyzing specific models as special cases of our gen-
+eralsetup.Morespecifically,wecoverfeedforwardneuralnetworks(NNs),bothintheirshallow
+anddeepversionsandrecurrentneuralnetworks(RNNs),andtree-basedmodelssuchasrandom
+forests(RFs)andboostedtrees.NNsareprobablyoneofthemostpopularMLmethods.Thesuc-
+cessispartlyduetothe,inouropinion,misguidedanalogytothefunctioningofthehumanbrain.
+Contrary to what has been boasted in the early literature, the empirical success of NN models
+comesfromamathematicalfactthatalinearcombinationofsufficientlymanysimplebasisfunc-
+tionsisabletoapproximateverycomplicatedfunctionsarbitrarilywellinsomespecificchoiceof
+metric.Regressiontreesonlyachievedpopularityafterthedevelopmentofalgorithmstoatten-
+uatetheinstabilityoftheestimatedmodels.AlgorithmslikeRandomForestsandBoostedTrees
+arenowinthetoolboxofappliedeconomists.
+Inadditiontothemodelsmentionedabove,wealsoincludeasurveyonensemble-basedmeth-
+odssuchasBaggingBreiman( 1996)andthecompletesubsetregression(CRS,Elliottetal., 2013,
+2015).Furthermore,wegiveabriefintroductiontowhatwenamed“hybridmethods,”whereideas
+frombothlinearandnonlinearmodelsarecombinedtogeneratenewMLforecastingmethods.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+78 MASINIetal.
+Beforepresentinganempiricalillustrationofthemethods,wediscusstestsofsuperiorpredic-
+tiveabilityinthecontextofMLmethods.
+1.1Generalframework
+Aquickwordonnotation:anuppercaseletterasin ??denotesarandomquantityasopposedtoa
+lowercaseletter ??whichdenotesadeterministic(nonrandom)quantity.Boldlettersasin ??and
+??arereservedformultivariateobjectssuchasvectorandmatrices.Thesymbol ?·???for??=1
+denotesthe????normofavector.Foraset ??,weuse |??|todenoteitscardinality.
+Givenasamplewith ??realizationsoftherandomvector (????,??'
+??)',thegoalistopredict ????+h
+forhorizonsh=1,…,?? .Throughoutthepaper,weconsiderthefollowingassumption:
+Assumption 1 (Data Generating Process (DGP)). Let {(????,??'
+??)'}8
+??=1be a covariance-stationary
+stochasticprocesstakingvalueson R??+1.
+Therefore, we are excluding important nonstationary processes that usually appear in time-
+seriesapplications.Inparticular,unitrootandsometypesonlong-memoryprocessareexcluded
+byAssumption 1.
+For(usuallypredetermined)integers ??=1and??=0,definethe??-dimensionalvectorofpre-
+dictors????:=(????-1,…,????-??,??'
+??,…,??'
+??-??)'where??=??+??(??+1) and consider the following
+directforecastingmodel:
+????+h=??h(????)+????+h, h=1,…,??, ??=1,…,??, (1)
+where??h:R???Ris an unknown (measurable) function and ????+h:=????+h-??h(????)is
+assumedtobezeromeanandfinitevariance.3
+Themodel??hcouldbetheconditionalexpectationfunction, ??h(??)=??(????+h|????=?? ),orsim-
+plythebestlinearprojectionof ????+hontothespacespannedby ????.Regardlessofthemodelchoice,
+ourtargetbecomes ??h,forh=1,…,?? .As??hisunknown,itshouldbeestimatedfromdata.The
+targetfunction ??hcanbeasinglemodeloranensembleofdifferentspecificationsanditcanalso
+changesubstantiallyforeachforecastinghorizon.
+Given an estimate ˆ??hfor??h, the next step is to evaluate the forecasting method by estimat-
+ingitspredictionaccuracy.Mostmeasuresofpredictionaccuracyderivefromtherandomquan-
+tity?h(????):=|ˆ??h(????)-??h(????)|.Forinstance,theterm predictionconsistency referstoestimators
+suchthat?h(????)???0as???8wheretheprobabilityistakentobeunconditional;asopposed
+toitsconditional counterpartwhichisgivenby ?h(????)???0,wheretheprobabilitylawiscondi-
+tionalon????=????.Clearly,ifthelatterholdsfor(almost)every ????thentheformerholdsbythelaw
+ofiteratedexpectation.
+Othermeasuresofpredictionaccuracycanbederivedfromthe ???norminducedbyeitherthe
+unconditionalprobabilitylaw ??|?h(????)|??ortheconditionalone ??(|?h(????)|??|????=????)for??=1.
+Byfar,themostusedarethe (conditional)meanabsolutelypredictionerror (????????)when??=1and
+(conditional)meansquaredpredictionerror (????????) when??=2, or the(conditional)rootmean
+squaredpredictionerror (??????????), which is simply thesquare root of ????????. Those measuresof
+predictionaccuracybasedonthe ???normsarestrongerthanpredictionconsistencyinthesense
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 79
+thattheirconvergencetozeroassamplesizeincreasesimpliespredictionconsistencybyMarkov’s
+inequality.
+Thisapproachstemsfromcastingeconomicforecastingasadecisionproblem.Underthechoice
+ofalossfunction,thegoalistoselect ??hfromafamilyofcandidatemodelsthatminimizesthe
+expectedpredictivelossorrisk.Givenanestimate ˆ??hfor??h,thenextstepistoevaluatethefore-
+castingmethodbyestimatingitsrisk.Themostcommonlyusedlossesaretheabsoluteerrorand
+squarederror,correspondingto ?1and?2riskfunctions,respectively.SeeGrangerandMachina
+(2006)forreferencesofadetailedexpositionofthistopic,ElliottandTimmermann( 2008)fora
+discussionoftheroleofthelossfunctioninforecasting,andElliottandTimmermann( 2016)for
+amorerecentreview.
+1.2Summaryofthepaper
+Apartfromthisbriefintroduction,thepaperisorganizedasfollows.Section 2reviewspenalized
+linearregressionmodels.NonlinearMLmodelsarediscussedinSection 3.Ensembleandhybrid
+methodsarepresentedinSection 4.Section5brieflydiscussestestsforsuperiorpredictiveabil-
+ity. An empirical application is presented in Section 6. Finally, we conclude and discuss some
+directionsforfutureresearchinSection 7.
+2PENALIZEDLINEARMODELS
+Weconsiderthefamilyoflinearmodelswhere ??(??)=??'
+0??in(1)foravectorofunknownparam-
+eters??0?R??. Notice that we drop the subscript hfor clarity. However, the model as well as
+theparameter ??0havetobeunderstoodforparticularvalueoftheforecastinghorizon h.These
+modelscontemplateaseriesofwell-knownspecificationsintime-seriesanalysis,suchaspredic-
+tiveregressions,autoregressivemodelsoforder ??,????(??),autoregressivemodelswithexogenous
+variables,??????(??),andautoregressivemodelswithdynamiclags ??????(??,??),amongmanyothers
+(Hamilton, 1994).Inparticular,( 1)becomes
+????+h=??'
+0????+????+h, h=1,…,??, ??=1,…,??, (2)
+whereundersquaredloss, ??0isidentifiedbythebestlinearprojectionof ????+honto????whichis
+welldefinedwhenever ??:=??(??????'
+??)isnonsingular.Inthatcase, ????+hisorthogonalto ????bycon-
+structionandthispropertyisexploitedtoderiveestimationproceduressuchastheordinaryleast
+squares(OLS).However,when ??>??(andsometimes ??»??)theOLSestimatorisnotuniqueas
+thesamplecounterpartof ??isrankdeficient.Infact,wecancompletelyoverfitwhenever ??=??.
+Penalizedlinearregressionarisesinthesettingwheretheregressionparameterisnotuniquely
+defined. It is usually the case when ??is large, possibly larger than the number of observations
+??,and/orwhencovariatesarehighlycorrelated.Thegeneralideaistorestrictthesolutionofthe
+OLS problem to a ball around the origin. It can be shown that, although biased, the restricted
+solutionhassmallermeansquarederror(MSE),whencomparedtotheunrestrictedOLS(Hastie
+etal.,2009,Chap.3andChap.6).
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+80 MASINIetal.
+Inpenalizedregressions,theestimator ˆ??fortheunknownparametervector ??0minimizesthe
+Lagrangianform
+??(??)=??-h?
+??=1(
+????+h-??'????)2+??(??),
+=???-???? ?2
+2+??(??),(3)
+where??:=(??h+1,…????)',??:=(??1,…????-h)',and??(??):=??(??;??,??,??) =0isapenaltyfunc-
+tion that depends on a tuning parameter ??=0, that controls the trade-off between the good-
+nessoffitandtheregularizationterm.If ??=0,wehaveaclassicalunrestrictedregression,since
+??(??;0,??,??)=0 .Thepenaltyfunctionmayalsodependonasetofextrahyperparameters ??,as
+wellasonthedata ??.Naturally,theestimator ˆ??alsodependsonthechoiceof ??and??.Different
+choicesforthepenaltyfunctionswereconsideredintheliteratureofpenalizedregression.
+Ridgeregression
+TheridgeregressionwasproposedbyHoerlandKennard( 1970)asawaytofighthighlycorrelated
+regressorsandstabilizethesolutionofthelinearregressionproblem.Theideawastointroducea
+smallbiasbut,inturn,reducethevarianceoftheestimator.Theridgeregressionisalsoknownas
+aparticularcaseofTikhonovRegularization(Tikhonov, 1943,1963;Tikhonov&Arsenin, 1977),
+inwhichthescalematrixisdiagonalwithidenticalentries.
+Theridgeregressioncorrespondstopenalizingtheregressionbythesquared ??2normofthe
+parametervector,thatis,thepenaltyin( 3)isgivenby
+??(??)=?????
+??=1??2
+??=??????2
+2.
+Ridgeregressionhastheadvantageofhavinganeasytocomputeanalyticsolution,wherethe
+coefficientsassociatedwiththeleastrelevantpredictorsareshrunktowardzero,butneverreach-
+ing exactly zero. Therefore, it cannot be used for selecting predictors, unless some truncation
+schemeisemployed.
+Leastabsoluteshrinkageandselectionoperator
+TheLASSOwasproposedbyTibshirani( 1996)andChenetal.( 2001)asamethodtoregularize
+andperformvariableselectionatthesametime.LASSOisoneofthemostpopularregularization
+methodsanditiswidelyappliedindata-richenvironmentswherenumberoffeatures ??ismuch
+largerthanthenumberoftheobservations.
+LASSOcorrespondstopenalizingtheregressionbythe ??1normoftheparametervector,that
+is,thepenaltyin( 3)isgivenby
+??(??)=?????
+??=1|????|=??????1.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 81
+ThesolutionoftheLASSOisefficientlycalculatedbycoordinatedescentalgorithms(Hastie
+et al.,2015, Chap. 5). The ??1penalty is the smallest convex ????p e n a l t yn o r mt h a ty i e l d s sparse
+solutions.Wesaythesolutionis sparseifonlyasubset ??<??coefficientsarenonzero.Inother
+words,onlyasubsetofvariablesisselectedbythemethod.Hence,LASSOismostusefulwhen
+thetotalnumberofregressors ??»??anditisnotfeasibletotestcombinationormodels.
+Despiteattractiveproperties,therearestilllimitationstotheLASSO.Alargenumberofalterna-
+tivepenaltieshavebeenproposedtokeepitsdesiredpropertieswhileovercomingitslimitations.
+AdaptiveLASSO
+TheadaptiveLASSO(adaLASSO)wasproposedbyZou( 2006)andaimedtoimprovetheLASSO
+regressionbyintroducingaweightparameter,comingfromafirststepOLSregression.Italsohas
+sparsesolutionsandefficientestimationalgorithm,butenjoysthe oracleproperty ,meaningthatit
+hasthesameasymptoticdistributionastheOLSconditionalonknowingthevariablesthatshould
+enterthemodel.4
+TheadaLASSOpenaltyconsistsinusingaweighted ??1penalty:
+??(??)=?????
+??=1????|????|,
+wherethenumberoffeatures ????=|??*
+??|-1and??*
+??isthecoefficientfromthefirst-stepestimation
+(anyconsistentestimatorof ??0)AdaLASSOcandealwithmanymorevariablesthanobservations.
+UsingLASSOasthefirst-stepestimatorcanberegardedasthetwo-stepimplementationofthe
+locallinearapproximationinFanetal.( 2014)withazeroinitialestimate.
+Elasticnet
+Theelasticnet(ElNet)wasproposedbyZouandHastie( 2005)asawayofcombiningstrengthsof
+LASSOandridgeregression.Whilethe ??1partofthemethodperformsvariableselection,the ??2
+partstabilizesthesolution.Thisconclusionisevenmoreaccentuatedwhencorrelationsamong
+predictorsbecomehigh.Asaconsequence,thereisasignificantimprovementinpredictionaccu-
+racyovertheLASSO(Zou&Zhang, 2009).
+TheElNetpenaltyisaconvexcombinationof ??1and??2penalties:
+??(??)=??[
+?????
+??=1??2
+??+(1-??)???
+??=1|????|]
+=??[?? ????2
+2+(1-??) ????1],
+where???[0,1].TheElNethasboththeLASSOandridgeregressionasspecialcases.
+JustlikeintheLASSOregression,thesolutiontotheElNetproblemisefficientlycalculatedby
+coordinatedescentalgorithms.ZouandZhang( 2009)proposetheadaptiveElNet.TheElNetand
+adaLASSOimprovetheLASSOindistinctdirections:theadaLASSOhastheoraclepropertyand
+theElNethelpswiththecorrelationamongpredictors.TheadaptiveElNetcombinesthestrengths
+ofbothmethods.ItisacombinationofridgeandadaLASSO,wherethefirst-stepestimatorcomes
+fromtheElNet.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+82 MASINIetal.
+Foldedconcavepenalization
+LASSOapproachesbecamepopularinsparsehigh-dimensionalestimationproblemslargelydue
+theircomputationalproperties.Anotherverypopularapproachisthefoldedconcavepenalization
+of Fan and Li ( 2001). This approach covers a collection of penalty functions satisfying a set of
+properties.Thepenaltiesaimtopenalizemoreparametersclosetozerothanthosethatarefurther
+away,improvingperformanceofthemethod.Inthisway,penaltiesareconcavewithrespectto
+each|????|.
+OneofthemostpopularformulationsistheSCAD(smoothlyclippedabsolutedeviation).Note
+thatunlikeLASSO,thepenaltymaydependon ??inanonlinearway.Wesetthepenaltyin( 3)as
+??(??)=???
+??=1˜??(????,??,??),where
+˜??(??,??,??)=?
+?
+?
+?
+?
+????|??|if|??|=??,
+2????|??|-??2-??2
+2(??-1)if??=|??|=????,
+??2(??+1)
+2if|??|>????
+for??>2and??>0.TheSCADpenaltyisidenticaltotheLASSOpenaltyforsmallcoefficients,
+butcontinuouslyrelaxestherateofpenalizationasthecoefficientdepartsfromzero.UnlikeOLS
+orLASSO,wehavetosolveanonconvexoptimizationproblemthatmayhavemultipleminima
+andiscomputationallymoreintensivethantheLASSO.Nevertheless,Fanetal.( 2014)show ed
+howtocalculatetheoracleestimatorusinganiterativeLocalLinearApproximationalgorithm.
+Otherpenalties
+Regularizationimposesarestrictiononthesolutionspace,possiblyimposingsparsity.Inadata-
+richenvironment,itisadesirablepropertyasitislikelythatmanyregressorsarenotrelevantto
+ourpredictionproblem.Thepresentationaboveconcentratesonthe,possibly,mostusedpenalties
+intime-seriesforecasting.Nevertheless,therearemanyalternativepenaltiesthatcanbeusedin
+regularizedlinearmodels.
+ThegroupLASSO,proposedbyYuanandLin( 2006),penalizestheparametersingroups,com-
+biningthe??1and??2norms.Itismotivatedbytheproblemofidentifying“factors,”denotedby
+groupsofregressorsas,forinstance,inregressionwithcategoricalvariablesthatcanassumemany
+values.Let ?={??1,…,????}denoteapartitionof {1,…,??}and??????=[????:???????]thecorrespond-
+ing regression subvector. The group LASSO assign to ( 3) the penalty??(??)=???
+??=1v
+|????|????????2,
+where |????|isthecardinalityofaset ????.Thesolutionisefficientlyestimatedusing,forinstance,
+thegroup-wisemajorizationdescentalgorithm(Yang&Zou, 2015).Naturally,theadaptivegroup
+LASSOwasalsoproposedaimingtoimprovesomeofthelimitationspresentonthegroupLASSO
+algorithm(Wang&Leng, 2008).InthegroupLASSO,thegroupsenterornotintheregression.
+ThesparsegroupLASSOrecoversparsegroupsbycombiningthegroupLASSOpenaltywiththe
+??1penaltyontheparametervector(Simonetal., 2013).
+ParkandSakaori( 2013)modifytheadaLASSOpenaltytoexplicitlytakeintoaccountlaginfor-
+mation.KonzenandZiegelmann( 2016)proposeasmallchangeinpenaltyandperformalarge
+simulationstudytoassesstheperformanceofthispenaltyindistinctsettings.Theyobservethat
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 83
+takingintoaccountlaginformationimprovesmodelselectionandforecastingperformancewhen
+comparedtotheLASSOandadaLASSO.Theyapplytheirmethodtoforecastinginflationandrisk
+premiumwithsatisfactoryresults.
+There is a Bayesian interpretation to the regularization methods presented here. The ridge
+regression can be also seen as a maximum a posteriori estimator of a Gaussian linear regres-
+sionwithindependent,equivariant,Gaussianpriors.TheLASSOreplacestheGaussianpriorbya
+Laplaceprior(Hans, 2009;Park&Casella, 2008).ThesemethodsfallwithintheareaofBayesian
+Shrinkagemethods,whichisaverylargeandactiveresearcharea,anditisbeyondthescopeof
+thissurvey.
+2.1Theoreticalproperties
+Inthissection,wegiveanoverviewofthetheoreticalpropertiesofpenalizedregressionestimators
+previously discussed. Most results in high-dimensional time-series estimation focus on model
+selectionconsistency,oracleproperty,andoraclebounds,forboththefinitedimension( ??fixed,
+butpossiblylargerthan ??)andhighdimension( ??increaseswith ??,usuallyfaster).
+Moreprecisely,supposethereisapopulation,parametervector ??0thatminimizesEquation( 2)
+overrepeatedsamples.Supposethisparameterissparseinasensethatonlycomponentsindexed
+by??0?{1,…,??} arenonnull.Let ˆ??0:={??:ˆ?????0}.Wesayamethodis modelselectionconsistent
+iftheindexofnonzeroestimatedcomponentsconvergesto ??0inprobability.5
+P(ˆ??0=??0)?1, ???8.
+Consistencycanalsobestatedintermsofhowclosetheestimatoristotrueparameterforagiven
+norm.Wesaythattheestimationmethodis ???-consistentifforevery ??>0:
+P(?ˆ??0-??0???>??)?0, ???8.
+Itisimportanttonotethatmodelselectionconsistencydoesnotimply,noritisimpliedby, ???-
+consistency.Asamatteroffact,oneusuallyhastoimposespecificassumptionstoachieveeach
+ofthosemodesofconvergence.
+Model selection performance of a given estimation procedure can be further broke down in
+terms of how many relevant variables ?????0are included in the model (screening). Or how
+many irrelevant variables ?????0are excluded from the model. In terms of probability, model
+screeningconsistencyisdefinedby P(ˆ??0???0)?1andmodelexclusionconsistencydefinedby
+P(ˆ??0???0)?1as???8.
+Wesayapenalizedestimatorhastheoraclepropertyifitsasymptoticdistributionisthesame
+astheunpenalizedoneonlyconsideringthe ??0regressors.Finally,oracleriskboundsarefinite
+sampleboundsontheestimationerrorof ˆ??thatholdwithhighprobability.Theseboundsrequire
+relativelystrongconditionsonthecurvatureofobjectivefunction,whichtranslatesintoabound
+ontheminimumrestrictedeigenvalueofthecovariancematrixamongpredictorsforlinearmod-
+elsandarateconditionon ??thatinvolvesthenumberofnonzeroparameters, |??0|.
+The LASSO was originally developed in fixed design with independent and identically dis-
+tributed(IID)errors,butithasbeenextendedandadaptedtoalargesetofmodelsanddesigns.
+KnightandFu( 2000)wasprobablythefirstpapertoconsidertheasymptoticsoftheLASSOesti-
+mator. The authors consider fixed design and fixed ??framework. From their results, it is clear
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+84 MASINIetal.
+thatthedistributionoftheparametersrelatedtotheirrelevantvariablesisnon-Gaussian.Toour
+knowledge,thefirst work expanding theresultsto adependentsettingwas Wangetal. ( 2007),
+wheretheerrortermwasallowedtofollowanautoregressiveprocess.AuthorsshowthatLASSO
+ismodelselectionconsistent,whereasamodifiedLASSO,similartotheadaLASSO,isbothmodel
+selectionconsistentandhastheoracleproperty.NardiandRinaldo( 2011)showmodelselection
+consistencyandpredictionconsistencyforlagselectioninautoregressivemodels.ChanandChen
+(2011)showoraclepropertiesandmodelselectionconsistencyforlagselectioninARMAmodels.
+Yoonetal.( 2013)derivemodelselectionconsistencyandasymptoticdistributionoftheLASSO,
+adaLASSO,andSCAD,forpenalizedregressionswithautoregressiveerrorterms.SangandSun
+(2015)studylagestimationofautoregressiveprocesseswithlong-memoryinnovationsusinggen-
+eralpenaltiesandshowmodelselectionconsistencyandasymptoticdistributionfortheLASSO
+andSCADasparticularcases.Kock( 2016)showsmodelselectionconsistencyandoracleproperty
+ofadaLASSOforlagselectioninstationaryandintegratedprocesses.Allresultsaboveholdforthe
+caseoffixednumberofregressorsorrelativelyhighdimension,meaningthat ??/???0.
+Insparse,high-dimensional,stationaryunivariatetime-seriessettings,where ???8atsome
+ratefasterthan ??,MedeirosandMendes( 2016,2017)showmodelselectionconsistencyandoracle
+property of a large set of linear time-series models with difference martingale, strong mixing,
+andnon-Gaussianinnovations.Itincludes,predictiveregressions,autoregressivemodels ????(??),
+autoregressive models with exogenous variables ??????(??), autoregressive models with dynamic
+lags??????(??,??), with possibly conditionally heteroskedastic errors. Xie et al. ( 2017) show oracle
+boundsforfixeddesignregressionwith ??-mixingerrors.WuandWu( 2016)deriveoraclebounds
+for the LASSO on regression with fixed design and weak dependent innovations, in a sense of
+Wu(2005),whereasHanandTsay( 2020)showmodelselectionconsistencyforlinearregression
+withrandomdesignandweaksparsity6underseriallydependenterrorsandcovariates,withinthe
+sameweakdependenceframework.XueandTaniguchi( 2020)showmodelselectionconsistency
+andparameterconsistencyforamodifiedversionoftheLASSOintime-seriesregressionswith
+long-memoryinnovations.
+FanandLi( 2001)showmodelselectionconsistencyandoraclepropertyforthefoldedconcave
+penaltyestimatorsinafixeddimensionalsetting.Kimetal.( 2008)showedthattheSCADalso
+enjoysthesepropertiesinhighdimensions.Intime-seriessettings,UematsuandTanaka( 2019)
+show oracle properties and model selection consistency in time-series models with dependent
+regressors.Ledereretal.( 2019)derivedoraclepredictionboundsformanypenalizedregression
+problems.Theauthorsconcludethatgenerichigh-dimensionalpenalizedestimatorsprovidecon-
+sistentpredictionwithanydesignmatrix.Althoughtheresultsarenotdirectlyfocusedontime-
+seriesproblems,theyaregeneralenoughtoholdinsuchsetting.
+Babiietal.( 2020c)proposedthesparse-groupLASSOasanestimationtechniquewhenhigh-
+dimensionaltime-seriesdataarepotentiallysampledatdifferentfrequencies.Theauthorsderived
+oracleinequalitiesforthesparse-groupLASSOestimatorwithinaframeworkwheredistribution
+ofthedatamayhaveheavytails.
+Twoframeworksnotdirectlyconsideredinthissurveybutofgreatempiricalrelevancearenon-
+stationaryenvironmentsandmultivariatemodels.Insparse,high-dimensional,integratedtime-
+series settings, Lee and Shi ( 2020)a n dK o oe ta l .( 2020) show model selection consistency and
+derivetheasymptoticdistributionsofLASSOestimatorsandsomevariants.SmeeksandWijler
+(2021) proposed the Single-equation Penalized Error Correction Selector (SPECS), which is an
+automated estimation procedure for dynamic single-equation models with a large number of
+potentiallycointegratedvariables.Insparsemultivariatetimeseries,Hsuetal.( 2008)showmodel
+selection consistency in vector autoregressive (VAR) models with white-noise shocks. Ren and
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 85
+Zhang(2010)useadaLASSOinasimilarsetting,showingbothmodelselectionconsistencyand
+oracleproperty.Afterward,CallotandKock( 2013)showmodelselectionconsistencyandoracle
+propertyoftheadaptiveGroupLASSO.Inhigh-dimensionalsettings,wherethedimensionofthe
+seriesincreasewiththenumberofobservations,KockandCallot( 2015)andBasuandMichailidis
+(2015)showoracleboundsandmodelselectionconsistencyfortheLASSOinGaussian ??????(??)
+models,extendingpreviousworks.MelnykandBanerjee( 2016)extendedtheseresultsforalarge
+collection of penalties. Zhu ( 2020) derives oracle estimation bounds for folded concave penal-
+tiesforGaussian ??????(??)modelsinhighdimensions.Morerecently,researchershavedeparted
+fromGaussianityandcorrectmodelspecification.Wongetal.( 2020)derivedfinitesampleguar-
+anteesfortheLASSOinamisspecifiedVARmodelinvolving ??-mixingprocesswithsub-Weibull
+marginaldistributions.Masinietal.( 2019)deriveequation-wiseerrorboundsfortheLASSOesti-
+matorofweaklysparse ??????(??)inmixingaledependencesettings,thatincludemodelswithcon-
+ditionallyheteroskedasticinnovations.
+2.2Inference
+Althoughseveralpapersderivedtheasymptoticpropertiesofpenalizedestimatorsaswellasthe
+oracleproperty,theseresultshavebeenderivedundertheassumptionthatthetruenonzerocoef-
+ficientsarelargeenough.Thisconditionisknownasthe ??-minrestriction.Furthermore,model
+selection,suchasthechoiceofthepenaltyparameter,hasnotbeentakenintoaccount.Therefore,
+thetruelimitdistribution,derivedunderuniformasymptoticsandwithoutthe ??-minrestriction
+can be very different from Gaussian, being even bimodal; see, for instance, Leeb and Pötscher
+(2005,2008)andBellonietal.( 2014)foradetaileddiscussion.
+Inference after model selection is actually a very active area of research and a vast num-
+ber of papers have recently appeared in the literature. van de Geer et al. ( 2014) proposed the
+desparsified LASSO in order to construct (asymptotically) a valid confidence interval for each
+????,0bymodifyingtheoriginalLASSOestimate ˆ??.Let??*beanapproximationfortheinverseof
+??:=??(??????'
+??),thenthedesparsifiedLASSOisdefinedas ˜??:=ˆ??+??*(??-??ˆ??)/??.Theaddition
+of this extra term to the LASSO estimator results in an unbiased estimator that no longer esti-
+matesanycoefficientexactlyaszero.Moreimportantly,asymptoticnormalitycanberecoverin
+thesensethatv
+??(˜????-????,0)convergesindistributiontoaGaussiandistributionunderappropri-
+ate regularity conditions. Not surprisingly, the most important condition is how well ??-1can
+be approximated by ??*. In particular, the authors propose to run ??LASSO regressions of ????
+onto??-??:=(??1,…,????-1,????+1,…,????),for1=??=??.Theauthorsnamedthisprocessas nodewide
+regressions,andusethoseestimatestoconstruct ??*(refertoSection2.1.1invandeGeeretal., 2014,
+fordetails)).
+Belloni et al. ( 2014) put forward the double-selection method in the context of on a linear
+model in the form ????=??01??(1)
+??+??'
+02??(2)
+??+????, where the interest lies on the scalar parame-
+ter??01and??(2)
+??is a high-dimensional vector of control variables. The procedure consists in
+obtaininganestimationoftheactive(relevant)regressorsinthehigh-dimensionauxiliaryregres-
+sions of????on??(2)and of??(1)
+??on??(2)
+??,g i v e nb yˆ??1andˆ??2, respectively.7This can be obtained
+eitherbyLASSOoranyotherestimationprocedure.Oncetheset ˆ??:=ˆ??1?ˆ??2isidentified,the
+(a priori) estimated nonzero parameters can be estimated by a low-dimensional regression ????
+on??(1)
+??and{??(2)
+????:???ˆ??}. The main result (Theorem 1 of Belloni et al., 2014) states conditions
+underwhichtheestimator ˆ??01oftheparameterofinterestproperlystudentizedisasymptotically
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+86 MASINIetal.
+normal.Therefore,uniformlyvalidasymptoticconfidenceintervalsfor ??01canbeconstructedin
+theusualfashion.
+SimilartoTayloretal.( 2014)andLockhartetal.( 2014),Leeetal.( 2016)putforwardgeneral
+approachtovalidinferenceaftermodelselection.Theideaistocharacterizethedistributionof
+apostselectionestimatorconditionedontheselectionevent.Morespecifically,theauthorsargue
+thatthepostselectionconfidenceintervalsforregressioncoefficientsshouldhavethecorrectcov-
+erageconditionalontheselectedmodel.ThespecificcaseoftheLASSOestimatorisdiscussedin
+details.ThemaindifferencebetweenLeeetal.( 2016)andTayloretal.( 2014)andLockhartetal.
+(2014)isthatintheformer,confidenceintervalscanbeformedatanyvalueoftheLASSOpenalty
+parameterandanycoefficientinthemodel.Finally,itisimportanttostressthatLeeetal.( 2016)
+inferenceiscarriedonthecoefficientsoftheselectedmodel,whilevandeGeeretal.( 2014)and
+Bellonietal.( 2014)considerinferenceonthecoefficientsofthetruemodel.
+Theabovepapersdonotconsideratime-seriesenvironment.Hecqetal.( 2019)isoneofthefirst
+paperswhichattempttoconsiderpost-selectioninferenceinatime-seriesenvironment.However,
+theirresultsarederivedunderafixednumberofvariables.Babiietal.( 2020a)andAdámeketal.
+(2020)extendtheseminalworkofvandeGeeretal.( 2014)totime-seriesframework.
+More specifically, Babii et al. ( 2020a) consider inference in time-series regression models
+underheteroskedastic and autocorrelated errors. The authors consider heteroskedaticity- and
+autocorrelation-consistent (HAC) estimation with sparse group-LASSO. They propose a debi-
+ased central limit theorem for low dimensional groups of regression coefficients and study the
+HACestimatorofthelong-runvariancebasedonthesparse-groupLASSOresiduals.Adámeket
+al.(2020)extendthedesparsifiedLASSOtoatime-seriessettingundernear-epochdependence
+assumptions,allowingfornon-Gaussian,seriallycorrelatedandheteroskedasticprocesses.Fur-
+thermore,thenumberofregressorscanpossiblygrowfasterthanthesamplesize.
+3NONLINEARMODELS
+Thefunction??happearingin( 1)isunknownandinseveralapplicationsthelinearityassumption
+istoorestrictiveandmoreflexibleformsmustbeconsidered.Assumingaquadraticlossfunction,
+theestimationproblemturnstobetheminimizationofthefunctional
+??(??):=??-h?
+??=1[????+h-??(????)]2, (4)
+where????,agenericfunctionspace.However,theoptimizationproblemstatedin( 4)isinfea-
+sible when ?is infinite dimensional, as there is no efficient technique to search over all ?.O f
+course,onesolutionistorestrictthefunctionspace,asforinstance,imposinglinearityorspecific
+formsofparametricnonlinearmodelsasin,forexample,Teräsvirta( 1994),Suarez-Fariñasetal.
+(2004), or McAleer and Medeiros ( 2008); see also Teräsvirta et al. ( 2010) for a recent review of
+suchmodels.
+Alternatively,wecanreplace ?bysimplerandfinite-dimensional ???.Theideaistoconsidera
+sequenceoffinite-dimensionalspaces,the sievespaces, ???,??=1,2,3,… ,thatconvergesto ?in
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 87
+somenorm.Theapproximatingfunction ????(????)iswrittenas
+????(????)=???
+??=1????????(????),
+where????(·)isthe??thbasisfunctionfor ???andcanbeeitherfullyknownorindexedbyavector
+ofparameters,suchthat: ????(????):=??(????;????).Thenumberofbasisfunctions ??:=????willdepend
+on the sample size ??.??is the dimension of the space and it also depends on the sample size:
+??:=????.Therefore,theoptimizationproblemisthenmodifiedto
+ˆ????(????)=arg min
+????(????)??????-h?
+??=1[????+h-????(????)]2. (5)
+Thesequenceofapproximatingspaces ???ischosenbyusingthestructureoftheoriginalunder-
+lying space ?and the fundamental concept of dense sets. If we have two sets ??and????,?
+beingametricspace, ??isdensein??ifforany??>0,?R and?????,thereisa?????suchthat
+???-????<??.Thisiscalledthemethodof“sieves.”Foracomprehensivereviewofthemethod
+fortime-seriesdata,seeChen( 2007).
+For example, from the theory of approximating functions we know that the proper subset
+???of polynomials is dense in ?, the space of continuous functions. The set of polynomi-
+als is smaller and simpler than the set of all continuous functions. In this case, it is natural to
+definethesequenceofapproximatingspaces ???,??=1,2,3,… bymaking ???thesetofpolyno-
+mials of degree smaller or equal to ??-1(including a constant in the parameter space). Note
+that??????(???)=??<8 .Inthelimitthissequenceoffinite-dimensionalspacesconvergestothe
+infinite-dimensionalspaceofpolynomials,whichonitsturnisdensein ?.
+Whenthebasisfunctionsareallknown“linearsieves,”theproblemislinearintheparameters
+andmethodslikeOLS(when ??«??)orpenalizedestimationaspreviouslydescribedcanbeused.
+Forexample,let ??=1andpickapolynomialbasissuchthat
+????(????)=??0+??1????+??2??2
+??+??3??3
+??+?+????????
+??.
+Inthiscase,thedimension ??of???is??+1,duetothepresenceofaconstantterm.
+If??«??,thevectorofparameters ??=(??1,…,????)'canbeestimatedby
+ˆ??=(??'
+??????)-1??'
+????,
+where????isthe??×(??+1) designmatrixand ??=(??1,…,????)'.
+Whenthebasisfunctionsarealsoindexedbyparameters(“nonlinearsieves”),nonlinearleast-
+squaresmethodsshouldbeused.Inthispaper,wewillfocusonfrequentlyusednonlinearsieves:
+NNsandregressiontrees.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+88 MASINIetal.
+Figure 1 Graphicalrepresentationofasinglehiddenlayerneuralnetwork[Colourfigurecanbeviewedat
+wileyonlinelibrary.com]
+3.1Neuralnetworks
+3.1.1ShallowNN
+NN is one of the most traditional nonlinear sieves. NN can be classified into shallow or deep
+networks.WestartdescribingtheshallowNNs.ThemostcommonshallowNNisthefeedforward
+NNwheretheapproximatingfunction ????(????)isdefinedas
+????(????):=????(????;??)=??0+?????
+??=1??????(??'
+??????+??0,??),
+=??0+?????
+??=1??????(~??'
+??~????).(6)
+Intheabovemodel, ~????=(1,??'
+??)',????(·)isabasisfunctionandtheparametervectortobeestimated
+isgivenby??=(??0,…,????,??'
+1,…,??'
+????,??0,1,…,??0,????)',where~????=(??0,??,??'
+??)'.
+NNmodelsformaverypopularclassofnonlinearsievesandhavebeenusedinmanyappli-
+cationsofeconomicforecasting.Usually,thebasisfunctions ??(·)arecalledactivationfunctions
+and the parameters are called weights. The terms in the sum are called hidden neurons as an
+unfortunateanalogytothehumanbrain.Specification( 6)isalsoknownasasinglehiddenlayer
+NNmodelasisusuallyrepresentedinthegraphicalasinFigure 1.Thegreencirclesinthefigure
+represent the input layer which consists of the covariates of the model ( ????). In the example in
+thefigure,therearefourinputvariables.Theblueandredcirclesindicatethehiddenandoutput
+layers, respectively. In the example, there are five elements (neurons) in the hidden layer. The
+arrowsfromthegreentothebluecirclesrepresentthelinearcombinationofinputs: ??'
+??????+??0,??,
+??=1,…,5.Finally,thearrowsfromthebluetotheredcirclesrepresentthelinearcombination
+ofoutputsfromthehiddenlayer: ??0+?5
+??=1??????(??'
+??????+??0,??).
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 89
+Thereareseveralpossiblechoicesfortheactivationfunctions.Intheearlydays, ??(·)waschosen
+amongtheclassofsquashingfunctionsasperthedefinitionbelow.
+Definition1. Afunction??:R?[??,??] ,??<??,isasquashing(sigmoid)functionifitisnon-
+decreasing,lim???8??(??)=??andlim???-8??(??)=??.
+Historically,themostpopularchoicesarethelogisticandhyperbolictangentfunctionssuch
+that:
+Logistic:??(??)=1
+1+exp(-??)
+Hyperbolictangent :??(??)=exp(??)-exp(-??)
+exp(??)+exp(-??).
+Thepopularityofsuchfunctionswaspartiallyduetotheoreticalresultsonfunctionapproxima-
+tion.Funahashi( 1989)establishesthatNNmodelsasin( 6)withgenericsquashingfunctionsare
+capableofapproximatinganycontinuousfunctionsfromonefinitedimensionalspacetoanother
+toanydesireddegreeofaccuracy,providedthat ????issufficientlylarge.Cybenko( 1989)andHornik
+etal.(1989)simultaneouslyprovedapproximationcapabilitiesofNNmodelstoanyBorelmea-
+surablefunctionandHorniketal.( 1989)extendedthepreviousresultsandshowedthattheNN
+modelsarealsocapabletoapproximatethederivativesoftheunknownfunction.Barron( 1993)
+relatespreviousresultstothenumberoftermsinthemodel.
+Stinchcombe and White ( 1989) and Park and Sandberg ( 1991) derived the same results of
+Cybenko(1989)andHorniketal.( 1989)butwithoutrequiringtheactivationfunctiontobesig-
+moid.Whiletheformerconsideredaverygeneralclassoffunctions,thelaterfocusedonradial-
+basisfunctions(RBF)definedas:
+RadialBasis:??(??)=exp(-??2).
+Morerecently,Yarotsky( 2017)showedthattherectifiedlinearunits(ReLU)as
+RectifiedLinearUnit :??(??)=max(0,??),
+arealsouniversalapproximators.
+Model(6)canbewritteninmatrixnotation.Let ??=(~??1,…,~????),
+??=?
+?
+?
+?
+??1??11???1??
+1??21???2??
+???
+1????1????????
+?
+?
+?
+??,and?(????)=?
+?
+?
+?
+??1??(~??'
+1~??1)???(~??'
+??~??1)
+1??(~??'
+1~??2)???(~??'
+??~??2)
+????
+1??(~??'
+1~????)???(~??'
+??~????)?
+?
+?
+?
+??.
+Therefore,bydefining ??=(??0,??1,…,????)',theoutputofafeedforwardNNisgivenby:
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+90 MASINIetal.
+????(??,??)=[h ??(??1;??),…,h??(????;??)]'
+=?
+?
+?
+????0+???
+??=1??????(??'
+????1+??0,??)
+?
+??0+???
+??=1??????(??'
+??????+??0,??)?
+?
+?
+??
+=?(????)??.(7)
+Thedimensionoftheparametervector ??=[??????(??)',??']'is??=(??+1)×?? ??+(????+1)andcan
+easilygetverylargesuchthattheunrestrictedestimationproblemdefinedas
+ˆ??=argmin
+???R?????-?(????)?? ?2
+2
+isunfeasible.Asolutionistouseregularizationasinthecaseoflinearmodelsandconsiderthe
+minimizationofthefollowingfunction:
+??(??)= ???-?(????)?? ?2
+2+??(??), (8)
+whereusually ??(??)=????'??.Traditionally,themostcommonapproachtominimize( 8)istouse
+BayesianmethodsasinMacKay( 1992a);MacKay( 1992b)andForeseeandHagan( 1997).Amore
+modernapproachistouseatechniqueknownas Dropout(Srivastavaetal., 2014).
+Thekeyideaistorandomlydropneurons(alongwiththeirconnections)fromtheNNduring
+estimation.AnNNwith ????neuronsinthehiddenlayercangenerate 2????possible“thinned”NN
+byjustremovingsomeneurons.Dropoutsamplesfromthis 2????differentthinnedNNandtrainthe
+sampledNN.Topredictthetargetvariable,weuseasingleunthinnednetworkthathasweights
+adjustedbytheprobabilitylawinducedbytherandomdrop.Thisproceduresignificantlyreduces
+overfittingandgivesmajorimprovementsoverotherregularizationmethods.
+WemodifyEquation( 6)by
+??*
+??(????)=??0+?????
+??=1??????????(??'
+??[???????]+??????0,??),
+where??,??,and??=(??1,…,????)areindependentBernoullirandomvariableseachwithprobability
+??ofbeingequalto1.TheNNmodelisthusestimatedbyusing ??*
+??(????)insteadof????(????)where,
+foreachtrainingexample,thevaluesoftheentriesof ??aredrawnfromtheBernoullidistribution.
+Thefinalestimatesfor ????,????,and????,??aremultipliedby ??.
+3.1.2DeepNNs
+AdeepNNmodelisastraightforwardgeneralizationofspecification( 6)wheremorehiddenlayers
+areincludedinthemodelasrepresentedinFigure 2.Inthefigure,werepresentadeepNNwith
+twohiddenlayerswiththesamenumberofhiddenunitsineach.However,thenumberofhidden
+neuronscanvaryacrosslayers.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 91
+Figure 2 Deepneuralnetworkarchitecture[Colourfigurecanbeviewedatwileyonlinelibrary.com]
+AspointedoutinMhaskaetal.( 2017),whiletheuniversalapproximationpropertyholdsfor
+shallowNNs,deepnetworkscanapproximatetheclassofcompositionalfunctionsaswellasshal-
+lownetworksbutwithexponentiallylowernumberoftrainingparametersandsamplecomplexity.
+Set????as the number of hidden units in layer ???{1,…,??} . For each hidden layer ??, define
+????=(~??1??,…,~????????).Then,theoutput ???oflayer??isgivenrecursivelyby
+???(???-1(·)????)
+??×(????+1)=?
+?
+?
+?
+??1??(~??'
+1???1??-1(·))???(~??'
+???????1??-1(·))
+1??(~??'
+1???2??-1(·))???(~??'
+???????2??-1(·))
+????
+1??(~??'
+1???????-1(·))???(~??'
+???????????-1(·))?
+?
+?
+?
+??,
+where???:=??.Therefore,theoutputofthedeepNNisthecompositionof
+????(??)=???(??3(?2(?1(????1)??2)??3)?)??????.
+Theestimationoftheparametersisusuallycarriedoutbystochasticgradientdescendmethods
+withdropouttocontrolthecomplexityofthemodel.
+3.1.3Recurrentneuralnetworks
+Broadlyspeaking,RNNsareNNsthatallowforfeedbackamongthehiddenlayers.RNNscanuse
+theirinternalstate(memory)toprocesssequencesofinputs.Intheframeworkconsideredinthis
+paper,agenericRNNcouldbewrittenas
+????=??(????-1,????),
+ˆ????+h|??=??(????),
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+92 MASINIetal.
+Figure 3 Architectureofthelong-short-termmemorycell(LSTM)[Colourfigurecanbeviewedat
+wileyonlinelibrary.com]
+whereˆ????+h|??isthepredictionof ????+hgivenobservationsonlyuptotime ??,??and??arefunctions
+tobedefined,and ????iswhatwecallthe(hidden)state.Fromatime-seriesperspective,RNNscan
+beseenasakindofnonlinearstate-spacemodel.
+RNNscanremembertheorderthattheinputsappearthroughitshiddenstate(memory)and
+theycanalsomodelsequencesofdatasothateachsamplecanbeassumedtobedependenton
+previousones,asintime-seriesmodels.However,RNNsarehardtobeestimatedastheysuffer
+fromthevanishing/explodinggradientproblem.Setthecostfunctiontobe
+???(??)=??-h?
+??=1(????+h-ˆ????+h|??)2,
+where??isthevectorofparameterstobeestimated.Itiseasytoshowthatthegradient?????(??)
+????can
+beverysmallordiverge.Fortunately,thereisasolutiontotheproblemproposedbyHochreiter
+andSchmidhuber( 1997).AvariantofRNNwhichiscalledlong-short-termmemory(LSTM)net-
+work.Figure 3showsthearchitectureofatypicalLSTMlayer.AnLSTMnetworkcanbecomposed
+of several layers. In the figure, red circles indicate logistic activation functions, while blue cir-
+clesrepresenthyperbolictangentactivation.Thesymbols“ ??”and“+”represent,respectively,the
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 93
+Algorithm 1 Mathematically,RNNscanbedefinedbythefollowingalgorithm
+1. Initiatewith ??0=0and??0=0.
+2. Giventheinput ????,for???{1,…,??} ,do:
+????= Logistic(????????+????????-1+????)
+????= Logistic(????????+????????-1+????)
+????= Logistic(????????+????????-1+????)
+????=T a n h ( ????????+????????-1+????)
+????=( ?????????-1)+(?????????)
+????=?????Tanh(????)
+ˆ????+h|??=????????+????
+where????,????,????,????,????,????,????,????,????,????,????,????,and????areparameterstobeestimated.
+Figure 4 Informationflowinan
+LTSMcell[Colourfigurecanbeviewed
+atwileyonlinelibrary.com]
+element-wisemultiplicationandsumoperations.TheRNNlayeriscomposedofseveralblocks:
+the cell state and the forget, input, and ouput gates. The cell state introduces a bit of memory
+to the LSTM so it can “remember” the past. LSTM learns to keep only relevant information to
+makepredictions,andforgetnonrelevantdata.Theforgetgatetellswhichinformationtothrow
+awayfromthecellstate.TheoutputgateprovidestheactivationtothefinaloutputoftheLSTM
+blockattime??.Usually,thedimensionofthehiddenstate( ????)isassociatedwiththenumberof
+hiddenneurons.
+Algorithm 1describesanalyticallyhowtheLSTMcellworks. ????representstheoutputofthe
+forgetgate.Notethatitisacombinationoftheprevioushiddenstate( ????-1)withthenewinfor-
+mation(????).Notethat?????[0,1]anditwillattenuatethesignalcomingcom ????-1.Theinputand
+outputgateshavethesamestructure.Theirfunctionistofilterthe“relevant”informationfrom
+theprevioustimeperiodaswellasfromthenewinput. ????scalesthecombinationofinputsand
+previous information. This signal will be then combined with the output of the input gate ( ????).
+Thenewhiddenstatewillbeanattenuationofthesignalcomingfromtheoutputgate.Finally,
+thepredictionisalinearcombinationofhiddenstates.Figure 4illustrateshowtheinformation
+flowsinanLSTMcell.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+94 MASINIetal.
+Figure 5 Exampleofasimpletree[Colourfigurecanbeviewedatwileyonlinelibrary.com]
+3.2Regressiontrees
+Aregressiontreeisanonparametricmodelthatapproximatesanunknownnonlinearfunction
+??h(????)in (1) with local predictions using recursive partitioning of the space of the covariates.
+A tree may be represented by a graph as in the left side of Figure 5, which is equivalent as the
+partitioningintherightsideofthefigureforthisbidimensionalcase.Forexample,supposethat
+we want to predict the scores of basketball players based on their height and weight. The first
+nodeofthetreeintheexamplesplitstheplayerstallerthan1.85mfromtheshorterplayers.The
+secondnodeinthelefttakestheshortplayersgroupsandsplitthembyweightsandthesecond
+nodeintherightdoesthesamewiththetallerplayers.Thepredictionforeachgroupisdisplayed
+intheterminalnodesandtheyarecalculatedastheaveragescoreineachgroup.Togrowatree,
+wemustfindtheoptimalsplittingpointineachnode,whichconsistsofanoptimalvariableand
+anoptimalobservation.Inthesameexample,theoptimalvariableinthefirstnodeisheightand
+theobservationis1.85m.
+Theideaofregressiontreesistoapproximate ??h(????)by
+h??(????)=?????
+??=1????????(????),where????(????)={
+1if????????,
+0otherwise.
+From the above expression, it becomes clear that the approximation of ??h(·)is equivalent to a
+linearregressionon ????dummyvariables,where ????(????)isaproductofindicatorfunctions.
+Let??:=????and??:=????be,respectively,thenumberofterminalnodes(regions, leaves)and
+parentnodes.Differentregionsaredenotedas ?1,…,???.Therootnodeatposition0.Theparent
+nodeatposition ??hastwosplit(child)nodesatpositions 2??+1and2??+2.Eachparentnodehas
+athreshold(split)variableassociated, ????????,where???????={1,2,…,??} .Define??and??asthesets
+ofparentandterminalnodes,respectively.Figure 6givesanexample.Intheexample,theparent
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 95
+Figure 6 Exampleoftreewithlabels
+nodesare??={0,2,5} andtheterminalnodesare ??={1,6,11,12} .
+Therefore,wecanwritetheapproximatingmodelas
+h??(????)=?
+???????????????(????;????), (9)
+where
+??????(????;????)=?
+???????(??????,??;????)????,??(1+????,??)
+2×[1-??(??????,??;????)](1-????,??)(1+????,??), (10)
+??(??????,??;????)={
+1if??????,??=????
+0otherwise,
+????,??=?
+?
+?
+??-1ifthepathtoleaf ??doesnotincludeparentnode ??;
+0ifthepathtoleaf ??includethe??????????-???????? childofparentnode ??;
+1ifthepathtoleaf ??includethe????????-???????? childofparentnode ??.
+????: indexes of parent nodes included in the path to leaf ??.????={????}such that???????,?????and?
+???????????(????;????)=1.
+3.2.1Randomforests
+RF is a collection of regression trees, each specified in a bootstrap sample of the original data.
+ThemethodwasoriginallyproposedbyBreiman( 2001).Sincewearedealingwithtimeseries,we
+useablockbootstrap.Supposethereare ??bootstrapsamples.Foreachsample ??,??=1,…,?? ,a
+treewith????regionsisestimatedforarandomlyselectedsubsetoftheoriginalregressors. ????is
+determinedinordertoleaveaminimumnumberofobservationsineachregion.Thefinalforecast
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+96 MASINIetal.
+Algorithm 2 Theboostingalgorithmisdefinedasthefollowingsteps
+1. Initialize ????0=¯??:=1
+?????
+??=1????;
+2.For??=1,…,?? :
+(a)Make??????=????-??????-1
+(b)Growa(small)Treemodeltofit ??????,ˆ??????=?
+???????ˆ??????????????(????;ˆ??????)
+(c)Make????=argmin
+?????
+??=1[??????-??ˆ??????]2
+(d)Update??????=??????-1+??????ˆ??????
+istheaverageoftheforecastsofeachtreeappliedtotheoriginaldata:
+ˆ????+h|??=1
+?????
+??=1[?????
+??=1ˆ????,????????,??(????;ˆ????,??)]
+.
+ThetheoryforRFmodelshasbeendevelopedonlytoindependentandidenticallydistributed
+randomvariables.Forinstance,Scornetetal.( 2015)provesconsistencyoftheRFapproximation
+totheunknownfunction ??h(????).Morerecently,WagerandAthey( 2018)provedconsistencyand
+asymptoticnormalityoftheRFestimator.
+3.2.2Boostingregressiontrees
+Boosting is another greedy method to approximate nonlinear functions that uses base learners
+forasequentialapproximation.Themodelweconsiderhere,calledGradientBoosting,wasintro-
+ducedbyFriedman( 2001)andcanbeseenasaGradientDescendentmethodinfunctionalspace.
+ThestudyofstatisticalpropertiesoftheGradientBoostingiswelldevelopedforindependent
+data.Forexample,forregressionproblems,DuffyandHelmbold( 2002)derivedboundsonthe
+convergenceofboostingalgorithmsusingassumptionsontheperformanceofthebaselearner.
+ZhangandYu( 2005)proveconvergence,consistency,andresultsonthespeedofconvergencewith
+mildassumptionsonthebaselearners.Bühlmann( 2002)showssimilarresultsforconsistencyin
+thecaseof??2lossfunctionsandthreebasemodels.Sinceboostingindefinitelyleadstooverfitting
+problems, some authors have demonstrated the consistency of boosting with different types of
+stopping rules, which are usually related to small step sizes, as suggested by Friedman ( 2001).
+Someoftheseworksincludeboostinginclassificationproblemsandgradientboostingforboth
+classificationandregressionproblems.See,forinstance,Jiang( 2004),LugosiandVayatis( 2004),
+BartlettandTraskin( 2007),ZhangandYu( 2005),Bühlmann( 2006),andBühlmann( 2002).
+Boostingisaniterativealgorithm.Theideaofboostedtreesisto,ateachiteration,sequentially
+refitthegradientofthelossfunctionbysmalltrees.Inthecaseofquadraticlossasconsideredin
+thispaper,thealgorithmsimplyrefitstheresidualsfromthepreviousiteration.
+Algorithm 2presentsthesimplifiedboostingprocedureforaquadraticloss.Itisrecommended
+touseashrinkageparameter ???(0,1]tocontrolthelearningrateofthealgorithm.If ??isclose
+to 1, we have a faster convergence rate and a better in-sample fit. However, we are more likely
+tohaveoverfittingandproducepoorout-of-sampleresults.Inaddition,thederivativeishighly
+affectedbyoverfitting,evenifwelookatin-sampleestimates.Alearningratebetween0.1and0.2
+isrecommendedtomaintainareasonableconvergenceratioandtolimitoverfittingproblems.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 97
+Thefinalfittedvaluemaybewrittenas
+ˆ????+h=¯??+???
+??=1??????ˆ??????
+=¯??+???
+??=1??ˆ?????
+???????ˆ??????????????(????;ˆ??????).(11)
+3.3Inference
+ConductinginferenceinnonlinearMLmethodsistricky.OnepossiblewayistofollowMedeiros
+etal.(2006),MedeirosandVeiga( 2005),andSuarez-Fariñasetal.( 2004)andinterpretparticu-
+larnonlinearMLspecificationsasparametricmodels,asforexample,generalformsofsmooth
+transition regressions. However, this approach restricts the application of ML methods to very
+specificsettings.Analternative,istoconsidermodelsthatcanbecastinthesievesframework
+asdescribedearlier.Thisisthecaseofsplinesandfeed-forwardNNs,forexample.Inthissetup,
+ChenandShen( 1998)andChen( 2007)derived,underregularityconditions,theconsistencyand
+asymptoticallynormalityoftheestimatesofasemiparametricsieveapproximations.Theirsetup
+isdefinedasfollows:
+????+h=??'
+0????+??(????)+????+h,
+where??(????)isanonlinearfunctionthatisnonparametricallymodeledbysieveapproximations.
+ChenandShen( 1998)andChen( 2007)considerboththeestimationofthelinearandnonlinear
+componentsofthemodel.However,theirresultsarederivedunderthecasewherethedimension
+of????isfixed.
+Recently,Chernozhukovetal.( 2017,2018)considerthecasewherethenumberofcovariates
+divergeasthesamplesizeincreasesinaverygeneralsetup.Inthiscase,theasymptoticresults
+inChenandShen( 1998)andChen( 2007)arenotvalidandtheauthorsputforwardtheso-called
+doubleMLmethodsasanicegeneralizationtotheresultsofBellonietal.( 2014).Nevertheless,
+theresultsdonotincludethecaseoftime-seriesmodels.
+MorespecificallytothecaseofRandomForests,asymptoticandinferentialresultsarederived
+inScornetetal.( 2015)andW ageretal.( 2018)forthecaseofIIDdata.Morerecently,Davisand
+Nielsen(2020)proveauniformconcentrationinequalityforregressiontreesbuiltonnonlinear
+autoregressive stochastic processes and prove consistency for a large class of random forests.
+Finally, it is worth mentioning the interesting work of Borup et al. ( 2020). In their paper, the
+authorsshowthatproperpredictortargetingcontrolstheprobabilityofplacingsplitsalongstrong
+predictorsandimprovesprediction.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+98 MASINIetal.
+Algorithm 3 BaggingforTime-SeriesModels
+TheBaggingalgorithmisdefinedasfollows.
+1.Arrangethesetoftuples (????+h,??'
+??),??=h+1,…,?? ,intheformofamatrix ??ofdimension(??-h)×?? .
+2. Construct(block)bootstrapsamplesoftheform {(??*
+(??)2,??'*
+(??)2),…,(??*
+(??)??,??'*
+(??)??)},??=1,…,??,bydrawing
+blocksof??rowsof??withreplacement.
+3.Computethe??thbootstrapforecastas
+ˆ??*
+(??)??+h |??={
+0if|??*
+??|<?????,
+ˆ??*
+(??)˜??*
+(??)??otherwise,(11)
+where˜??*
+(??)??:=??*
+(??)????*
+(??)??and????isadiagonalselectionmatrixwith ??thdiagonalelementgivenby
+??{|????|>??}={
+1if|????|>??,
+0otherwise,
+??isaprespecifiedcriticalvalueofthetest. ˆ??*
+(??)istheOLSestimatorateachbootstraprepetition.
+4.Computetheaverageforecastsoverthebootstrapsamples:
+~????+h|??=1
+?????
+??=1ˆ??*
+(??)??|??-1.
+Algorithm 4 BaggingforTime-SeriesModelsandManyRegressors
+TheBaggingalgorithmisdefinedasfollows.
+0.Run??univariateregressionsof ????+honeachcovariatein ????.Compute??-statisticsandkeeponlytheones
+thatturnouttobesignificantatagivenprespecifiedlevel.Callthisnewsetofregressorsas ?????
+1–4. Sameasbeforebutwith ????replacedby?????.
+4OTHERMETHODS
+4.1Bagging
+ThetermbaggingmeansBootstrapAggregating andwasproposedbyBreiman( 1996)toreducethe
+varianceofunstablepredictors.8Itwaspopularizedinthetime-seriesliteraturebyInoueandKil-
+ian(2008),whotoconstructforecastsfrommultipleregressionmodelswithlocal-to-zeroregres-
+sionparametersanderrorssubjecttopossibleserialcorrelationorconditionalheteroskedasticity.
+Baggingisdesignedforsituationsinwhichthenumberofpredictorsismoderatelylargerelative
+tothesamplesize.
+Thebaggingalgorithmintime-seriessettingshavetotakeintoaccountthetimedependence
+dimensionwhenconstructingthebootstrapsamples.
+InAlgorithm 3,onerequiresthatitispossibletoestimateandconductinferenceinthelinear
+model.Thisiscertainlyinfeasibleifthenumberofpredictorsislargerthanthesamplesize( ??>
+??), which requires the algorithm to be modified. Garcia et al. ( 2017) and Medeiros et al. ( 2021)
+adoptthechangesasdescribedinAlgorithm 4.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 99
+4.2Completesubsetregression
+CSRisamethodforcombiningforecastsdevelopedbyElliottetal.( 2013,2015).Themotivation
+was that selecting the optimal subset of ????to predict????+hby testing all possible combinations
+ofregressorsiscomputationallyverydemandingand,inmostcases,unfeasible.Foragivenset
+ofpotentialpredictorvariables,theideaistocombineforecastsbyaveraging9allpossiblelinear
+regressionmodelswithfixednumberofpredictors.Forexample,with ??possiblepredictors,there
+are??uniqueunivariatemodelsand
+????,??=??!
+(??-??)!??!
+different??-variatemodelsfor ??=??.Thesetofmodelsforafixedvalueof ??asisknownasthe
+completesubset.
+When the set of regressors is large the number of models to be estimated increases rapidly.
+Moreover,itislikelythatmanypotentialpredictorsareirrelevant.Inthesecases,itwassuggested
+that one should include only a small, ??, fixed set of predictors, such as 5 or 10. Nevertheless,
+the number of models still very large, for example, with ??=30and??=8, there are 5,852,925
+regression.AnalternativesolutionistofollowGarciaetal.( 2017)andMedeirosetal.( 2021)and
+adoptasimilarstrategyasinthecaseofBagginghigh-dimensionalmodels.Theideaistostart
+fitting a regression of ????+hon each of the candidate variables and save the ??-statistics of each
+variable.The??-statisticsarerankedbyabsolutevalue,andweselectthe ~??variablesthataremore
+relevantintheranking.TheCSRforecastiscalculatedonthesevariablesfordifferentvaluesof
+??.ThisapproachisbasedontheSureIndependenceScreeningofFanandLv( 2008),extended
+todependentbyYousuf( 2018),thataimstoselectasupersetofrelevantpredictorsamongavery
+largeset.
+4.3Hybridmethods
+Recently,MedeirosandMendes( 2013)proposedthecombinationofLASSO-basedestimationand
+NNmodels.Theideaistoconstructafeedforwardsingle-hiddenlayerNNwheretheparametersof
+thenonlinearterms(neurons)arerandomlygeneratedandthelinearparametersareestimatedby
+LASSO(oroneofitsgeneralizations).SimilarideaswerealsoconsideredbyKockandTeräsvirta
+(2014,2015).
+Traplettietal.( 2000)andMedeirosetal.( 2006)proposedtoaugmentafeedforwardshallow
+NN by a linear term. The motivation is that the nonlinear component should capture only the
+nonlinear dependence, making the model more interpretable. This is in the same spirit of the
+semi-parametricmodelsconsideredinChen( 2007).
+Inspired by the above ideas, Medeiros et al. ( 2021) proposed combining random forests with
+adaLASSOandOLS.Theauthorsconsideredtwospecifications.Inthefirstone,calledRF/OLS,
+the idea is to use the variables selected by a Random Forest in a OLS regression. The second
+approach, named adaLASSO/RF, works in the opposite direction. First select the variables by
+adaLASSOandthanusetheminaRandomForestmodel.Thegoalistodisentangletherelative
+importanceofvariableselectionandnonlinearitytoforecastinflation.
+Recently,DieboldandShin( 2019)proposethe“partially-egalitarian”LASSOtocombinesur-
+veyforecasts.Morespecifically,theproceduresetssomecombiningweightstozeroandshrinks
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+100 MASINIetal.
+thesurvivorstowardequality.Therefore,thefinalforecastwillbecloserelatedtothesimpleaver-
+age combination of the survived forecasts. Although the paper considers survey forecasts, the
+methodisquitegeneralandcanbeappliedtoanysetofforecasts.Aspointedoutbytheauthors,
+optimally-regularizedregression-basedcombinationsandsubset-averagecombinationsarevery
+closelyconnected.Dieboldetal.( 2021)extendedtheideasinDieboldetal.( 2019)inordertocon-
+structregularizedmixturesofdensityforecasts.Bothpapersshedlightonhowmachinelearning
+methodscanbeusedtooptimallycombinealargesetofforecasts.
+5FORECASTCOMPARISON
+WiththeadvancesintheMLliterature,thenumberofavailableforecastingmodelsandmethods
+havebeenincreasingatafastpace.Consequently,itisveryimportanttoapplystatisticaltoolsto
+comparedifferentmodels.Theforecastingliteratureprovidesanumberoftestssincetheseminal
+paperbyDieboldandMariano( 1995)thatcanbeappliedaswelltotheMLmodelsdescribedin
+thissurvey.
+IntheDieboldandMariano’s( 1995)test,twocompetingmethodshavethesameunconditional
+expectedlossunderthenullhypothesis,andthetestcanbecarriedoutusingasimple ??-test.A
+smallsampleadjustmentwasdevelopedbyHarveyetal.( 1997).Seealsotherecentdiscussionin
+Diebold(2015).OnedrawbackoftheDieboldandMariano’s( 1995)testisthatitsstatisticdiverges
+undernullwhenthecompetingmodelsarenested.However,GiacominiandWhite( 2006)show
+thatthetestisvalidiftheforecastsarederivedfrommodelsestimatedinarollingwindowframe-
+work.Recently,McCracken( 2020)showsthatiftheestimationwindowisfixed,theDieboldand
+Mariano’s( 1995)statisticmaydivergeunderthenull.Therefore,itisveryimportantthatthefore-
+castsarecomputedinarollingwindowscheme.
+Inordertoaccommodatecaseswheretherearemorethantwocompetingmodels,anuncondi-
+tionalsuperiorpredictiveability(USPA)testwasproposedbyWhite( 2000).Thenullhypothesis
+statesthatabenchmarkmethodoutperformsasetofcompetingalternatives.However,Hansen
+(2005)showedthatWhite’s( 2000)testcanbeveryconservativewhentherearecompetingmeth-
+odsthatareinferiortothebenchmark.Anotherimportantcontributiontotheforecastingliter-
+ature is the model confidence set (MCS) proposed by Hansen et al. ( 2011). An MCS is a set of
+competingmodelsthatisbuiltinawaytocontainthebestmodelwithrespecttoacertainloss
+functionandwithagivenlevelofconfidence.TheMCSacknowledgesthepotentiallimitations
+ofthedataset,suchthatuninformativedatayieldanMCSwithalargenumbermodels,whereas
+informativedatayieldanMCSwithonlyafewmodels.Importantly,theMCSproceduredoesnot
+assumethataparticularmodelisthetrueone.
+AnotherextensionoftheDieboldandMariano’s( 1995)testistheconditionalequalpredictive
+ability(CEPA)testproposedbyGiacominiandWhite( 2006).Inpracticalapplications,itisimpor-
+tanttoknownotonlyifagivenmodelissuperiorbutalsowhenitisbetterthanthealternatives.
+Recently, Li et al. ( 2020) proposed a very general framework to conduct conditional predictive
+abilitytests.
+Insummary,itisveryimportanttocomparetheforecastsfromdifferentMLmethodsandthe
+literatureprovidesanumberofteststhatcanbeused.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 101
+6APPLICATIONSOFMLMETHODSTOECONOMICAND
+FINANCIALFORECASTING
+6.1Linearmethods
+Penalizedregressionsarenowanimportantoptioninthetoolkitofappliedeconomists.Thereis
+avastliteratureconsideringtheuseofsuchtechniquestoeconomicsandfinancialforecasting.
+Macroeconomic forecasting is certainly one of the most successful applications of penalized
+regressions.MedeirosandMendes( 2016)appliedtheadaLASSOtoforecastingU.S.inflationand
+showedthatthemethodoutperformsthelinearautoregressiveandfactormodels.Medeirosand
+Vasconcelos( 2016)showthathigh-dimensionallinearmodelsproduce,onaverage,smallerfore-
+casting errors for macroeconomic variables when a large set of predictors is considered. Their
+resultsalsoindicatethatagoodselectionoftheadaLASSOhyperparametersreducesforecasting
+errors. Garcia et al. ( 2017) show that high-dimensional econometric models, such as shrinkage
+and CSR, perform very well in real-time forecasting of Brazilian inflation in data-rich environ-
+ments.Theauthorscombineforecastsofdifferentalternativesandshowthatmodelcombination
+canachievesuperiorpredictiveperformance.SmeeksandWijler( 2018)consideranapplication
+toalargemacroeconomicU.S.datasetanddemonstratethatpenalizedregressionsareverycom-
+petitive.Medeirosetal.( 2021)conductavastcomparisonofmodelstoforecastU.S.inflationand
+showedthepenalizedregressionswerefarsuperiortoseveralbenchmarks,includingfactormod-
+els. Ardia et al. ( 2019) introduce a general text sentiment framework that optimizes the design
+for forecasting purposes and apply it to forecasting economic growth in the United States. The
+methodincludestheuseoftheElnetforsparsedata-drivenselectionandtheweightingofthou-
+sandsofsentimentvalues.Tarassow( 2019)considerpenalizedVARstoforecastsixdifferenteco-
+nomicuncertaintyvariablesforthegrowthoftherealM2andrealM4Divisiamoneyseriesfor
+the United States using monthly data. Uematsu and Tanaka ( 2019) consider high-dimensional
+forecastingandvariableselectionviafolded-concavepenalizedregressions.Theauthorsforecast
+quarterly U.S. gross domestic product data using a high-dimensional monthly data set and the
+mixeddatasampling(MIDAS)frameworkwithpenalization.SeealsoBabiietal.( 2020b,2020c).
+Thereisalsoavastlistofapplicationsinempiricalfinance.Elliottetal.( 2013)findthatcom-
+binationsofsubsetregressionscanproducemoreaccurateforecastsoftheequitypremiumthan
+conventionalapproachesbasedonequal-weightedforecastsandotherregularizationtechniques.
+AudrinoandKnaus( 2016)usedLASSO-basedmethodstoestimateforecastingmodelsforrealized
+volatilities.Callotetal.( 2017)considermodelingandforecastinglargerealizedcovariancematri-
+cesofthe30DowJonesstocksbypenalizedVARmodels.TheauthorsfindthatpenalizedVARs
+outperformthebenchmarksbyawidemarginandimprovetheportfolioconstructionofamean–
+varianceinvestor.Chincoetal.( 2019)usetheLASSOtomake1-minute-aheadreturnforecastsfor
+avastsetofstockstradedattheNewYorkStockExchange.Theauthorsprovideevidencethat
+penalizedregressionestimatedbytheLASSOboostout-of-samplepredictivepowerbychoosing
+predictorsthattraceouttheconsequencesofunexpectednewsannouncements.
+6.2Nonlinearmethods
+TherearemanypapersontheapplicationofnonlinearMLmethodstoeconomicandfinancial
+forecasting.MostofthepapersfocusonNNmethods,speciallytheonesfromtheearlyliterature.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+102 MASINIetal.
+With respect to the early papers, most of the models considered were nonlinear versions of
+autoregressivemodels.Atbest,asmallnumberofextracovariateswereincluded.See,forexam-
+ple, Teräsvirta et al. ( 2005) and the references therein. In the majority of the papers, including
+Teräsvirtaetal.( 2005),therewasnostrongevidenceofthesuperiorityofnonlinearmodelsasthe
+differencesinperformanceweremarginal.OtherexamplesfromtheearlyliteratureareSwanson
+andWhite( 1995,1997a,1997b),BalkinandOrd( 2000),Tkacz(2001),Medeirosetal.( 2001),and
+Heravietal.( 2004).
+Morerecently,withtheavailabilityoflargedatasets,nonlinearmodelsarebacktothescene.
+For example, Medeiros et al. ( 2021) show that, despite the skepticism of the previous literature
+on inflation forecasting, ML models with a large number of covariates are systematically more
+accurate than the benchmarks for several forecasting horizons and show that Random Forests
+dominated all other models. The good performance of the Random Forest is due not only to
+its specific method of variable selection but also the potential nonlinearities between past key
+macroeconomicvariablesandinflation.OthersuccessfulexampleisGuetal.( 2020).Theauthors
+showlargeeconomicgainstoinvestorsusingMLforecastsoffuturestockreturnsbasedonavery
+largesetofpredictors.Thebestperformingmodelsaretree-basedandneuralnetworks.Coulombe
+etal.(2020)showsignificantgainswhennonlinearMLmethodsareusedtoforecastmacroeco-
+nomic time series. Borup et al. ( 2020) consider penalized regressions, ensemble methods, and
+random forest to forecast employment growth in the United States over the period 2004–2019
+usingGooglesearchactivity.TheirresultsstronglyindicatethatGooglesearchdatahavepredic-
+tivepower.Borupetal.( 2020)computenow-andbackcastsofweeklyunemploymentinsurance
+initialclaimsintheUSbasedonarichsetofdailyGoogleTrendssearch-volumedataandmachine
+learningmethods.
+6.3Empiricalillustration
+Inthissection,weillustratetheuseofsomeofthemethodsreviewedinthispapertoforecastdaily
+realizedvarianceoftheBrazilianStockMarketindex(BOVESPA).Weuseasregressorsinforma-
+tionfromothermajorindexes,namely,theS&P500(US),theFTSE100(UnitedKingdom),DAX
+(Germany),HangSeng(HongKong),andNikkei(Japan).Ourmeasureofrealizedvolatilityiscon-
+structedbyaggregatingintradayreturnssampleatthe5-minfrequency.Thedatawereobtained
+fromtheOxford-ManRealizedLibraryatOxfordUniversity.10
+Foreachstockindex,wedefinetherealizedvarianceas
+??????=???
+??=1??2
+????,
+where??????isthelogreturnsampledatthe5-min.frequency. ??isthenumberofavailablereturns
+atday??.
+The benchmark model is the heterogeneous autoregressive (HAR) model proposed by Corsi
+(2009):
+log??????+1=??0+??1log??????+??5log????5,??+??22log????22,??+????+1, (13)
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 103
+Figure 7 Realizedvarianceofdifferentstockindexes[Colourfigurecanbeviewedat
+wileyonlinelibrary.com]
+where??????isdailyrealizedvarianceoftheBOVESPAindex,
+????5,??=1
+54?
+??=0??????-??,and
+????22,??=1
+2221?
+??=0??????-??.
+Asalternatives,weconsideranextendedHARmodelwithadditionalregressorsestimatedby
+adaLASSO.Weincludeasextraregressorsthedailypastvolatilityoftheotherfiveindexescon-
+sideredhere.Themodelhasatotalofeightcandidatepredictors.Furthermore,weconsidertwo
+nonlinearalternativesusingallpredictors:arandomforestandshallowanddeepNNs.
+TherealizedvariancesofthedifferentindexesareillustratedinFigure 7.ThedatastartinFebru-
+ary2,2000andendsinMay21,2020,atotalof4200observations.Thesampleincludestwoperi-
+odsofveryhighvolatility,namely,thefinancialcrisisof2007–2008andtheCovid-19pandemics
+of2020.Weconsiderarollingwindowexercise,wereweset1500observationsineachwindow.
+Themodelsarereestimatedeveryday.
+SeveralotherauthorshaveestimatednonlinearandMLmodelstoforecastrealizedvariances.
+McAleer and Medeiros ( 2008) considered a smooth transition version of the HAR while Hille-
+brandandMedeiros( 2016)consideredthecombinationofsmoothtransitions,longmemory,and
+NN models. Hillebrand and Medeiros ( 2010) and McAleer and Medeiros ( 2011) combined NN
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+104 MASINIetal.
+Table 1 Forecastingresults
+Fullsample 2007–2008 2020
+Model MSE QLIKE MSE QLIKE MSE QLIKE
+HARX-LASSO 0.96**0.98 0.98*0.96 0.90***0.90
+Randomforest 1.00 1.02 0.95***0.98 1.13**1.03*
+Neuralnetwork(1) 0.99**0.99 0.97**0.98 0.99 0.99
+Neuralnetwork(3) 0.99**0.99 0.98*0.99 0.99 0.99
+Neuralnetwork(5) 0.90**0.99 0.98*0.99 0.99 0.99
+The table reports for each model, the mean squared error (MSE) and the QLIKE statistics as a ratio to the HAR benchmark.
+ValuessmallerthanoneindicatesthatthemodeloutperformstheHAR.TheasterisksindicatetheresultsoftheDiebold-Mariano
+testofequalforecastingperformance.*,**,and***,indicaterejectionofthenullofequalforecastingabilityatthe10%,5%,and
+1%,respectively.
+modelswithbaggingandScharthandMedeiros( 2009)consideredsmoothtransitionregression
+trees. The use of LASSO and its generalizations to estimate extensions of the HAR model was
+proposedbyAudrinoandKnaus( 2016).
+Althoughthemodelsareestimatedinlogarithms,wereporttheresultsinlevels,whichinthe
+endisthequantityofinterest.WecomparethemodelsaccordingtotheMSEandtheQLIKEmet-
+ric.
+TheresultsareshowninTable 1.Thetablereportsforeachmodel,theMSEandtheQLIKE
+statisticsasaratiototheHARbenchmark.Valuessmallerthanoneindicatesthatthemodelout-
+performstheHAR.TheasterisksindicatetheresultsoftheDiebold-Marianotestofequalfore-
+castingperformance.*,**,and***,indicaterejectionofthenullofequalforecastingabilityatthe
+10%, 5%, and 1%, respectively. We report results for the full out-of-sample period, the financial
+crisis years (2007–2008), and then for 2020 as a way to capture the effects of the Covid-19 pan-
+demicsontheforecastingperformanceofdifferentmodels.
+Aswecanseefromthetables,theMLmethodsconsideredhereoutperformtheHARbench-
+mark.ThewinnermodelisdefinitelytheHARmodelwithadditionalregressorsandestimated
+withadaLASSO.Theperformanceimprovesduringthehighvolatilityperiodsandthegainsreach
+10%duringtheCovid-19pandemics.RFsdonotperformwell.Ontheotherhand,NNmodelswith
+differentnumberofhiddenlayersoutperformthebenchmark.
+7CONCLUSIONSANDTHEROADAHEAD
+Inthispaper,wepresentanonexhaustivereviewofthemostoftherecentdevelopmentsinML
+andhigh-dimensionalstatisticstotime-seriesmodelingandforecasting.Wepresentedbothlinear
+andnonlinearalternatives.Furthermore,weconsiderensembleandhybridmodels.Finally,we
+brieflydiscusstestsforsuperiorpredictiveability.
+Among linear specification, we pay special attention to penalized regression (Ridge, LASSO
+anditsgeneralizations,forexample)andensemblemethods(BaggingandCSR).Although,there
+havebeenmajortheoreticaladvancesintheliteratureonpenalizedlinearregressionmodelsfor
+dependentdata,thesameisnottrueforensemblemethods.ThetheoreticalresultsforBagging
+aresofarbasedonindependentdataandtheresultsforCSRarequitelimited.
+WithrespecttononlinearMLmethods,wefocusedonNNsandtree-basedmethods.Theoret-
+icalresultsforRFsandboostedtreeshavebeendevelopedonlytoIIDdataandinthecaseofa
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 105
+low-dimensionalsetofregressors.ForshallowNNs,Chenetal.( 2007)andChen( 2007)provide
+some theoretical results for dependent data in the low-dimensional case. The behavior of such
+modelsinhighdimensionsisstillunderstudy.ThesameistruefordeepNNs.
+Nevertheless,therecentempiricalevidenceshowsthatnonlinearMLmodelscombinedwith
+largedatasetscanbeextremelyusefulforeconomicforecasting.
+Asadirectionforfurtherdevelopmentswelistthefollowingpoints:
+1. DevelopresultsforBaggingandBoostingfordependentdata.
+2. Show consistency and asymptotic normality of the RF estimator of the unknown function
+??h(????)whenthedataaredependent.
+3. DeriveabetterunderstandingofthevariableselectionmechanismofnonlinearMLmethods.
+4. DevelopinferentialmethodstoaccessvariableimportanceinnonlinearMLmethods.
+5. Developmodelsbasedonunstructureddata,suchastextdata,toeconomicforecasting.
+6. EvaluateMLmodelsfornowcasting.
+7. EvaluateMLinveryunstableenvironmentswithmanystructuralbreaks.
+Finally,wewouldliketopointthatweleftanumberofotherinterestingMLmethodsoutof
+this survey, such as, for example, Support Vector Regressions, autoenconders, nonlinear factor
+models,andmanymore.However,wehopethatthematerialpresentedherecanbeofvalueto
+anyoneinterestedofapplyingMLtechniquestoeconomicand/orfinancialforecasting.
+ACKNOWLEDGMENTS
+Weareverygratefulfortheinsightfulcommentsmadebytwoanonymousreferees.Thesecond
+authorgratefullyacknowledgesthepartialfinancialsupportfromCNPq.Wearealsogratefulto
+FrancisX.Diebold,DanielBorup,andAndriiBabiiforhelpfulcomments.
+ORCID
+MarceloC.Medeiros https://orcid.org/0000-0001-8471-4323
+ENDNOTES
+1Morerecently,MLforcausalinferencehavestartedtoreceivealotofattention.However,thissurveywillnot
+covercausalinferencewithMLmethods.
+2The original sentence is “Programming computers to learn from experience should eventually eliminate the
+needformuchofthisdetailedprogrammingeffort.”SeeSamuel( 1959).
+3Thezeromeanconditioncanbealwaysensuredbyincludinganinterceptinthemodel.Alsothevarianceof
+??(????)tobefinitesufficesforthefinitevariance.
+4Theoracleproperty wasfirstdescribedinFanandLi( 2001)inthecontextofnonconcavepenalizedestimation.
+5Amoreprecisetreatmentwouldseparate signconsistency frommodelselectionconsistency .Signconsistency first
+appearedinZhaoandYu( 2006)andalsoverifywhetherthesignofestimatedregressionweightsconvergeto
+thepopulationones.
+6Weaksparsity generalizessparsitybysupposingthatcoefficientsare(very)smallinsteadofexactlyzero.
+7Therelevantregressorsaretheonesassociatedwithnonzeroparameterestimates.
+8Anunstablepredictor haslargevariance.Intuitively,smallchangesinthedatayieldlargechangesinthepredic-
+tivemodel.
+9Itispossibletocombineforecastsusinganyweightingscheme.However,itisdifficulttobeatuniformweighting
+(Genreetal., 2013).
+10https://realized.oxford-man.ox.ac.uk/data/assets
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+106 MASINIetal.
+References
+Adámek,R.,Smeekes,S.,&Wilms,I.(2020). LASSOinferenceforhigh-dimensionaltimeseries (TechnicalReport).
+arxiv:2007.10952.
+Ardia,D.,Bluteau,K.,&Boudt,K.(2019).Questioningthenewsabouteconomicgrowth:Sparseforecastingusing
+thousandsofnews-basedsentimentvalues. InternationalJournalofForecasting ,35,1370–1386.
+Audrino,F.,&Knaus,S.D.(2016).LassoingtheHARmodel:Amodelselectionperspectiveonrealizedvolatility
+dynamics.EconometricReviews ,35,1485–1521.
+Babii,A.,Ghysels,E.,&Striaukas,J.(2020a). Inferenceforhigh-dimensionalregressionswithheteroskedasticityand
+autocorrelation (TechnicalReport).arxiv:1912.06307.
+Babii,A.,Ghysels,E.,&Striaukas,J.(2020b). Machinelearningpaneldataregressionswithanapplicationtonow-
+castingpriceearningsratios (TechnicalReport).arxiv:2008.03600.
+Babii,A.,Ghysels,E.,&Striaukas,J.(2020c). Machinelearningtimeseriesregressionswithanapplicationtonow-
+casting(TechnicalReport).arxiv:2005.14057.
+Balkin, S. D., & Ord, J. K. (2000). Automatic neural network modeling for univariate time series. International
+JournalofForecasting ,16,509–515.
+Barron,A.(1993).Universalapproximationboundsforsuperpositionsofasigmoidalfunction. IEEETransactions
+onInformationTheory ,39,930–945.
+Bartlett,P.,&Traskin,M.M.(2007).AdaBoostisconsistent. JournalofMachineLearningResearch ,8,2347–2368.
+Basu,S.,&Michailidis,G.(2015).Regularizedestimationinsparsehigh-dimensionaltimeseriesmodels. Annals
+ofStatistics ,43,1535–1567.
+Belloni,A.,Chernozhukov,V.,&Hansen,C.(2014).Inferenceontreatmenteffectsafterselectionamongsthigh-
+dimensionalcontrols. ReviewofEconomicStudies ,81,608–650.
+Borup,D.,Christensen,B.,Mühlbach,N.,&Nielsen,M.(2020).Targetingpredictorsinrandomforestregression.
+TechnicalReport ,2004.01411,arxiv.
+Borup,D.,Rapach,D.,&Schütte,E.(2020).Now-andbackcastinginitialclaimswithhigh-dimensionaldailyinter-
+netsearch-volumedata. TechnicalReport ,3690832,SSRN.
+Breiman,L.(1996).Baggingpredictors. MachineLearning ,24,123–140.
+Breiman,L.(2001).Randomforests. MachineLearning ,45,5–32.
+Bühlmann, P. L. (2002). Consistency for L2boosting and matching pursuit with trees and tree-type basis func-
+tions.InResearchreport/SeminarfürStatistik,EidgenössischeTechnischeHochschule(ETH) ,Vol.109.Seminar
+fürStatistik,EidgenössischeTechnischeHochschule(ETH).
+Bühlmann,P.(2006).Boostingforhigh-dimensionallinearmodels. AnnalsofStatistics ,34,559–583.
+Callot, L. A. F., & Kock, A. B. (2013). Oracle efficient estimation and forecasting with the adaptive LASSO and
+theadaptivegroupLASSOinvectorautoregressions.InN.Haldrup,M.Meitz,&P.Saikkonen(Eds.), Essaysin
+nonlineartimeserieseconometrics .OxfordUniversityPress.
+Callot,L.,Kock,A.,&Medeiros,M.(2017).Modelingandforecastinglargerealizedcovariancematricesandport-
+foliochoice. JournalofAppliedEconometrics ,32,140–158.
+Chan,K-.S.,&Chen,K.(2011).SubsetARMAselectionviatheadaptiveLASSO. StatisticsandItsInterface ,4,197–
+205.
+Chen,X.(2007).Largesamplesieveestimationofsemi-nonparametricmodels.InJ.Heckman&E.Leamer(Eds.),
+Handbookofeconometrics (pp.5549–5632).Elsevier.
+Chen,S.,Donoho,D.,&Saunders,M.(2001).Atomicdecompositionbybasispursuit. SIAMReview ,43,129–159.
+Chen,X.,Racine,J.,&Swanson,N.(2007).SemiparametricARXneural-networkmodelswithanapplicationto
+forecastinginflation. IEEETransactionsonNeuralNetworks ,12,67 4–683.
+Chen,X.,&Shen,S.(1998).Sieveextremumestimatesforweaklydependentdata. Econometrica ,66,289–314.
+Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., & Newey, W. (2017). Dou-
+ble/debiased/Neymanmachinelearningoftreatmenteffects. AmericanEconomicReview ,107,261–265.
+Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., & Robins, J. (2018). Dou-
+ble/debiasedmachinelearningfortreatmentandstructuralparameters. EconometricsJournal ,21,C1–C68.
+Chinco,A.,Clark-Joseph,A.,&Ye,M.(2019).Sparsesignalsinthecross-sectionofreturns. JournalofFinance ,74,
+449–492.
+Corsi,F.(2009).Asimplelongmemorymodelofrealizedvolatility. JournalofFinancialEconometrics ,7,17 4–196.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 107
+Coulombe,P.,Leroux,M.,Stevanovic,D.,&Surprenant,S.(2020). Howismachinelearningusefulformacroeco-
+nomicforecasting? (Technicalreport).UniversityofPennsylvania.
+Cybenko,G.(1989).Approximationbysuperpositionofsigmoidalfunctions. MathematicsofControl,Signals,and
+Systems,2,303–314.
+Davis,R.,&Nielsen,M.(2020).Modelingoftimeseriesusingrandomforests:Theoreticaldevelopments. Electronic
+JournalofStatistics14 ,3644–3671.
+Diebold,F.(2015).Comparingpredictiveaccuracy,twentyyearslater:Apersonalperspectiveontheuseandabuse
+ofDiebold-Marianotests. JournalofBusinessandEconomicStatistics ,33,1–9.
+Diebold,F.X.,&Mariano,R.S.(1995).Comparingpredictiveaccuracy. JournalofBusinessandEconomicStatistics ,
+13,253–263.
+Diebold,F.&Shin,M.(2019).Machinelearningforregularizedsurveyforecastcombination:Partially-egalitarian
+LASSOanditsderivatives. InternationalJournalofForecasting ,35,1679–1691.
+Diebold,F.,Shin,M.,&Zhang,B.(2021).Ontheaggregationofprobabilityassessments:Regularizedmixturesof
+predictivedensitiesforEurozoneinflationandrealinterestrates. TechnicalReport ,2012.11649,arxiv.
+Duffy,N.,&Helmbold,D.(2002).Boostingmethodsforregression. MachineLearning ,47,153–200.
+Elliott,G.,Gargano,A.,&Timmermann,A.(2013).Completesubsetregressions. JournalofEconometrics ,177(2),
+357–373.
+Elliott, G., Gargano, A., & Timmermann, A. (2015). Complete subset regressions with large-dimensional sets of
+predictors. JournalofEconomicDynamicsandControl ,54,86–110.
+Elliott,G.,&Timmermann,A.(2008).Economicforecasting. JournalofEconomicLiterature ,46,3–56.
+Elliott,G.,&Timmermann,A.(2016).Forecastingineconomicsandfinance. AnnualReviewofEconomics ,8,81–110.
+Fan,J.,&Li,R.(2001).Variableselectionvianonconcavepenalizedlikelihoodanditsoracleproperties. Journalof
+theAmericanStatisticalAssociation ,96,1348–1360.
+Fan,J.,&Lv,J.(2008).Sureindependencescreeningforultrahighdimensionalfeaturespace. JournaloftheRoyal
+StatisticalSociety,SeriesB ,70,849–911.
+Fan,J.,Xue,L.,&Zou,H.(2014).Strongoracleoptimalityoffoldedconcavepenalizedestimation. AnnalsofStatis-
+tics,42,819–849.
+Foresee,F.D.,&Hagan,M.T.(1997).Gauss-NewtonapproximationtoBayesianregularization. IEEEInternational
+ConferenceonNeuralNetworks (Vol.3,pp.1930–1935).NewYork:IEEE.
+Friedman,J.(2001).Greedyfunctionapproximation:Agradientboostingmachine. AnnalsofStatistics ,29,1189–
+1232.
+Funahashi, K. (1989). On the approximate realization of continuous mappings by neural networks. Neural Net-
+works,2,183–192.
+Garcia,M.,Medeiros,M.,&Vasconcelos,G.(2017).Real-timeinflationforecastingwithhigh-dimensionalmodels:
+ThecaseofBrazil. InternationalJournalofForecasting ,33(3),679–693.
+Genre,V.,Kenny,G.,Meyler,A.,&Timmermann,A.(2013).Combiningexpertforecasts:Cananythingbeatthe
+simpleaverage? InternationalJournalofForecasting ,29,108–121.
+Giacomini,R.,&White,H.(2006).Testsofconditionalpredictiveability. Econometrica ,74,1545–1578.
+Granger,C.,&Machina,M.(2006).Forecastinganddecisiontheory.In Handbookofeconomicforecasting (Vol.1,
+pp.81–98).Elsevier.
+Grenander,U.(1981). Abstractinference .NewYork:Wiley.
+Gu,S.,Kelly,B.,&Xiu,D.(2020).Empiricalassetpricingviamachinelearning. ReviewofFinancialStudies ,33,
+2223–2273.
+Hamilton,J.(1994). Timeseriesanalysis .PrincetonUniversityPress.
+Han,Y.,&Tsay,R.(2020).High-dimensionallinearregressionfordependentdatawithapplicationstonowcasting.
+StatisticaSinica ,30,1797–1827.
+Hans,C.(2009).BayesianLASSOregression. Biometrika ,96,835–845.
+Hansen,P.(2005).Atestforsuperiorpredictiveability. JournalofBusinessandEconomicStatistics ,23,365–380.
+Hansen,P.,Lunde,A.,&Nason,J.(2011).Themodelconfidenceset. Econometrica ,79,453–497.
+Harvey,D.,Leybourne,S.,&Newbold,P.(1997).Testingtheequalityofpredictionmeansquarederrors. Interna-
+tionalJournalofForecasting ,13,281–291.
+Hastie, T., Tibshirani, R., & Friedman, J. (2009). Theelementsofstatisticallearning:Datamining,inference,and
+prediction.Springer.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+108 MASINIetal.
+Hastie,T.,Tibshirani,R.,&Wainwright,M.(2015). Statisticallearningwithsparsity:TheLASSOandgeneralizations .
+CRCPress.
+Hecq,A.,Margaritella,L.,&Smeekes,S.(2019). Grangercausalitytestinginhigh-dimensionalVARs:Apost-double-
+selectionprocedure (TechnicalReport).arxiv:1902.10991.
+Heravi,S.,Osborne,D.,&Birchenhall,C.(2004).LinearversusneuralnetworkforecastsforEuropeanindustrial
+productionseries. InternationalJournalofForecasting ,20,435–446.
+Hillebrand,E.,&Medeiros,M.(2010).Thebenefitsofbaggingforforecastmodelsofrealizedvolatility. Econometric
+Reviews,29,571–593.
+Hillebrand,E.,&Medeiros,M.C.(2016).Asymmetries,breaks,andlong-rangedependence. JournalofBusiness
+andEconomicStatistics ,34,23–41.
+Hochreiter,S.,&Schmidhuber,J.(1997).Longshort-termmemory. NeuralComputation ,9,1735–1780.
+Hoerl,A.,&Kennard,R.(1970).Ridgeregression:Biasedestimationfornonorthogonalproblems. Technometrics ,
+12,55–67.
+Hornik,K.,Stinchombe,M.,&White,H.(1989).Multi-layerFeedforwardnetworksareuniversalapproximators.
+NeuralNetworks ,2,359–366.
+Hsu,N.-J.,Hung,H.-L.,&Chang,Y.-M.(2008).SubsetselectionforvectorautoregressiveprocessesusingLASSO.
+ComputationalStatistics&DataAnalysis ,52,3645–3657.
+Inoue, A., & Kilian, L. (2008). How useful is bagging in forecasting economic time series? A case study of U.S.
+consumerpriceinflation. JournaloftheAmericanStatisticalAssociation ,103,511–522.
+James,W.,&Stein,C.(1961).Estimationwithquadraticloss. ProceedingsoftheThirdBerkeleySymposiumonMath-
+ematicalStatisticsandProbability (Vol.1,pp.361–379).
+Jiang,W.(2004).ProcessconsistencyforAdaBoost. AnnalsofStatistics ,32,13–29.
+Kim, Y., Choi, H., & Oh, H.-S. (2008). Smoothly clipped absolute deviation on high dimensions. Journal of the
+AmericanStatisticalAssociation ,103,1665–1673.
+Knight,K.,&Fu,W.(2000).AsymptoticsforLASSO-typeestimators. AnnalsofStatistics ,28,1356–1378.
+Kock,A.(2016).ConsistentandconservativemodelselectionwiththeadaptiveLassoinstationaryandnonstation-
+aryautoregressions. EconometricTheory ,32,243–259.
+Kock,A.,&Callot,L.(2015).Oracleinequalitiesforhighdimensionalvectorautoregressions. JournalofEconomet-
+rics,186,325–344.
+Kock, A., & Teräsvirta, T. (2014). Forecasting performance of three automated modelling techniques during the
+economiccrisis2007-2009. InternationalJournalofForecasting ,30,616–631.
+Kock, A., & Teräsvirta, T. (2015). Forecasting macroeconomic variables using neural network models and three
+automatedmodelselectiontechniques. EconometricReviews ,35,1753–1779.
+Konzen,E.,&Ziegelmann,F.(2016).LASSO-typepenaltiesforcovariateselectionandforecastingintimeseries.
+JournalofForecasting ,35,592–612.
+Koo,B.,Anderson,H.,Seo,M.,&Yao,W.(2020).High-dimensionalpredictiveregressioninthepresenceofcoin-
+tegration.JournalofEconometrics ,219,456–477.
+Lederer,J.,Yu,L.,&Gaynanova,I.(2019).Oracleinequalitiesforhigh-dimensionalprediction. Bernoulli,25,1225–
+1255.
+Lee,J.,Sun,D.,Sun,Y.,&Taylor,J.(2016).Exactpost-selectioninferencewithapplicationtotheLASSO. Annals
+ofStatistics ,44,907–927.
+Lee,J.,&Shi,Z.G.Z.(2020). OnLASSOforpredictiveregression (TechnicalReport).arxiv:1810.03140.
+Leeb,H.,&Pötscher,B.(2005).Modelselectionandinference:Factsandfiction. EconometricTheory ,21,21–59.
+Leeb, H., & Pötscher, B. (2008). Sparse estimators and the oracle property, or the return of Hodges’ estimator.
+JournalofEconometrics ,142,201–211.
+Li,J.,Liao,Z.,&Quaedvlieg,R.(2020). Conditionalsuperiorpredictiveability (TechnicalReport).ErasmusSchool
+ofEconomics.
+Lockhart,R.,Taylor,J.,Tibshirani,R.,&Tibshirani,R.(2014).Asignificancetestforthelasso. AnnalsofStatistics ,
+42,413–468.
+Lugosi,G.,&Vayatis,N.(2004).OntheBayes-riskconsistencyofregularizedboostingmethods. AnnalsofStatistics ,
+32,30–55.
+MacKay,D.J.C.(1992a).Bayesianinterpolation. NeuralComputation ,4,415–447.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 109
+MacKay,D.J.C.(1992b).ApracticalBayesianframeworkforbackpropagationnetworks. NeuralComputation ,4,
+448–472.
+Masini,R.,Medeiros,M.,&Mendes,E.(2019). Regularizedestimationofhigh-dimensionalvectorautoregressions
+withweaklydependentinnovations (TechnicalReport).arxiv:1912.09002.
+McAleer,M.,&Medeiros,M.(2011).Forecastingrealizedvolatilitywithlinearandnonlinearmodels. Journalof
+EconomicSurveys ,25,6–18.
+McAleer,M.,&Medeiros,M.C.(2008).Amultipleregimesmoothtransitionheterogeneousautoregressivemodel
+forlongmemoryandasymmetries. JournalofEconometrics ,147,104–119.
+McCracken,M.(2020).Divergingtestsofequalpredictiveability. Econometrica ,88,1753–1754.
+Medeiros, M., & Mendes, E. (2013). Penalized estimation of semi-parametric additive time-series models. In N.
+Haldrup,M.Meitz,&P.Saikkonen(Eds.), Essaysinnonlineartimeserieseconometrics .OxfordUniversityPress.
+Medeiros,M.,&Mendes,E.(2016). ??1-Regularizationofhigh-dimensionaltime-seriesmodelswithnon-Gaussian
+andheteroskedasticerrors. JournalofEconometrics ,191,255–271.
+Medeiros, M., & Mendes, E. (2017). Adaptive LASSO estimation for ARDL models with GARCH innovations.
+EconometricReviews ,36,622–637.
+Medeiros, M., & Vasconcelos, G. (2016). Forecasting macroeconomic variables in data-rich environments. Eco-
+nomicsLetters ,138,50–52.
+Medeiros, M. C., Teräsvirta, T., & Rech, G. (2006). Building neural network models for time series: A statistical
+approach.JournalofForecasting ,25,49–75.
+Medeiros,M.C.,Vasconcelos,G.,Veiga,A.,&Zilberman,E.(2021).Forecastinginflationinadata-richenviron-
+ment:Thebenefitsofmachinelearningmethods. JournalofBusinessandEconomicStatistics ,39,98–119.
+Medeiros,M.C.,&Veiga,A.(2005).Aflexiblecoefficientsmoothtransitiontimeseriesmodel. IEEETransactions
+onNeuralNetworks ,16,97–113.
+Medeiros,M.C.,Veiga,A.,&Pedreira,C.(2001).Modellingexchangerates:Smoothtransitions,neuralnetworks,
+andlinearmodels. IEEETransactionsonNeuralNetworks ,12,755–764.
+Melnyk,I.,&Banerjee,A.(2016).Estimatingstructuredvectorautoregressivemodels. InternationalConferenceon
+MachineLearning (pp.830–839).
+Mhaska,H.,Liao,Q.,&Poggio,T.(2017).Whenandwhyaredeepnetworksbetterthanshallowones? Proceedings
+oftheThirty-FirstAAAIConferenceonArtificialIntelligence(AAAI-17) (pp.2343–2349).
+Nardi,Y.,&Rinaldo,A.(2011).AutoregressiveprocessmodelingviatheLASSOprocedure. JournalofMultivariate
+Analysis,102,528–549.
+Park,H.,&Sakaori,F.(2013).LagweightedLASSOfortimeseriesmodel. ComputationalStatistics ,28,493–504.
+Park,J.,&Sandberg,I.(1991).Universalapproximationusingradial-basis-functionnetworks. NeuralComputation ,
+3,246–257.
+Park,T.,&Casella,G.(2008).TheBayesianLASSO. JournaloftheAmericanStatisticalAssociation ,103,681–686.
+Ren,Y.,&Zhang,X.(2010).SubsetselectionforvectorautoregressiveprocessesviaadaptiveLASSO. Statistics&
+ProbabilityLetters ,80,1705–1712.
+Samuel, A. (1959). Some studies in machine learning using the game of checkers. IBM Journal of Research and
+Development ,3(3),210–229.
+Sang,H.,&Sun,Y.(2015).Simultaneoussparsemodelselectionandcoefficientestimationforheavy-tailedautore-
+gressiveprocesses. Statistics,49,187–208.
+Scharth,M.,&Medeiros,M.(2009).AsymmetriceffectsandlongmemoryinthevolatilityofDowJonesstocks.
+InternationalJournalofForecasting ,25,304–325.
+Scornet,E.,Biau,G.,&Vert,J.-P.(2015).Consistencyofrandomforests. AnnalsofStatistics ,43,1716–1741.
+Simon,N.,Friedman,J.,Hastie,T.,&Tibshirani,R.(2013).Asparse-groupLASSO. JournalofComputationaland
+GraphicalStatistics ,22,231–245.
+Smeeks,S.,&Wijler,E.(2018).Macroeconomicforecastingusingpenalizedregressionmethods. InternationalJour-
+nalofForecasting ,34,408–430.
+Smeeks,S.,&Wijler,E.(2021).Anautomatedapproachtowardssparsesingle-equationcointegrationmodelling.
+JournalofEconometrics ,221(1),247–276.
+Srivastava,N.,Hinton,G.,Krizhevsky,A.,Sutskever,I.,&Salakhutdinov,R.(2014).Simplewaytopreventneural
+networksfromoverfitting. JournalofMachineLearningResearch ,15,1929–1958.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+110 MASINIetal.
+Stein,C.(1956).Inadmissibilityoftheusualestimatorforthemeanofamultivariatedistribution. Proceedingsof
+theThirdBerkeleySymposiumonMathematicalStatisticsandProbability (Vol.1,pp.197–206).
+Stinchcombe, M., & White, S. (1989). Universal approximation using feedforward neural networks with non-
+sigmoidhiddenlayeractivationfunctions. ProceedingsoftheInternationalJointConferenceonNeuralNetworks ,
+Washington (pp.613–617).NewYork,NY:IEEEPress.
+Suarez-Fariñas,Pedreira,C.,&Medeiros,M.C.(2004).Local-globalneuralnetworks:Anewapproachfornonlin-
+eartimeseriesmodelling. JournaloftheAmericanStatisticalAssociation ,99,1092–1107.
+Swanson,N.R.,&White,H.(1995).Amodelselectionapproachtoassessingtheinformationinthetermstructure
+usinglinearmodelsandartificialneuralnetworks. JournalofBusinessandEconomicStatistics ,13,265–275.
+Swanson,N.R.,&White,H.(1997a).Forecastingeconomictimeseriesusingflexibleversusfixedspecificationand
+linearversusnonlineareconometricmodels. InternationalJournalofForecasting ,13,439–461.
+Swanson,N.R.,&White,H.(1997b).Amodelselectionapproachtoreal-timemacroeconomicforecastingusing
+linearmodelsandartificialneuralnetworks. ReviewofEconomicandStatistics ,79,540–550.
+Tarassow,A.(2019).ForecastingU.S.moneygrowthusingeconomicuncertaintymeasuresandregularisationtech-
+niques.InternationalJournalofForecasting ,35,443–457.
+Taylor,J.,Lockhart,R.,Tibshirani,R.,&Tibshirani,R.(2014). Post-selectionadaptiveinferenceforleastangleregres-
+sionandtheLASSO (TechnicalReport).arxiv:1401.3889.
+Teräsvirta,T.(1994).Specification,estimation,andevaluationofsmoothtransitionautoregressivemodels. Journal
+oftheAmericanStatisticalAssociation ,89,208–218.
+Teräsvirta,T.,Tjöstheim,D.,&Granger,C.(2010). Modellingnonlineareconomictimeseries .Oxford,UK:Oxford
+UniversityPress.
+Teräsvirta,T.,vanDijk,D.,&Medeiros,M.(2005).Linearmodels,smoothtransitionautoregressionsandneural
+networksforforecastingmacroeconomictimeseries:Areexamination(withdiscussion). InternationalJournal
+ofForecasting ,21,755–77 4.
+Tibshirani, R. (1996). Regression shrinkage and selection via the LASSO. J o ur na lo ft heR o ya lS t a t is t ic a lS o ciet y ,
+SeriesB,58,267–288.
+Tikhonov,A.(1943).Onthestabilityofinverseproblems. DokladyAkademiiNaukSSSR ,39,195–198(inRussian).
+Tikhonov,A.(1963).Onthesolutionofill-posedproblemsandthemethodofregularization. DokladyAkademii
+Nauk,151,501–504.
+Tikhonov,A.,&Arsenin,V.(1977). Solutionsofill-posedproblems .V.HWinstonandSons.
+Tkacz, G. (2001). Neural network forecasting of Canadian GDP growth. InternationalJournalofForecasting ,17,
+57–69.
+Trapletti,A.,Leisch,F.,&Hornik,K.(2000).Stationaryandintegratedautoregressiveneuralnetworkprocesses.
+NeuralComputation ,12,2427–2450.
+Uematsu,Y.,&Tanaka,S.(2019).High-dimensionalmacroeconomicforecastingandvariableselectionviapenal-
+izedregression. EconometricsJournal ,22,34–56.
+vandeGeer,S.,Bühlmann,P.,Ritov,Y.,&Dezeure,R.(2014).Onasymptoticallyoptimalconfidenceregionsand
+testsforhigh-dimensionalmodels. AnnalsofStatistics ,42,1166–1202.
+Wager,S.,&Athey,S.(2018).Estimationandinferenceofheterogeneoustreatmenteffectsusingrandomforests.
+JournaloftheAmericanStatisticalAssociation ,113,1228–1242.
+Wang,H.,&Leng,C.(2008).AnoteonadaptivegroupLASSO. ComputationalStatistics&DataAnalysis ,52,5277–
+5286.
+Wang,H.,Li,G.,&Tsai,C.-L.(2007).Regressioncoefficientandautoregressiveordershrinkageandselectionvia
+theLASSO. JournaloftheRoyalStatisticalSociety,SeriesB ,69,63–78.
+White,H.(2000).Arealitycheckfordatasnooping. Econometrica ,68,1097–1126.
+Wong,K.,Li,Z.,&Tewari,A.(2020).LASSOguaranteesfor ??-mixingheavytailedtimeseries. AnnalsofStatistics ,
+48,1124–1142.
+Wu, W. (2005). Nonlinear system theory: Another look at dependence. Proceedings of the National Academy of
+Sciences,102,14150–14154.
+Wu, W., & Wu, Y. (2016). Performance bounds for parameter estimates of high-dimensional linear models with
+correlatederrors. ElectronicJournalofStatistics ,10,352–379.
+Xie,F.,Xu,L.,&Yang,Y.(2017).LASSOforsparselinearregressionwithexponentially ??-mixingerrors. Statistics
+&ProbabilityLetters ,125,64–70.
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+MASINIetal. 111
+Xue, Y., & Taniguchi, M. (2020). Modified LASSO estimators for time series regression models with dependent
+disturbances. StatisticalMethods&Applications ,29,845–869.
+Yang,Y.,&Zou,H.H.(2015).Afastunifiedalgorithmforsolvinggroup-LASSOpenalizelearningproblems. Statis-
+ticsandComputing ,25,1129–1141.
+Yarotsky,D.(2017).ErrorboundsforapproximationswithdeepReLUnetworks. NeuralNetworks ,94,103–114.
+Yoon,Y.,Park,C.,&Lee,T.(2013).Penalizedregressionmodelswithautoregressiveerrorterms. JournalofStatis-
+ticalComputationandSimulation ,83,1756–1772.
+Yousuf,K.(2018).Variablescreeningforhighdimensionaltimeseries. ElectronicJournalofStatistics ,12,667–702.
+Yuan, M., & Lin, Y. (2006). Model selection and estimation in regression with grouped variables. Journal of the
+RoyalStatisticalSociety,SeriesB ,68,49–67.
+Zhang, T., & Yu, B. (2005). Boosting with early stopping: Convergence and consistency. Annals of Statistics ,33,
+1538–1579.
+Zhao, P., & Yu, B. (2006). On model selection consistency of LASSO. Journal of Machine Learning Research ,7,
+2541–2563.
+Zhu,X.(2020).Nonconcavepenalizedestimationinsparsevectorautoregressionmodel. ElectronicJournalofStatis-
+tics,14,1413–1448.
+Zou,H.(2006).TheadaptiveLASSOanditsoracleproperties. JournaloftheAmericanStatisticalAssociation ,101,
+1418–1429.
+Zou,H.,&Hastie,T.(2005).Regularizationandvariableselectionviatheelasticnet. JournaloftheRoyalStatistical
+Society,SeriesB ,67,301–320.
+Zou,H.,&Zhang,H.(2009).Ontheadaptiveelastic-netwithadivergingnumberofparameters. AnnalsofStatistics ,
+37,1733–1751.
+Howtocitethisarticle: Masini,R.P.,Medeiros,M.C.,&Mendes,E.F.(2023).Machine
+learningadvancesfortimeseriesforecasting. JEconSurv ,37,76–111.
+https://doi.org/10.1111/joes.12429
+ 14676419, 2023, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/joes.12429 by Higher Education Commission,, Wiley Online Library on [14/02/2024]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License

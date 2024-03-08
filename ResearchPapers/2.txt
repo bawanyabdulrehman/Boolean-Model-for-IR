@@ -1,0 +1,813 @@
+arXiv:1909.12072v1  [cs.AI]  26 Sep 2019Towards Explainable Arti?cial Intelligence
+Wojciech Samek1and Klaus-Robert M¨ uller2,3,4
+1Fraunhofer Heinrich Hertz Institute, 10587 Berlin, German y
+wojciech.samek@hhi.fraunhofer.de
+2Technische Universit¨ at Berlin, 10587 Berlin, Germany
+3Korea University, Anam-dong, Seongbuk-gu, Seoul 02841, Ko rea
+4Max Planck Institute for Informatics, Saarbr¨ ucken 66123, Germany
+klaus-robert.mueller@tu-berlin.de
+Abstract. In recent years, machine learning (ML) has become a key
+enabling technology for the sciences and industry. Especia lly through
+improvements in methodology, the availability of large dat abases and in-
+creased computational power, today’s ML algorithms are abl e to achieve
+excellent performance (at times even exceeding the human le vel) on an
+increasing number of complex tasks. Deep learning models ar e at the
+forefront of this development. However, due to their nested non-linear
+structure, these powerful models have been generally consi dered “black
+boxes”, not providing any information about what exactly ma kes them
+arrive at their predictions. Since in many applications, e. g., in the med-
+ical domain, such lack of transparency may be not acceptable , the de-
+velopment of methods for visualizing, explaining and inter preting deep
+learning models has recently attracted increasing attenti on. This intro-
+ductory paper presents recent developments and applicatio ns in this ?eld
+and makes a plea for a wider use of explainable learning algorithms in
+practice.
+Keywords: Explainable Arti?cial Intelligence ·Model Transparency ·
+Deep Learning ·Neural Networks ·Interpretability
+1 Introduction
+Today’s arti?cial intelligence (AI) systems based on machine learning excel in
+many ?elds. They not only outperform humans in complex visual task s [16,53]
+or strategic games [ 56,83,61], but also became an indispensable part of our every
+day lives, e.g., as intelligent cell phone cameras which can recognize an d track
+faces [71], as online services which can analyze and translate written texts [ 11]
+or as consumer devices which can understand speech and generat e human-like
+answers [ 90]. Moreover, machine learning and arti?cial intelligence have become
+The ?nal authenticated publication is available online at
+https://doi.org/10.1007/978-3-030-28954-6_1 . In: W. Samek et al. (Eds.)
+Explainable AI: Interpreting, Explaining and Visualizing Deep Learning. Lecture
+Notes in Computer Science, vol. 11700, pp. 5-22. Springer, C ham (2019).2 W. Samek and K.-R. M¨ uller
+indispensable tools in the sciences for tasks such as prediction, simu lation or ex-
+ploration [ 78,15,89,92]. These immense successes of AI systems mainly became
+possible through improvements in deep learning methodology [ 48,47], the avail-
+abilityoflargedatabases[ 17,34]andcomputationalgainsobtainedwithpowerful
+GPU cards [ 52].
+Despite the revolutionary character of this technology, challenge s still exist
+which slow down or even hinder the prevailance of AI in some application s.
+Examplar challenges are (1) the large complexity and high energy dem ands of
+current deep learning models [ 29], which hinder their deployment in resource
+restricted environments and devices, (2) the lack of robustness to adversarial
+attacks [55], which pose a severe security risk in application such as autonomous
+driving5, and (3) the lack of transparency and explainability [ 76,32,18], which
+reduces the trust in and the veri?ability of the decisions made by an A I system.
+This paper focuses on the last challenge. It presents recent deve lopments in
+the ?eld of explainable arti?cial intelligence and aims to foster awareness for the
+advantages–and at times–also for the necessity of transparent decision making
+in practice. The historic second Go match between Lee Sedol and Alp haGo [82]
+nicely demonstrates the power of today’s AI technology, and hints at its enor-
+mous potential for generating new knowledge from data when being accessible
+for human interpretation. In this match AlphaGo played a move, whic h was
+classi?ed as “not a human move” by a renowned Go expert, but which was the
+deciding move for AlphaGo to win the game. AlphaGo did not explain the m ove,
+but the later playunveiled the intention behind its decision. With explain able AI
+it may be possible to also identify such novel patterns and strategie s in domains
+like health, drug development or material sciences, moreover, the explanations
+will ideally let us comprehend the reasoning of the system and unders tand why
+the system has decided e.g. to classify a patient in a speci?c manner o r asso-
+ciate certain properties with a new drug or material. This opens up inn umerable
+possibilities for future research and may lead to new scienti?c insight s.
+The remainder of the paper is organized as follows. Section 2discusses the
+need for transparencyand trust in AI. Section 3comments on the di?erent types
+of explanations and their respective information content and use in practice.
+Recent techniques of explainable AI are brie?y summarized in Section 4, includ-
+ing methods which rely on simple surrogate functions, frame explana tion as an
+optimization problem, access the model’s gradient or make use of the model’s
+internal structure. The question of how to objectively evaluate t he quality of
+explanations is addressed in Section 5. The paper concludes in Section 6with a
+discussion on general challenges in the ?eld of explainable AI.
+5The authors of [ 24] showed that deep models can be easily fooled by physical-wo rld
+attacks. For instance, by putting speci?c stickers on a stop sign one can achieve that
+the stop sign is not recognized by the system anymore.1. Towards Explainable Arti?cial Intelligence 3
+2 Need for Transparency and Trust in AI
+Black box AI systems have spread to many of today’s applications. F or machine
+learning models used, e.g., in consumer electronics or online translatio n services,
+transparency and explainability are not a key requirement as long as the overall
+performance of these systems is good enough. But even if these s ystems fail,
+e.g., the cell phone camera does not recognize a person or the tran slation service
+produces grammatically wrong sentences, the consequences are rather unspec-
+tacular. Thus, the requirements for transparency and trust ar e rather low for
+these types of AI systems. In safety critical applications the situ ation is very
+di?erent. Here, the intransparency of ML techniques may be a limitin g or even
+disqualifying factor. Especially if single wrong decisions can result in da nger to
+life and health of humans (e.g., autonomous driving, medical domain) o r signi?-
+cant monetary losses (e.g., algorithmic trading), relying on a data-d riven system
+whose reasoning is incomprehensible may not be an option. This intran sparency
+is one reason why the adoption of machine learning to domains such as health is
+more cautious than the usage of these models in the consumer, e-c ommerce or
+entertainment industry.
+In the following we discuss why the ability to explain the decision making o f
+an AI system helps to establish trust and is of utmost importance, n ot only in
+medical or safety critical applications. We refer the reader to [ 91] for a discussion
+of the challenges of transparency.
+2.1 Explanations Help to Find “Clever Hans” Predictors
+Clever Hans was a horse that could supposedly count and that was c onsidered a
+scienti?c sensation in the yearsaround 1900.As it turned out later , Hans did not
+master the math but in about 90 percent of the cases, he was able t o derive the
+correct answer from the questioner’s reaction. Analogous behav iours have been
+recently observed in state-of-the-art AI systems [ 46]. Also here the algorithms
+have learned to use some spurious correlates in the training and tes t data and
+similarly to Hans predict right for the ‘wrong’ reason.
+For instance, the authors of [ 44,46] showed that the winning method of the
+PASCAL VOC competition [ 23] was often not detecting the object of interest,
+but was utilizing correlations or context in the data to correctly clas sify an im-
+age. It recognized boats by the presence of water and trains by t he presence
+of rails in the image, moreover, it recognized horses by the presenc e of a copy-
+right watermark6. The occurrence of the copyright tags in horse images is a
+clear artifact in the dataset, which had gone unnoticed to the orga nizers and
+participants of the challenge for many years. It can be assumed th at nobody
+has systematically checked the thousands images in the dataset fo r this kind
+of artifacts (but even if someone did, such artifacts may be easily o verlooked).
+Many other examples of “Clever Hans” predictors have been descr ibed in the
+6The PASCAL VOC images have been automatically crawled from ? ickr and espe-
+cially the horse images were very often copyrighted with a wa termark.4 W. Samek and K.-R. M¨ uller
+literature. For instance, [ 73] show that current deep neural networks are dis-
+tinguishing the classes “Wolf” and “Husky” mainly by the presence of snow in
+the image. The authors of [ 46] demonstrate that deep models over?t to padding
+artifacts when classifying airplanes, whereas [ 63] show that a model which was
+trained to distinguish between 1000 categories, has not learned du mbbells as
+an independent concept, but associates a dumbbell with the arm wh ich lifts it.
+Such “CleverHans” predictors perform well on their respective te st sets, but will
+certainly fail if deployed to the real-world, where sailing boats may lie o n a boat
+trailer, both wolves and huskies can be found in non-snow regions an d horses do
+not have a copyright sign on them. However, if the AI system is a blac k box, it
+is very di?cult to unmask such predictors. Explainability helps to dete ct these
+types of biases in the model or the data, moreover, it helps to unde rstand the
+weaknesses of the AI system (even if it is not a “Clever Hans” predic tor). In the
+extreme case, explanations allow to detect the classi?er’s misbehav iour (e.g., the
+focus on the copyright tag) from a single test image7. Since understanding the
+weaknesses of a system is the ?rst step towards improving it, expla nations are
+likely to become integral part of the training and validation process o f future AI
+models.
+2.2 Explanations Foster Trust and Veri?ability
+The ability to verify decisions of an AI system is very important to fos ter trust,
+both in situations where the AI system has a supportive role (e.g., me dical diag-
+nosis) and in situations whereit practicallytakesthe decisions (e.g., a utonomous
+driving). In the former case, explanations provide extra informat ion, which, e.g.,
+help the medical expert to gain a comprehensive picture of the patie nt in order
+to takethe best therapydecision.Similarlyto aradiologist,whowrite sadetailed
+report explaining his ?ndings, a supportive AI system should in detail explain
+its decisions rather than only providing the diagnosis to the medical e xpert. In
+cases where the AI system itself is deciding, it is even more critical to be able to
+comprehend the reasoning of the system in order to verify that it is not behav-
+ing like Clever Hans, but solves the problem in a robust and safe manne r. Such
+veri?cations are required to build the necessary trust in every new technology.
+There is also a social dimension of explanations. Explaining the rationa le
+behind one’s decisions is an important part of human interactions [ 30]. Explana-
+tions help to build trust in a relationship between humans, and should t herefore
+be also part of human-machine interactions [ 3]. Explanations are not only an in-
+evitable part of human learning and education (e.g., teacher explains solution to
+student), but also foster the acceptance of di?cult decisions and are important
+for informed consent (e.g., doctor explaining therapy to patient). Thus, even if
+not providing additional information for verifying the decision, e.g., b ecause the
+patient may have no medical knowledge, receiving explanations usua lly make us
+feel better as it integrates us into the decision-making process. A n AI system
+which interacts with humans should therefore be explainable.
+7Traditional methods to evaluate classi?er performance req uire large test datasets.1. Towards Explainable Arti?cial Intelligence 5
+2.3 Explanations are a Prerequisite for New Insights
+AI systems have the potential to discover patterns in data, which are not acces-
+sible to the human expert. In the case of the Go game, these patte rns can be
+new playing strategies [ 82]. In the case of scienti?c data, they can be unknown
+associations between genes and diseases [ 51], chemical compounds and material
+properties [ 68] or brain activations and cognitive states [ 49]. In the sciences,
+identifying these patterns, i.e., explaining and interpreting what fea tures the AI
+system uses for predicting, is often more important than the pred iction itself, be-
+cause it unveils information about the biological, chemical or neural m echanisms
+and may lead to new scienti?c insights.
+This necessity to explain and interpret the results has led to a stron g domi-
+nance of linear models in scienti?c communities in the past (e.g. [ 42,67]). Linear
+models are intrinsically interpretable and thus easily allow to extract t he learned
+patterns. Only recently, it became possible to apply more powerful models such
+as deep neural networks without sacri?cing interpretability. Thes e explainable
+non-linear models have already attracted attention in domains such as neuro-
+science [87,89,20], health [ 33,14,40], autonomous driving [ 31], drug design [ 70]
+and physics [ 78,72] and it can be expected that they will play a pivotal role in
+future scienti?c research.
+2.4 Explanations are Part of the Legislation
+The in?ltration of AI systems into our daily lives poses a new challenge f or the
+legislation.Legaland ethical questionsregardingthe responsibility ofAI systems
+and their level of autonomy have recently received increased atte ntion [21,27].
+But also anti-discrimination and fairness aspects have been widely dis cussed in
+the contextofAI[ 28,19].TheEU’sGeneralDataProtectionRegulation(GDPR)
+has even added the right to explanation to the policy in Articles 13, 14 and 22,
+highlighting the importance of human-understandable interpretat ions derived
+from machine decisions. For instance, if a person is being rejected f or a loan by
+the AI system of a bank, in principle, he or she has the right to know w hy the
+system has decided in this way, e.g., in order to make sure that the de cision is
+compatible with the anti-discrimination law or other regulations. Altho ugh it is
+not yet clear how these legal requirements will be implemented in prac tice, one
+can be sure that transparency aspects will gain in importance as AI decisions
+will more and more a?ect our daily lives.
+3 Di?erent Facets of an Explanation
+Recently proposed explanation techniques provide valuable informa tion about
+the learned representations and the decision-making of an AI syst em. These
+explanations may di?er in their information content, their recipient a nd their
+purpose. In the following we describe the di?erent types of explana tions and
+comment on their usefulness in practice.6 W. Samek and K.-R. M¨ uller
+3.1 Recipient
+Di?erent recipients may require explanations with di?erent level of d etail and
+withdi?erentinformationcontent.Forinstance,forusersofAIt echnologyitmay
+be su?cient to obtain coarse explanations, which are easy to interp ret, whereas
+AI researchers and developers would certainly prefer explanation s, which give
+them deeper insights into the functioning of the model.
+In the case of image classi?cation such simple explanations could coar sely
+highlight image regions, which are regarded most relevant for the mo del. Several
+preprocessingsteps, e.g., smoothing, ?ltering or contrastnorma lization,could be
+applied to further improve the visualization quality. Although discard ing some
+information, such coarse explanations could help the ordinary user to foster
+trust in AI technology. On the other hand AI researchers and dev elopers, who
+aim to improve the model, may require all the available information, inclu ding
+negative evidence, about the AI’s decision in the highest resolution ( e.g., pixel-
+wiseexplanations),becauseonlythiscompleteinformationgivesdet ailedinsights
+into the (mal)functioning of the model.
+One can easily identify further groups of recipients, which are inter ested in
+di?erent types of explanations. For instance, when applying AI to t he medical
+domain these groups could be patients, doctors and institutions. A n AI system
+which analyzes patient data could provide simple explanations to the p atients,
+e.g., indicating too high blood sugar, while providing more elaborate exp lana-
+tions to the medical personal, e.g., unusual relation between di?ere nt blood
+parameters. Furthermore, institutions such as hospitals or the F DA might be
+less interested in understanding the AI’s decisions for individual pat ients, but
+would rather prefer to obtain global or aggregated explanations, i.e., patterns
+which the AI system has learned after analyzing many patients.
+3.2 Information Content
+Di?erenttypesofexplanationprovideinsightsintodi?erentaspect softhemodel,
+ranging from information about the learned representations to th e identi?cation
+of distinct prediction strategies and the assessment of overall mo del behaviour.
+Depending on the recipient of the explanations and his or her intent, it may be
+advantageous to focus on one particular type of explanation. In t he following we
+brie?y describe four di?erent types of explanations.
+1.Explaining learned representations : This type of explanation aims to
+foster the understanding of the learned representations, e.g., n eurons of
+a deep neural network. Recent work [ 12,38] investigates the role of single
+neurons or group of neurons in encoding certain concepts. Other methods
+[84,93,64,65] aim to interpret what the model has learned by building proto-
+types that are representative of the abstract learned concept . These meth-
+ods, e.g., explain what the model has learned about the category “c ar” by
+generating a prototypical image of a car. Building such a prototype can
+be formulated within the activation maximization framework and has b een1. Towards Explainable Arti?cial Intelligence 7
+shown to be an e?ective tool for studying the internal represent ation of a
+deep neural network.
+2.Explaining individual predictions : Other types of explanations provide
+information about individual predictions, e.g., heatmaps visualizing wh ich
+pixels have been most relevant for the model to arrive at its decision [60]
+or heatmaps highlighting the most sensitive parts of an input [ 84]. Such
+explanations help to verify the predictions and establish trust in the correct
+functioning on the system. Layer-wise Relevance Propagation (LR P) [9,58]
+provides a general framework for explaining individual predictions, i.e., it is
+applicable to various ML models, including neural networks [ 9], LSTMs [ 7],
+Fisher Vector classi?ers [ 44] and Support Vector Machines [ 35]. Section 4
+gives an overview over recently proposed methods for computing in dividual
+explanations.
+3.Explaining model behaviour : This type of explanations go beyond the
+analysis of individual predictions towards a more general understa nding of
+model behaviour, e.g., identi?cation of distinct prediction strategie s. The
+spectral relevance analysis (SpRAy) approach of [ 46] computes such meta
+explanations by clusteringindividual heatmaps. Eachcluster then r epresents
+a particular prediction strategy learned by the model. For instance , the au-
+thors of [ 46] identify four clusters when classifying “horse” images with the
+Fisher Vector classi?er [ 77] trained on the PASCAL VOC 2007 dataset [ 22],
+namely (1) detect the horse and rider, 2) detect a copyright tag in portrait
+oriented images, 3) detect wooden hurdles and other contextual elements of
+horsebackriding, and 4) detect a copyrighttag in landscape orient ed images.
+Such explanations are useful for obtaining a global overviewover t he learned
+strategies and detecting “Clever Hans” predictors [ 46].
+4.Explaining with representative examples : Another class of methods
+interpret classi?ers by identifying representative training example s [41,37].
+This type of explanations can be useful for obtaining a better unde rstanding
+of the training dataset and how it in?uences the model. Furthermor e, these
+representative examples can potentially help to identify biases in the data
+and make the model more robust to variations of the training datas et.
+3.3 Role
+Besides the recipient and information content it is alsoimportant to c onsider the
+purpose of an explanation. Here we can distinguish two aspects, na mely (1) the
+intent of the explanation method (what speci?c question does the e xplanation
+answer) and (2) our intent (what do we want to use the explanation for).
+Explanations are relative and it makes a huge di?erence whether the ir intent
+is to explain the prediction as is (even if it is incorrect), whether they aim to
+visualize what the model “thinks” about a speci?c class (e.g., the tru e class) or
+whether they explain the prediction relative to another alternative (“why is this
+image classi?ed as car and not as truck”). Methods such as LRP allow to answer
+all these di?erent questions, moreover, they also allow to adjust t he amount of
+positive and negative evidence in the explanations, i.e., visualize what s peaks8 W. Samek and K.-R. M¨ uller
+for (positive evidence) and against (negative evidence) the predic tion. Such ?ne-
+grained explanations foster the understanding of the classi?er an d the problem
+at hand.
+Furthermore, there may be di?erent goals for using the explanatio ns beyond
+visualization and veri?cation of the prediction. For instance, explan ations can
+be potentially used to improve the model, e.g., by regularization [ 74]. Also since
+explanations provide information about the (relevant parts of the ) model, they
+can be potentially used for model compression and pruning. Many ot her uses
+(certi?cation of the model, legal use) of explanations can be thoug ht of, but the
+details remain future work.
+4 Methods of Explainable AI
+This section gives an overviewover di?erent approaches to explaina ble AI, start-
+ing with techniques which are model-agnostic and rely on a simple surro gate
+function to explain the predictions. Then, we discuss methods which compute
+explanations by testing the model’s response to local perturbation s (e.g., by uti-
+lizing gradient information or by optimization). Subsequently, we pre sent very
+e?cient propagation-based explanation techniques which leverage the model’s
+internal structure. Finally, we consider methods which go beyond in dividual ex-
+planations towards a meta-explanation of model behaviour.
+This section is not meant to be a complete survey of explanation meth ods,
+but it rather summarizes the most important developments in this ?e ld. Some
+approaches to explainable AI, e.g., methods which ?nd in?uencial exa mples [37],
+are not discussed in this section.
+4.1 Explaining with Surrogates
+Simple classi?ers such as linear models or shallow decision trees are intr insically
+interpretable, so that explaining its predictions becomes a trivial ta sk. Complex
+classi?ers such as deep neural networks or recurrent models on t he other hand
+contain several layers of non-linear transformations, which large ly complicates
+the task of ?nding what exactly makes them arrive at their predictio ns.
+One approach to explain the predictions of complex models is to locally
+approximate them with a simple surrogate function, which is interpre table. A
+populartechniquefallingintothiscategoryisLocalInterpretableM odel-agnostic
+Explanations (LIME) [ 73]. This method samples in the neighborhood of the
+input of interest, evaluates the neural network at these points, and tries to ?t
+the surrogate function such that it approximates the function of interest. If the
+input domain of the surrogate function is human-interpretable, th en LIME can
+even explain decisions of a model which uses non-interpretable feat ures. Since
+LIME ismodel agnostic,it can be applied toanyclassi?er,evenwithou t knowing
+its internals, e.g., architecture or weights of a neural network clas si?er. One
+major drawback of LIME is its high computational complexity, e.g., fo r state-of-
+the-art models such as GoogleNet it requires several minutes for c omputing the
+explanation of a single prediction [ 45].1. Towards Explainable Arti?cial Intelligence 9
+Similar to LIME which builds a model for locally approximating the functio n
+of interest, the SmoothGrad method [ 85] samples the neighborhood of the input
+to approximate the gradient. Also SmoothGrad does not leverage t he internals
+of the model, however, it needs access to the gradients. Thus, it c an also be
+regarded as a gradient-based explanation method.
+4.2 Explaining with Local Perturbations
+Another class of methods construct explanations by analyzing the model’s re-
+sponse to local changes. This includes methods which utilize the grad ient infor-
+mation as well as perturbation- and optimization-based approache s.
+Explanation methods relying on the gradient of the function of inter est [2]
+have a long history in machine learning. One example is the so-called Sen sitivity
+Analysis (SA) [ 62,10,84]. Although being widely used as explanation methods,
+SA technically explains the change in prediction instead of the predict ion itself.
+Furthermore, SA has been shown to su?er from fundamental pro blems such as
+gradient shattering and explanation discontinuities, and is therefo re considered
+suboptimal for explanation of today’s AI models [ 60]. Variants of Sensitivity
+Analysis exist which tackle some of these problems by locally averaging the
+gradients [ 85] or integrating them along a speci?c path [ 88].
+Perturbation-basedexplanationmethods[ 94,97,25]explicitlytestthemodel’s
+response to more general local perturbations. While the occlusion method of [ 94]
+measures the importance of input dimensions by masking parts of th e input, the
+Prediction Di?erence Analysis (PDA) approachof[ 97] uses conditional sampling
+within the pixel neighborhood of an analyzed feature to e?ectively r emove infor-
+mation. Both methods are model-agnostic, i.e., can be applied to any c lassi?er,
+but are computationally not very e?cient, because the function of interest (e.g.,
+neural network) needs to be evaluated for all perturbations.
+The meaningful perturbation method of [ 25,26] is another model-agnostic
+technique to explaining with local perturbations. It regards explan ation as a
+meta prediction task and applies optimization to synthesize the maxim ally in-
+formative explanations. The idea to formulate explanation as an opt imization
+problem is also used by other methods. For instance, the methods [ 84,93,64]
+aim to interpret what the model has learned by building prototypes t hat are
+representative of the learned concept. These prototypes are c omputed within
+the activation maximization framework by searching for an input pat tern that
+produces a maximum desired model response. Conceptually, activa tion maxi-
+mization [ 64] is similar to the meaningful perturbation approach of [ 25]. While
+the latter ?nds a minimum perturbation of the data that makes f(x) low, activa-
+tion maximization ?nds a minimum perturbation of the gray image that m akes
+f(x) high. The costs of optimization can make these methods computat ionally
+very demanding.10 W. Samek and K.-R. M¨ uller
+4.3 Propagation-Based Approaches (Leveraging Structure)
+Propagation-based approaches to explanation are not oblivious to the model
+which they explain, but rather integrate the internal structure o f the model into
+the explanation process.
+Layer-wise Relevance Propagation (LRP) [ 9,58] is a propagation-based ex-
+planation framework, which is applicable to general neural network structures,
+including deep neural networks [ 13], LSTMs [ 7,5], and Fisher Vector classi?ers
+[44]. LRP explains individual decisions of a model by propagating the pred iction
+from the output to the input using local redistribution rules. The pr opagation
+process can be theoretically embedded in the deep Taylor decompos ition frame-
+work [59]. More recently, LRP was extended to a wider set of machine learning
+models, e.g., in clustering [ 36] or anomaly detection [ 35], by ?rst transforming
+the model into a neural network (‘neuralization’) and then applying L RP to
+explain its predictions. The leveraging of the model structure toge ther with the
+use of appropriate (theoretically-motivated) propagation rules, enables LRP to
+deliver good explanations at very low computational cost (one forw ard and one
+backwardpass).Furthermore,thegeneralityoftheLRPframew orkallowsalsoto
+express other recently proposed explanation techniques, e.g., [ 81,95]. Since LRP
+does not rely on gradients, it does not su?er from problems such as gradient
+shattering and explanation discontinuities [ 60].
+Other popular explanation methods leveragingthe model’s internal s tructure
+are Deconvolution [ 94] and Guided Backprogagation [ 86]. In contrast to LRP,
+these methods do not explain the prediction in the sense “how much d id the
+input feature contribute to the prediction”, but rather identify p atterns in input
+space, that relate to the analyzed network output.
+Many other explanation methods have been proposed in the literatu re which
+fall into the “leveraging structure” category. Some of these met hods use heuris-
+tics to guide the redistribution process [ 79], others incorporate an optimization
+step into the propagation process [ 39]. The iNNvestigate toolbox [ 1] provides
+an e?cient implementation for many of these propagation-based ex planation
+methods.
+4.4 Meta-Explanations
+Finally, individual explanations can be aggregated and analyzed to ide ntify gen-
+eral patterns of classi?er behavior. A recently proposed method , spectral rel-
+evance analysis (SpRAy) [ 46], computes such meta explanations by clustering
+individual heatmaps. This approach allows to investigate the predict ions strate-
+gies of the classi?er on the whole dataset in a (semi-)automated man ner and to
+systematically ?nd weak points in models or training datasets.
+Another type ofmeta-explanation aims to better understand the learned rep-
+resentations and to provide interpretations in terms of human-fr iendly concepts.
+For instance, the network dissection approach of [ 12,96] evaluates the semantics
+of hidden units, i.e., quantify what concepts these neurons encode . Other recent
+work [38] provides explanations in terms of user-de?ned concepts and tes ts to
+which degree these concepts are important for the prediction.1. Towards Explainable Arti?cial Intelligence 11
+5 Evaluating Quality of Explanations
+The objective assessment of the quality of explanations is an active ?eld of re-
+search. Many e?orts have been made to de?ne quality measures fo r heatmaps
+which explain individual predictions of an AI model. This section gives an
+overview over the proposed approaches.
+A popular measure for heatmap quality is based on perturbation ana lysis
+[9,75,6]. The assumption of this evaluation metric is that the perturbation o f
+relevant (according to the heatmap) input variables should lead to a steeper
+decline of the prediction score than the perturbation of input dimen sions which
+are of lesser importance. Thus, the average decline of the predict ion score after
+several rounds of perturbation (starting from the most relevan t input variables)
+de?nes an objective measure of heatmap quality. If the explanatio n identi?es the
+truly relevant input variables, then the decline should be large. The a uthors of
+[75]recommendtouseuntargetedperturbations(e.g.,uniformnoise )toallowfair
+comparison of di?erent explanation methods. Although being very p opular, it is
+clear that perturbation analysis can not be the only criterion to eva luate expla-
+nation quality, because one could easily design explanations techniqu es which
+would directly optimize this criterion. Examples are occlusion methods which
+were used in [ 94,50], however, they have been shown to be inferior (according to
+other quality criteria) to explanation techniques such as LRP [ 8].
+Other studies use the ‘pointing game” [ 95] to evaluate the quality of a
+heatmap. The goal of this game is to evaluate the discriminativeness of the
+explanations for localizing target objects, i.e., it is compared if the mo st rele-
+vant point of the heatmap lies on the object of designated categor y. Thus, these
+measures assume that the AI model will focus most attention on th e object of
+interest when classifying it, therefore this should be re?ected in th e explanation.
+However, this assumption may not always be true, e.g., “Clever Hans ” predic-
+tors [46] may rather focus on context than of the object itself, irrespec tively of
+the explanation method used. Thus, their explanations would be eva luated as
+poor quality according to this measure although they truly visualize t he model’s
+prediction strategy.
+Task speci?c evaluation schemes have also been proposed in the liter ature.
+For example, [ 69] use the subject-verb agreement task to evaluate explanations
+of a NLP model. Here the model predicts a verb’s number and the exp lana-
+tions verify if the most relevant word is indeed the correct subject or a noun
+with the predicted number. Other approaches to evaluation rely on human judg-
+ment [73,66]. Such evaluation schemes relatively quickly become impractical if
+evaluating a larger number of explanations.
+A recent study [ 8] proposes to objectively evaluate explanation for sequential
+data using ground truth information in a toy task. The idea of this ev aluation
+metric is to add or subtract two numbers within an input sequence an d measure
+the correlation between the relevances assigned to the elements o f the sequence
+and the two input numbers. If the model is able to accurately perfo rm the ad-
+dition and subtraction task, then it must focus on these two numbe rs (other12 W. Samek and K.-R. M¨ uller
+numbers in the sequence are random) and this must be re?ected in t he explana-
+tion.
+An alternative and indirect way to evaluate the quality of explanation s is to
+use them for solving other tasks. The authors of [ 6] build document-level rep-
+resentations from word-level explanations. The performance of these document-
+level representations(e.g., in a classi?cation task) re?ect the qua lity of the word-
+level explanations. Another work [ 4] uses explanation for reinforcement learning.
+Many other functionally-grounded evaluations [ 18] could be conceived such as
+using explanations for compressing or pruning the neural network or training
+student models in a teacher-student scenario.
+Lastly, another promising approach to evaluate explanations is bas ed on the
+ful?llment of a certain axioms [ 80,88,54,60,57]. Axioms are properties of an ex-
+planation that are considered to be necessary and should therefo re be ful?lled.
+Proposedaxiomsinclude relevanceconservation[ 60], explanationcontinuity[ 60],
+sensitivity [ 88] and implementation invariance[ 88]. In contrastto the other qual-
+ity measures discussed in this section, the ful?llment or non-ful?llmen t of certain
+axioms can be often shown analytically, i.e., does not require empirical evalua-
+tions.
+6 Challenges and Open Questions
+Although signi?cant progress has been made in the ?eld of explainable AI in the
+last years, challenges still exist both on the methods and theory sid e as well as
+regarding the way explanations are used in practice. Researchers have already
+started working on some of these challenges, e.g., the objective ev aluation of
+explanation quality or the use of explanations beyond visualization. O ther open
+questions, especially those concerning the theory, are more fund amental and
+more time will be required to give satisfactory answers to them.
+Explanation methods allow us to gain insights into the functioning of th e
+AI model. Yet, these methods are still limited in several ways. First, heatmaps
+computed with today’s explanation methods visualize “?rst-order” information,
+i.e., they show which input features have been identi?ed as being relev ant for the
+prediction. However, the relation between these features, e.g., w hether they are
+important on their own or only whether they occur together, rema ins unclear.
+Understanding these relations is important in many applications, e.g., in the
+neurosciences such higher-order explanations could help us to iden tify groups of
+brain regions which act together when solving a speci?c task (brain n etworks)
+rather than just identifying important single voxels.
+Another limitation is the low abstraction level of explanations. Heatm aps
+show that particular pixels are important without relating these rele vance values
+to more abstract concepts such as the objects or the scene disp layed in the
+image. Humans need to interpret the explanations to make sense th em and
+to understand the model’s behaviour. This interpretation step can be di?cult
+and erroneous.Meta-explanations which aggregateevidence fro m these low-level
+heatmaps and explain the model’s behaviour on a more abstract, mor e human1. Towards Explainable Arti?cial Intelligence 13
+understandable level, are desirable. Recently, ?rst approaches t o aggregate low-
+level explanations [ 46] and quantify the semantics of neural representations [ 12]
+have been proposed. The construction of more advanced meta-e xplanations is a
+rewarding topic for future research.
+Since the recipient of explanations is ultimately the human user, the u se
+of explanations in human-machine interaction is an important future research
+topic.Someworks(e.g.,[ 43])havealreadystartedtoinvestigatehumanfactorsin
+explainable AI. Constructing explanations with the right user focus , i.e., asking
+therightquestionsintherightway,isaprerequisitetosuccessful human-machine
+interaction. However, the optimization of explanations for optimal human usage
+is still a challenge which needs further study.
+A theory of explainable AI, with a formal and universally agreed de?n ition of
+what explanations are, is lacking. Some works made a ?rst step towa rdsthis goal
+by developing mathematically well-founded explanation methods. For instance,
+the authors of [ 59] approach the explanation problem by integrating it into
+the theoretical framework of Taylor decomposition. The axiomatic approaches
+[88,54,60] constitute another promising direction towards the goal of deve loping
+a general theory of explainable AI.
+Finally, the use of explanations beyond visualization is a wide open
+challenge. Future work will show how to integrate explanations into a larger
+optimization process in order to, e.g., improve the model’s performan ce or
+reduce its complexity.
+Acknowledgements. This work was supported by the German Ministry
+for Education and Research as Berlin Big Data Centre (01IS14013A ), Berlin
+Center for Machine Learning (01IS18037I) and TraMeExCo (01IS 18056A).
+Partial funding by DFG is acknowledged (EXC 2046/1, project-ID: 390685689).
+This work was also supported by the Institute for Information & Co mmuni-
+cations Technology Planning & Evaluation (IITP) grant funded by th e Korea
+government (No. 2017-0-00451, No. 2017-0-01779).
+References
+1. Alber, M., Lapuschkin, S., Seegerer, P., H¨ agele, M., Sch ¨ utt, K.T., Montavon, G.,
+Samek, W., M¨ uller, K.R., D¨ ahne, S., Kindermans, P.J.: iNN vestigate neural net-
+works!. Journal of Machine Learning Research 20(93), 1–8 (2019)
+2. Ancona, M., Ceolini, E., ¨Oztireli, C., Gross, M.: Gradient-based attribution meth-
+ods. In: Explainable AI: Interpreting, Explaining and Visu alizing Deep Learning.
+Lecture Notes in Computer Science 11700, Springer (2019)
+3. Antunes, P., Herskovic, V., Ochoa, S.F., Pino, J.A.: Stru cturingdimensions for col-
+laborative systems evaluation. ACM Computing Surveys (CSU R)44(2), 8 (2012)
+4. Arjona-Medina, J.A., Gillhofer, M., Widrich, M., Untert hiner, T., Hochreiter,
+S.: RUDDER: Return Decomposition for Delayed Rewards. arXi v preprint
+arXiv:1806.07857 (2018)
+5. Arras, L., Arjona-Medina, J., Gillhofer, M., Widrich, M. , Montavon, G., M¨ uller,
+K.R.,Hochreiter, S., Samek,W.: Explainingandinterpreti ngLSTMs with LRP.In:14 W. Samek and K.-R. M¨ uller
+Explainable AI: Interpreting, Explaining and Visualizing Deep Learning. Lecture
+Notes in Computer Science 11700, pp. 211238. Springer (2019)
+6. Arras, L., Horn, F., Montavon, G., M¨ uller, K.R., Samek, W .: ”What is relevant
+in a text document?”: An interpretable machine learning app roach. PLoS ONE
+12(8), e0181142 (2017)
+7. Arras, L., Montavon, G., M¨ uller, K.R., Samek, W.: Explai ning recurrent neural
+network predictions in sentiment analysis. In: EMNLP’17 Wo rkshop on Computa-
+tional Approaches to Subjectivity, Sentiment & Social Medi a Analysis (WASSA).
+pp. 159–168 (2017)
+8. Arras, L., Osman, A., M¨ uller, K.R., Samek, W.: Evaluatin g recurrent neural net-
+work explanations. In: ACL’19 Workshop on BlackboxNLP: Ana lyzing and Inter-
+preting Neural Networks for NLP, pp. 113-126 (2019)
+9. Bach, S., Binder, A., Montavon, G., Klauschen, F., M¨ ulle r, K.R., Samek, W.: On
+pixel-wise explanations for non-linear classi?er decisio ns by layer-wise relevance
+propagation. PLoS ONE 10(7), e0130140 (2015)
+10. Baehrens, D., Schroeter, T., Harmeling, S., Kawanabe, M ., Hansen, K., M¨ uller,
+K.R.: How to explain individual classi?cation decisions. J ournal of Machine Learn-
+ing Research 11, 1803–1831 (2010)
+11. Bahdanau, D., Cho, K., Bengio, Y.: Neural machine transl ation by jointly learning
+to align and translate. In: International Conference on Lea rning Representations
+(ICLR). (2015)
+12. Bau, D., Zhou, B., Khosla, A., Oliva, A., Torralba, A.: Ne twork dissection: Quanti-
+fying interpretability of deep visual representations. In : IEEE Conference on Com-
+puter Vision and Pattern Recognition (CVPR). pp. 6541–6549 (2017)
+13. Binder, A., Bach, S., Montavon, G., M¨ uller, K.R., Samek , W.: Layer-wise relevance
+propagation for deep neural network architectures. In: Inf ormation Science and
+Applications (ICISA), pp. 913–922 (2016)
+14. Binder, A., Bockmayr, M., H¨ agele, M., Wienert, S., Heim , D., Hellweg, K., Sten-
+zinger, A., Parlow, L., Budczies, J., Goeppert, B., et al.: T owards computational
+?uorescence microscopy: Machine learning-based integrat ed prediction of morpho-
+logical and molecular tumor pro?les. arXiv preprint arXiv: 1805.11178 (2018)
+15. Chmiela, S.,Sauceda, H.E.,M¨ uller, K.R.,Tkatchenko, A.:Towards exactmolecular
+dynamics simulations with machine-learned force ?elds. Na ture Communications
+9(1), 3887 (2018)
+16. Cire¸ san, D., Meier, U., Masci, J., Schmidhuber, J.: A co mmittee of neural networks
+for tra?c sign classi?cation. In: International Joint Conf erence on Neural Networks
+(IJCNN). pp. 1918–1921 (2011)
+17. Deng, J., Dong, W., Socher, R., Li, L.J., Li, K., Fei-Fei, L.: Imagenet: A large-
+scale hierarchical image database. In: IEEE Conference on C omputer Vision and
+Pattern Recognition (CVPR). pp. 248–255 (2009)
+18. Doshi-Velez,F., Kim,B.: Towardsarigorous scienceofi nterpretablemachinelearn-
+ing. arXiv preprint arXiv:1702.08608 (2017)
+19. Doshi-Velez, F., Kortz, M., Budish, R., Bavitz, C., Gers hman, S., O’Brien, D.,
+Schieber, S., Waldo, J., Weinberger, D., Wood, A.: Accounta bility of AI under the
+law: The role of explanation. arXiv preprint arXiv:1711.01 134 (2017)
+20. Eitel, F., Soehler,E., Bellmann-Strobl,J., Brandt,A. U.,Ruprecht,K.,Giess, R.M.,
+Kuchling, J., Asseyer, S., Weygandt, M., Haynes, J.D., et al .: Uncovering convo-
+lutional neural network decisions for diagnosing multiple sclerosis on conventional
+mri usinglayer-wise relevance propagation. arXivpreprin tarXiv:1904.08771 (2019)
+21. European Commission’s High-Level Expert Group: Draft e thics guidelines for
+trustworthy AI. European Commission (2019)1. Towards Explainable Arti?cial Intelligence 15
+22. Everingham, M., Eslami, S.A., Van Gool, L., Williams, C. K., Winn, J., Zisserman,
+A.: The PASCAL Visual Object Classes Challenge: A Retrospec tive. International
+Journal of Computer Vision 111(1), 98–136 (2015)
+23. Everingham,M.,VanGool, L.,Williams, C.K., Winn,J., Z isserman,A.:ThePascal
+visual object classes (VOC) challenge. International Jour nal of Computer Vision
+88(2), 303–338 (2010)
+24. Eykholt, K., Evtimov, I., Fernandes, E., Li, B., Rahmati , A., Xiao, C., Prakash,
+A., Kohno, T., Song, D.: Robust physical-world attacks on de ep learning models.
+arXiv preprint arXiv:1707.08945 (2017)
+25. Fong, R.C., Vedaldi, A.: Interpretable explanations of black boxes by meaningful
+perturbation. In: IEEE International Conference on Comput er Vision (CVPR). pp.
+3429–3437 (2017)
+26. Fong, R., Vedaldi, A.: Explanations for attributing dee p neural network predic-
+tions. In: Explainable AI: Interpreting, Explaining and Vi sualizing Deep Learning.
+Lecture Notes in Computer Science 11700, pp. 149167. Springer (2019)
+27. Goodman, B., Flaxman, S.: European union regulations on algorithmic decision-
+making and a “right to explanation”. AI Magazine 38(3), 50–57 (2017)
+28. Hajian, S.,Bonchi,F.,Castillo, C.: Algorithmicbias: Fromdiscriminationdiscovery
+to fairness-aware data mining. In: 22nd ACM SIGKDD Internat ional Conference
+on Knowledge Discovery and Data Mining. pp. 2125–2126 (2016 )
+29. Han, S., Pool, J., Tran, J., Dally, W.: Learning both weig hts and connections for
+e?cient neural network. In: Advances in Neural Information Processing Systems
+(NIPS). pp. 1135–1143 (2015)
+30. Heath, R.L., Bryant, J.: Human communication theory and research: Concepts,
+contexts, and challenges. Routledge (2013)
+31. Hofmarcher, M., Unterthiner, T., Arjona-Medina, J., Kl ambauer, G., Hochreiter,
+S., Nessler, B.: Visual scene understanding for autonomous driving using semantic
+segmentation. In: Explainable AI: Interpreting, Explaini ng and Visualizing Deep
+Learning. Lecture Notes in Computer Science 11700, pp. 285296. Springer (2019)
+32. Holzinger, A., Langs, G., Denk, H., Zatloukal, K., M¨ ull er, H.: Causability and
+explainabilty of arti?cial intelligence in medicine. Wile y Interdisciplinary Reviews:
+Data Mining and Knowledge Discovery p. e1312 (2019)
+33. Horst, F., Lapuschkin, S., Samek, W., M¨ uller, K.R., Sch ¨ ollhorn, W.I.: Explaining
+the unique nature of individual gait patterns with deep lear ning. Scienti?c Reports
+9, 2391 (2019)
+34. Karpathy,A.,Toderici, G.,Shetty,S.,Leung,T., Sukth ankar,R.,Fei-Fei,L.: Large-
+scale video classi?cation with convolutional neural netwo rks. In: IEEE conference
+on Computer Vision and Pattern Recognition (CVPR). pp. 1725 –1732 (2014)
+35. Kau?mann, J., M¨ uller, K.R., Montavon, G.: Towards expl aining anomalies: A deep
+Taylor decomposition of one-class models. arXiv preprint a rXiv:1805.06230 (2018)
+36. Kau?mann, J., Esders, M., Montavon, G., Samek, W., M¨ ull er, K.R.: From cluster-
+ing to cluster explanations via neural networks. arXiv prep rint arXiv:1906.07633
+(2019)
+37. Khanna, R., Kim, B., Ghosh, J., Koyejo, O.: Interpreting black box predictions
+using ?sher kernels. arXiv preprint arXiv:1810.10118 (201 8)
+38. Kim, B., Wattenberg, M., Gilmer, J., Cai, C., Wexler, J., Viegas, F., Sayres, R.:
+Interpretability beyond feature attribution: Quantitati ve testing with concept acti-
+vationvectors (TCAV). In:International Conference onMac hine Learning(ICML).
+pp. 2673–2682, (2018)16 W. Samek and K.-R. M¨ uller
+39. Kindermans, P.J., Sch¨ utt, K.T., Alber, M., M¨ uller, K. R., Erhan, D., Kim, B.,
+D¨ ahne, S.: Learning how to explain neural networks: Patter nnet and patternattri-
+bution. In: International Conference on Learning Represen tations (ICLR). (2018)
+40. Klauschen, F., M¨ uller, K.R., Binder, A., Bockmayr, M., H¨ agele, M., Seegerer, P.,
+Wienert,S.,Pruneri,G., deMaria, S.,Badve,S.,etal.: Sco ringoftumor-in?ltrating
+lymphocytes: From visual estimation to machine learning. S eminars in Cancer
+Biology52(2), 151–157 (2018)
+41. Koh, P.W., Liang, P.: Understanding black-box predicti ons via in?uence functions.
+In: International Conference on Machine Learning (ICML). p p. 1885–1894 (2017)
+42. Kriegeskorte, N., Goebel, R., Bandettini, P.: Informat ion-based functional brain
+mapping. Proceedings of the National Academy of Sciences 103(10), 3863–3868
+(2006)
+43. Lage, I., Chen, E., He, J., Narayanan, M., Kim, B., Gershm an, S., Doshi-Velez,
+F.: An evaluation of the human-interpretability of explana tion. arXiv preprint
+arXiv:1902.00006 (2019)
+44. Lapuschkin, S., Binder, A., Montavon, G., M¨ uller, K.R. , Samek, W.: Analyzing
+classi?ers: Fisher vectors and deep neural networks. In: IE EE Conference on Com-
+puter Vision and Pattern Recognition (CVPR). pp. 2912–2920 (2016)
+45. Lapuschkin, S.: Opening the Machine Learning Black Box w ith Layer-wise Rele-
+vance Propagation. Ph.D. thesis, Technische Universit¨ at Berlin (2019)
+46. Lapuschkin, S., W¨ aldchen, S., Binder, A., Montavon, G. , Samek, W., M¨ uller, K.R.:
+Unmaskingclever hans predictors and assessing what machin es really learn. Nature
+Communications 10, 1096 (2019)
+47. LeCun, Y., Bengio, Y., Hinton, G.: Deep learning. Nature 521(7553), 436–444
+(2015)
+48. LeCun, Y.A., Bottou, L., Orr, G.B., M¨ uller, K.R.: E?cie nt backprop. In: Neural
+networks: Tricks of the trade, pp. 9–48. Springer (2012)
+49. Lemm, S., Blankertz, B., Dickhaus, T., M¨ uller, K.R.: In troduction to machine
+learning for brain imaging. Neuroimage 56(2), 387–399 (2011)
+50. Li, J., Monroe, W., Jurafsky, D.: Understanding Neural N etworks through Repre-
+sentation Erasure. arXiv preprint arXiv:1612.08220 (2016 )
+51. Libbrecht, M.W., Noble, W.S.: Machine learning applica tions in genetics and ge-
+nomics. Nature Reviews Genetics 16(6), 321 (2015)
+52. Lindholm, E., Nickolls, J., Oberman, S., Montrym, J.: Nv idia tesla: A uni?ed
+graphics and computing architecture. IEEE Micro 28(2), 39–55 (2008)
+53. Lu, C., Tang, X.: Surpassing human-level face veri?cati on performance on LFW
+with GaussianFace. In: 29th AAAI Conference on Arti?cial In telligence. pp. 3811–
+3819 (2015)
+54. Lundberg, S.M., Lee, S.I.: A uni?ed approach to interpre ting model predictions.
+In: Advances in Neural Information Processing Systems (NIP S). pp. 4765–4774
+(2017)
+55. Madry,A., Makelov, A.,Schmidt,L., Tsipras, D.,Vladu, A.:Towards deeplearning
+models resistant to adversarial attacks. In: Internationa l Conference on Learning
+Representations (ICLR). (2018)
+56. Mnih, V., Kavukcuoglu, K., Silver, D., Rusu, A.A., Venes s, J., Bellemare, M.G.,
+Graves, A., Riedmiller, M., Fidjeland, A.K., Ostrovski, G. , et al.: Human-level
+control through deep reinforcement learning. Nature 518(7540), 529–533 (2015)
+57. Montavon, G.: Gradient-based vs. propagation-based ex planations: An axiomatic
+comparison. In: Explainable AI: Interpreting, Explaining and Visualizing Deep
+Learning. Lecture Notes in Computer Science 11700, pp. 253265. Springer (2019)1. Towards Explainable Arti?cial Intelligence 17
+58. Montavon, G., Binder, A., Lapuschkin, S., Samek, W., M¨ u ller, K.R.: Layer-wise
+relevance propagation: An overview. In: Explainable AI: In terpreting, Explaining
+and Visualizing Deep Learning. Lecture Notes in Computer Sc ience11700, pp.
+193-209. Springer (2019)
+59. Montavon, G., Lapuschkin, S., Binder, A., Samek, W., M¨ u ller, K.R.: Explaining
+nonlinear classi?cation decisions with deep Taylor decomp osition. Pattern Recog-
+nition65, 211–222 (2017)
+60. Montavon, G., Samek, W., M¨ uller, K.R.: Methods for inte rpretingand understand-
+ing deep neural networks. Digital Signal Processing 73, 1–15 (2018)
+61. Morav? c´ ik, M., Schmid, M., Burch, N., Lis´ y, V., Morril l, D., Bard, N., et al.:
+Deepstack: Expert-level arti?cial intelligence in heads- up no-limit poker. Science
+356(6337), 508–513 (2017)
+62. Morch, N., Kjems, U., Hansen, L.K., Svarer, C., Law, I., L autrup, B., Strother, S.,
+Rehm, K.: Visualization of neural networks using saliency m aps. In: International
+Conference on Neural Networks (ICNN). vol. 4, pp. 2085–2090 (1995)
+63. Mordvintsev, A., Olah, C., Tyka, M.: Inceptionism: Goin g deeper into neural net-
+works (2015)
+64. Nguyen, A., Dosovitskiy, A., Yosinski, J., Brox, T., Clu ne, J.: Synthesizing the
+preferred inputs for neurons in neural networks via deep gen erator networks. In:
+Advances in Neural Information Processing Systems (NIPS). pp. 3387–3395 (2016)
+65. Nguyen, A., Yosinski, J., Clune, J.: Understanding neur al networks via feature
+visualization: A survey. In: Explainable AI: Interpreting , Explaining and Visualiz-
+ing Deep Learning. Lecture Notes in Computer Science 11700, pp. 5576. Springer
+(2019)
+66. Nguyen, D.: Comparing Automatic and Human Evaluation of Local Explanations
+for Text Classi?cation. In: Conference of the North America n Chapter of the As-
+sociation for Computational Linguistics: Human Language T echnologies (NAACL-
+HLT). pp. 1069–1078 (2018)
+67. Phinyomark, A., Petri, G., Ib´ a˜ nez-Marcelo, E., Osis, S.T., Ferber, R.: Analysis of
+big data in gait biomechanics: Current trends and future dir ections. Journal of
+Medical and Biological Engineering 38(2), 244–260 (2018)
+68. Pilania, G., Wang, C., Jiang, X., Rajasekaran, S., Rampr asad, R.: Accelerating
+materials property predictions using machine learning. Sc ienti?c Reports 3, 2810
+(2013)
+69. Poerner, N.,Roth,B., Sch¨ utze,H.: Evaluatingneural n etworkexplanationmethods
+using hybrid documents and morphosyntactic agreement. In: 56th Annual Meeting
+of the Association for Computational Linguistics (ACL). pp . 340–350 (2018)
+70. Preuer, K., Klambauer, G., Rippmann, F., Hochreiter, S. , Unterthiner, T.: Inter-
+pretable deep learning in drug discovery. In: Explainable A I: Interpreting, Explain-
+ing and Visualizing Deep Learning. Lecture Notes in Compute r Science 11700,
+Springer (2019)
+71. Redmon, J., Divvala, S., Girshick, R., Farhadi, A.: You o nly look once: Uni?ed,
+real-time object detection. In: IEEE Conference on Compute r Vision and Pattern
+Recognition (CVPR). pp. 779–788 (2016)
+72. Reyes, E., Est´ evez, P.A., Reyes, I., Cabrera-Vives, G. , Huijse, P., Carrasco, R.,
+Forster, F.: Enhanced rotational invariant convolutional neural network for super-
+novae detection. In: International Joint Conference on Neu ral Networks (IJCNN).
+pp. 1–8 (2018)
+73. Ribeiro, M.T., Singh, S., Guestrin, C.: Why should i trus t you?: Explaining the
+predictions ofanyclassi?er. In:ACMSIGKDDInternational Conference onKnowl-
+edge Discovery and Data Mining. pp. 1135–1144 (2016)18 W. Samek and K.-R. M¨ uller
+74. Ross, A.S., Hughes, M.C., Doshi-Velez, F.: Right for the right reasons: Training
+di?erentiable models by constraining their explanations. In: 26th International
+Joint Conferences on Arti?cial Intelligence (IJCAI). pp. 2 662–2670 (2017)
+75. Samek, W., Binder, A., Montavon, G., Lapuschkin, S., M¨ u ller, K.R.: Evaluating
+the visualization of what a deep neural network has learned. IEEE Transactions
+on Neural Networks and Learning Systems 28(11), 2660–2673 (2017)
+76. Samek, W., Wiegand, T., M¨ uller, K.R.: Explainable arti ?cial intelligence: Under-
+standing, visualizing and interpreting deep learning mode ls. ITU Journal: ICT
+Discoveries - Special Issue 1 - The Impact of Arti?cial Intel ligence (AI) on Com-
+munication Networks and Services 1(1), 39–48 (2018)
+77. S´ anchez, J., Perronnin, F., Mensink, T., Verbeek, J.J. : Image classi?cation with
+the Fisher vector: Theory and practice. International Jour nal of Computer Vision
+105(3), 222–245 (2013)
+78. Sch¨ utt, K.T., Arbabzadah, F., Chmiela, S., M¨ uller, K. R., Tkatchenko, A.:
+Quantum-chemical insights from deep tensor neural network s. Nature Commu-
+nications 8, 13890 (2017)
+79. Selvaraju, R.R., Cogswell, M., Das, A., Vedantam, R., Pa rikh, D., Batra, D.: Grad-
+cam: Visual explanations from deep networks via gradient-b ased localization. In:
+IEEE International Conference on Computer Vision (CVPR). p p. 618–626 (2017)
+80. Shapley, L.S.: A value for n-person games. Contribution s to the Theory of Games
+2(28), 307–317 (1953)
+81. Shrikumar, A., Greenside, P., Kundaje, A.: Learning Imp ortant Features Through
+Propagating Activation Di?erences. arXiv preprint arXiv: 1704.02685 (2017)
+82. Silver, D., Huang, A., Maddison, C.J., Guez, A., Sifre, L ., Van Den Driessche, G.,
+et al.: Mastering the game of Go with deep neural networks and tree search. Nature
+529(7587), 484–489 (2016)
+83. Silver, D., Schrittwieser, J., Simonyan, K., Antonoglo u, I., Huang, A., Guez, A.,
+Hubert,T., Baker, L., Lai, M., Bolton, A., et al.: Mastering the game ofGo without
+human knowledge. Nature 550(7676), 354–359 (2017)
+84. Simonyan, K., Vedaldi, A., Zisserman, A.: Deep inside co nvolutional networks:
+Visualising image classi?cation models and saliency maps. In: ICLR Workshop.
+(2014)
+85. Smilkov, D., Thorat, N., Kim, B., Vi´ egas, F., Wattenber g, M.: Smoothgrad: re-
+moving noise by adding noise. arXiv preprint arXiv:1706.03 825 (2017)
+86. Springenberg, J.T., Dosovitskiy, A., Brox, T., Riedmil ler, M.: Striving for simplic-
+ity: The all convolutional net. In: ICLR Workshop. (2015)
+87. Sturm, I., Lapuschkin, S., Samek, W., M¨ uller, K.R.: Int erpretable deep neural
+networks for single-trial eeg classi?cation. Journal of Ne uroscience Methods 274,
+141–145 (2016)
+88. Sundararajan, M., Taly, A., Yan, Q.: Axiomatic attribut ion for deep networks. In:
+International Conference on Machine Learning (ICML). pp. 3 319–3328 (2017)
+89. Thomas, A.W., Heekeren, H.R., M¨ uller, K.R., Samek, W.: Analyzing neuroimag-
+ing data through recurrent deep learning models. arXiv prep rint arXiv:1810.09945
+(2018)
+90. Van Den Oord, A., Dieleman, S., Zen, H., Simonyan, K., Vin yals, O., Graves, A.,
+Kalchbrenner, N., Senior, A.W., Kavukcuoglu, K.: Wavenet: A generative model
+for raw audio. SSW 125(2016)
+91. Weller, A.: Transparency: Motivations and Challenges. In: Explainable AI: Inter-
+preting, Explaining and Visualizing Deep Learning. Lectur e Notes in Computer
+Science11700, Springer (2019)1. Towards Explainable Arti?cial Intelligence 19
+92. Wu, D., Wang, L., Zhang, P.: Solving statistical mechani cs using variational au-
+toregressive networks. Physical Review Letters 122(8), 080602 (2019)
+93. Yosinski, J., Clune, J., Nguyen, A., Fuchs, T., Lipson, H .: Understanding neural
+networks through deep visualization. arXiv preprint arXiv :1506.06579 (2015)
+94. Zeiler, M.D., Fergus, R.: Visualizing and understandin g convolutional networks.
+In: European Conference Computer Vision (ECCV). pp. 818–83 3 (2014)
+95. Zhang, J., Lin, Z.L., Brandt, J., Shen, X., Sclaro?, S.: T op-down neural attention
+by excitation backprop. In: European Conference on Compute r Vision (ECCV).
+pp. 543–559 (2016)
+96. Zhou, B., Bau, D., Oliva, A., Torralba, A.: Comparing the interpretability of deep
+networks via network dissection. In: Explainable AI: Inter preting, Explaining and
+Visualizing Deep Learning. Lecture Notes in Computer Scien ce11700, pp. 243252.
+Springer (2019)
+97. Zintgraf, L.M., Cohen, T.S., Adel, T., Welling, M.: Visu alizing deep neural network
+decisions: Prediction di?erence analysis. In: Internatio nal Conference on Learning
+Representations (ICLR). (2017)
