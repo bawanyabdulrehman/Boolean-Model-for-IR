@@ -368,6 +368,14 @@ def main():
             if query_type_var.get() == "Boolean":
                 result_set = boolean_query(query, inverted_index, set(documents.keys()))
             elif query_type_var.get() == "Proximity":
+                # Check if the proximity query is in the correct format
+                if not re.match(r'\w+ \w+ /\s*\d+', query):
+                    messagebox.showwarning("Warning", "Invalid query format. Correct format is 'X Y / k'")
+                    query_entry.delete(0, tk.END)  # Reset query entry
+                    query_entry.insert(0, default_text)
+                    query_entry.config(fg="grey")
+                    query_entry.icursor(0)
+                    return
                 result_set = proximity_query(query, positional_index)
             else:
                 messagebox.showwarning("Warning", "Invalid query type selected.")
@@ -382,7 +390,7 @@ def main():
                 results_text.insert(tk.END, "No matching documents found.\n")
                 results_text.insert(tk.END, "-" * 50 + "\n")  # Add a separator line
 
-        # Reset query entry
+            # Reset query entry
             query_entry.delete(0, tk.END)
             query_entry.insert(0, default_text)
             query_entry.config(fg="grey")
