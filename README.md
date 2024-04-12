@@ -14,7 +14,7 @@ This repository contains the implementation of a Boolean Model for Information R
 
 1. Clone the repository to your local machine.
 2. Install the required dependencies: Python 3.x, NLTK (Natural Language Toolkit), Tkinter.
-3. Run the Python script `document_query_gui.py`.
+3. Run the Python script `main.py`.
 4. Interact with the GUI to enter queries, select query types, execute queries, and view the results.
 
 ## File Descriptions
